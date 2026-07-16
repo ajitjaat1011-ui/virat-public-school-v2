@@ -3,298 +3,242 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Notices | Admin | Virat Public School</title>
+  <title>Notices | Virat Public School Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=2" />
 </head>
 <body class="admin-body">
-
   <header class="admin-header">
     <div class="container-wide">
-      <a href="/admin/" class="admin-brand">
-        <span class="brand-logo">V</span>
-        <span style="font-size:14px;">VPS Admin</span>
-      </a>
-      <nav class="admin-nav" aria-label="Admin">
-        <a href="/admin/">Dashboard</a>
-        <a href="/admin/notices.html" class="active">Notices</a>
-        <a href="/admin/gallery.html">Gallery</a>
-        <a href="/admin/results.html">Results</a>
-        <a href="/admin/inquiries.html">Inquiries</a>
-        <a href="/admin/messages.html">Messages</a>
-        <a href="/admin/audit.html">Audit</a>
-      </nav>
-      <div class="admin-user">
-        <button class="btn btn-ghost btn-sm" id="logout-btn" style="color:var(--color-white);">Sign out</button>
+      <div class="admin-header-inner">
+        <a href="/admin/" class="admin-brand">
+          <span class="logo">V</span>
+          <div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div>
+        </a>
+        <nav class="admin-nav" aria-label="Admin">
+          <a href="/admin/">Dashboard</a>
+          <a href="/admin/notices.html" class="active">Notices</a>
+          <a href="/admin/gallery.html">Gallery</a>
+          <a href="/admin/results.html">Results</a>
+          <a href="/admin/inquiries.html">Inquiries</a>
+          <a href="/admin/messages.html">Messages</a>
+          <a href="/admin/audit.html">Audit</a>
+        </nav>
+        <div class="admin-user">
+          <span id="admin-name">…</span>
+          <button class="logout" id="logout-btn">Sign out</button>
+        </div>
       </div>
     </div>
   </header>
 
   <main class="admin-main">
     <div class="container-wide">
-      <div class="flex justify-between items-center mb-6" style="flex-wrap:wrap;gap:var(--space-3);">
-        <div>
-          <h1 class="page-title">Notices</h1>
-          <p class="page-sub">Manage school notices, announcements, and updates.</p>
-        </div>
-        <button class="btn btn-primary" id="new-notice-btn">+ New Notice</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px;">
+        <h1 class="page-title">Notices</h1>
+        <button class="btn btn-accent" id="new-btn">+ New notice</button>
       </div>
+      <p class="page-sub">Publish announcements, exam schedules, and holiday lists.</p>
 
-      <div id="readonly-banner" class="alert alert-info mb-6" hidden>
-        <span>ℹ️</span>
-        <span><strong>Read-only mode:</strong> The current deployment is using static JSON content (no database bound). You can browse all notices here, but to add or edit them, a D1 database binding needs to be configured in the Cloudflare Pages project settings. See the README for setup instructions.</span>
-      </div>
-
-      <div class="filter-bar">
-        <input type="text" id="search" class="form-control" placeholder="Search notices…" style="max-width:280px;" />
-        <select id="filter-category" class="form-select" style="max-width:200px;">
-          <option value="">All categories</option>
-          <option value="ADMISSION">Admission</option>
-          <option value="HOLIDAY">Holiday</option>
-          <option value="EXAM">Exam</option>
-          <option value="PTM">PTM</option>
-          <option value="GENERAL">General</option>
-        </select>
-        <select id="filter-status" class="form-select" style="max-width:200px;">
-          <option value="">All statuses</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-        </select>
-      </div>
-
-      <div class="form-card">
-        <div id="notices-list">
-          <p class="text-mute text-center" style="padding:var(--space-6);">Loading…</p>
-        </div>
+      <div class="table-wrap">
+        <div id="list"><div class="empty-state"><p>Loading…</p></div></div>
       </div>
     </div>
   </main>
 
-  <!-- Modal: create/edit notice -->
-  <div id="notice-modal" class="lightbox" hidden style="display:none;background:rgba(11,37,69,0.6);">
-    <div class="form-card" style="max-width:760px;width:100%;max-height:90vh;overflow-y:auto;background:var(--color-white);position:relative;">
-      <div class="flex justify-between items-center mb-4">
-        <h2 id="modal-title" style="font-size:20px;margin:0;">New Notice</h2>
-        <button id="close-modal" class="btn btn-ghost btn-sm" aria-label="Close">✕</button>
-      </div>
-      <form id="notice-form">
-        <input type="hidden" id="notice-id" />
-        <div class="form-grid">
-          <div class="form-group full">
-            <label class="form-label" for="n-title">Title <span class="req">*</span></label>
-            <input type="text" id="n-title" class="form-control" required maxlength="200" />
-          </div>
+  <div class="modal-backdrop" id="edit-modal">
+    <div class="modal" style="max-width:640px;">
+      <h2 id="edit-title">New notice</h2>
+      <p class="modal-sub">Will be visible on the public site immediately when published.</p>
+      <form id="edit-form">
+        <input type="hidden" id="edit-id" />
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input class="form-input" id="edit-title-input" required maxlength="200" />
+        </div>
+        <div class="form-row">
           <div class="form-group">
-            <label class="form-label" for="n-category">Category <span class="req">*</span></label>
-            <select id="n-category" class="form-select" required>
+            <label class="form-label">Category</label>
+            <select class="form-select" id="edit-category" required>
               <option value="GENERAL">General</option>
               <option value="ADMISSION">Admission</option>
-              <option value="HOLIDAY">Holiday</option>
               <option value="EXAM">Exam</option>
+              <option value="HOLIDAY">Holiday</option>
               <option value="PTM">PTM</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label" for="n-publish">Publish date</label>
-            <input type="datetime-local" id="n-publish" class="form-control" />
-          </div>
-          <div class="form-group full">
-            <label class="form-label" for="n-excerpt">Excerpt (one-line summary)</label>
-            <input type="text" id="n-excerpt" class="form-control" maxlength="300" />
-          </div>
-          <div class="form-group full">
-            <label class="form-label">Body <span class="req">*</span></label>
-            <div class="editor-toolbar">
-              <button type="button" data-cmd="bold"><strong>B</strong></button>
-              <button type="button" data-cmd="italic"><em>I</em></button>
-              <button type="button" data-cmd="createLink">🔗 Link</button>
-              <button type="button" data-cmd="insertUnorderedList">• List</button>
-              <button type="button" data-cmd="insertOrderedList">1. List</button>
-              <button type="button" data-cmd="formatBlock" data-arg="h3">H3</button>
-              <button type="button" data-cmd="formatBlock" data-arg="p">P</button>
-            </div>
-            <div id="n-body" class="editor-content" contenteditable="true" role="textbox" aria-label="Notice body"></div>
-            <input type="hidden" id="n-body-hidden" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">
-              <input type="checkbox" id="n-published" checked /> Publish immediately
-            </label>
+            <label class="form-label">Publish date</label>
+            <input class="form-input" type="datetime-local" id="edit-publish" />
           </div>
         </div>
-        <div class="flex gap-3 justify-end mt-6" style="flex-wrap:wrap;">
-          <button type="button" class="btn btn-secondary" id="cancel-modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="save-notice">Save Notice</button>
+        <div class="form-group">
+          <label class="form-label">Body (HTML allowed)</label>
+          <textarea class="form-textarea" id="edit-body" rows="8" required></textarea>
+          <div class="form-help">Allowed tags: p, br, strong, em, ul, ol, li, a, h3, h4, blockquote, hr</div>
+        </div>
+        <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;">
+          <input type="checkbox" id="edit-published" checked style="width:18px;height:18px;" />
+          <label class="form-label" for="edit-published" style="margin:0;">Published (visible on site)</label>
+        </div>
+        <div id="edit-err" class="alert-error" hidden></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('edit-modal').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-btn">Save notice</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div class="toast-container" id="toasts"></div>
+  <div id="toast-area"></div>
 
   <script>
-    (function () {
-      const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-      const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
-      const toast = (msg, type='success') => {
-        const t = document.createElement('div');
-        t.className = 'toast ' + type;
-        t.textContent = msg;
-        document.getElementById('toasts').appendChild(t);
-        setTimeout(() => t.remove(), 4000);
-      };
+  (async function () {
+    const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
+    const toast = (msg, type='success') => {
+      const t = document.createElement('div');
+      t.className = 'toast ' + type;
+      t.textContent = msg;
+      document.getElementById('toast-area').appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    };
 
-      let notices = [];
+    const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
+    if (!me || !me.user) { location.href = '/admin/login.html'; return; }
+    document.getElementById('admin-name').textContent = me.user.name;
 
-      async function load() {
-        try {
-          const res = await fetch('/api/admin/notices?all=1');
-          if (!res.ok) throw new Error('Failed to load');
-          const data = await res.json();
-          notices = data.notices || [];
-          if (data.readOnly) {
-            document.getElementById('readonly-banner').hidden = false;
-            document.getElementById('new-notice-btn').disabled = true;
-            document.getElementById('new-notice-btn').textContent = 'Read-only';
-          }
-          render();
-        } catch (e) {
-          document.getElementById('notices-list').innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">Could not load notices.</p>';
-        }
+    let notices = [];
+    async function load() {
+      try {
+        const r = await fetch('/api/admin/notices');
+        if (r.status === 401) { location.href = '/admin/login.html'; return; }
+        const d = await r.json();
+        notices = d.notices || [];
+        render();
+      } catch (e) {
+        document.getElementById('list').innerHTML = '<div class="empty-state"><h3>Could not load</h3></div>';
       }
+    }
 
-      function render() {
-        const q = document.getElementById('search').value.toLowerCase();
-        const cat = document.getElementById('filter-category').value;
-        const st  = document.getElementById('filter-status').value;
-        const filtered = notices.filter((n) => {
-          if (q && !(n.title || '').toLowerCase().includes(q)) return false;
-          if (cat && n.category !== cat) return false;
-          if (st === 'published' && !n.is_published) return false;
-          if (st === 'draft' && n.is_published) return false;
-          return true;
+    function render() {
+      const el = document.getElementById('list');
+      if (!notices.length) {
+        el.innerHTML = '<div class="empty-state"><h3>No notices yet</h3><p>Click "+ New notice" to create your first one.</p></div>';
+        return;
+      }
+      el.innerHTML = `
+        <table class="admin-table">
+          <thead><tr><th>Published</th><th>Title</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${notices.map((n) => `
+            <tr>
+              <td style="white-space:nowrap;font-size:13px;">${fmt(n.publish_date)}</td>
+              <td><strong>${esc(n.title)}</strong></td>
+              <td><span class="badge">${esc(n.category)}</span></td>
+              <td><span class="badge ${n.is_published ? 'published' : 'draft'}">${n.is_published ? 'Published' : 'Draft'}</span></td>
+              <td>
+                <div class="actions">
+                  <button data-action="edit" data-id="${n.id}">Edit</button>
+                  <button data-action="toggle" data-id="${n.id}">${n.is_published ? 'Unpublish' : 'Publish'}</button>
+                  <button data-action="delete" data-id="${n.id}" class="danger">Delete</button>
+                </div>
+              </td>
+            </tr>`).join('')}</tbody>
+        </table>`;
+      el.querySelectorAll('[data-action]').forEach((b) => {
+        b.addEventListener('click', () => {
+          const id = b.dataset.id;
+          if (b.dataset.action === 'edit') openEdit(notices.find(x => x.id === id));
+          else if (b.dataset.action === 'toggle') togglePublish(id);
+          else if (b.dataset.action === 'delete') del(id);
         });
+      });
+    }
 
-        const container = document.getElementById('notices-list');
-        if (!filtered.length) {
-          container.innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">No notices match your filters.</p>';
+    function openEdit(n) {
+      document.getElementById('edit-id').value = n ? n.id : '';
+      document.getElementById('edit-title-input').value = n ? n.title : '';
+      document.getElementById('edit-category').value = n ? n.category : 'GENERAL';
+      document.getElementById('edit-publish').value = n && n.publish_date ? n.publish_date.replace(' ', 'T').slice(0, 16) : new Date().toISOString().slice(0, 16);
+      document.getElementById('edit-body').value = n ? n.body : '';
+      document.getElementById('edit-published').checked = n ? !!n.is_published : true;
+      document.getElementById('edit-title').textContent = n ? 'Edit notice' : 'New notice';
+      document.getElementById('edit-err').hidden = true;
+      document.getElementById('edit-modal').classList.add('open');
+    }
+
+    document.getElementById('new-btn').addEventListener('click', () => openEdit(null));
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const data = {
+        title: document.getElementById('edit-title-input').value,
+        category: document.getElementById('edit-category').value,
+        body: document.getElementById('edit-body').value,
+        is_published: document.getElementById('edit-published').checked ? 1 : 0,
+        publish_date: new Date(document.getElementById('edit-publish').value).toISOString()
+      };
+      const btn = document.getElementById('save-btn');
+      btn.disabled = true; btn.textContent = 'Saving…';
+      try {
+        const r = id
+          ? await fetch('/api/admin/notices/' + id, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
+          : await fetch('/api/admin/notices', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+        const out = await r.json().catch(() => ({}));
+        if (!r.ok || !out.ok) {
+          document.getElementById('edit-err').textContent = out.error || 'Could not save';
+          document.getElementById('edit-err').hidden = false;
           return;
         }
-        container.innerHTML = `
-          <table class="admin-table">
-            <thead><tr><th>Title</th><th>Category</th><th>Published</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>${filtered.map((n) => `
-              <tr>
-                <td><strong>${esc(n.title)}</strong></td>
-                <td><span class="tag tag-${n.category.toLowerCase()}">${esc(n.category)}</span></td>
-                <td style="white-space:nowrap;">${fmt(n.publish_date)}</td>
-                <td><span class="badge-status status-${n.is_published ? 'published' : 'draft'}">${n.is_published ? 'Published' : 'Draft'}</span></td>
-                <td>
-                  <div class="actions">
-                    <a href="/notice-detail.html?id=${encodeURIComponent(n.id)}" target="_blank" rel="noopener">View</a>
-                    <button data-action="edit" data-id="${n.id}">Edit</button>
-                    <button data-action="delete" data-id="${n.id}" class="danger">Delete</button>
-                  </div>
-                </td>
-              </tr>`).join('')}</tbody>
-          </table>`;
-        container.querySelectorAll('[data-action]').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            if (btn.dataset.action === 'edit') openModal(notices.find((n) => n.id === id));
-            if (btn.dataset.action === 'delete') deleteNotice(id);
-          });
-        });
+        document.getElementById('edit-modal').classList.remove('open');
+        toast('Notice saved');
+        load();
+      } catch (err) {
+        document.getElementById('edit-err').textContent = 'Network error';
+        document.getElementById('edit-err').hidden = false;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save notice';
       }
+    });
 
-      // Modal
-      const modal = document.getElementById('notice-modal');
-      const openModal = (n) => {
-        document.getElementById('notice-id').value = n?.id || '';
-        document.getElementById('modal-title').textContent = n ? 'Edit Notice' : 'New Notice';
-        document.getElementById('n-title').value = n?.title || '';
-        document.getElementById('n-category').value = n?.category || 'GENERAL';
-        document.getElementById('n-excerpt').value = n?.excerpt || '';
-        document.getElementById('n-publish').value = n?.publish_date ? n.publish_date.slice(0,16) : '';
-        document.getElementById('n-published').checked = n ? !!n.is_published : true;
-        document.getElementById('n-body').innerHTML = n?.body || '';
-        modal.hidden = false;
-        modal.style.display = 'flex';
-      };
-      const closeModal = () => { modal.hidden = true; modal.style.display = 'none'; };
-      document.getElementById('new-notice-btn').addEventListener('click', () => openModal(null));
-      document.getElementById('close-modal').addEventListener('click', closeModal);
-      document.getElementById('cancel-modal').addEventListener('click', closeModal);
-
-      // Editor toolbar
-      document.querySelectorAll('.editor-toolbar button').forEach((b) => {
-        b.addEventListener('click', () => {
-          const cmd = b.dataset.cmd;
-          const arg = b.dataset.arg || null;
-          document.execCommand(cmd, false, arg);
-          document.getElementById('n-body').focus();
+    async function togglePublish(id) {
+      const n = notices.find(x => x.id === id);
+      if (!n) return;
+      try {
+        const r = await fetch('/api/admin/notices/' + id, {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ is_published: n.is_published ? 0 : 1 })
         });
-      });
+        if (!r.ok) throw new Error('Failed');
+        toast(n.is_published ? 'Unpublished' : 'Published');
+        load();
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-      // Save
-      document.getElementById('notice-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const body = document.getElementById('n-body').innerHTML;
-        document.getElementById('n-body-hidden').value = body;
-        const id = document.getElementById('notice-id').value;
-        const payload = {
-          title: document.getElementById('n-title').value,
-          category: document.getElementById('n-category').value,
-          excerpt: document.getElementById('n-excerpt').value,
-          body,
-          is_published: document.getElementById('n-published').checked,
-          publish_date: document.getElementById('n-publish').value
-            ? new Date(document.getElementById('n-publish').value).toISOString()
-            : new Date().toISOString()
-        };
-        const url = id ? '/api/admin/notices/' + id : '/api/admin/notices';
-        const method = id ? 'PUT' : 'POST';
-        const saveBtn = document.getElementById('save-notice');
-        saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
-        try {
-          const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-          if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
-          toast(id ? 'Notice updated' : 'Notice created');
-          closeModal();
-          load();
-        } catch (e) {
-          toast(e.message, 'error');
-        } finally {
-          saveBtn.disabled = false; saveBtn.textContent = 'Save Notice';
-        }
-      });
+    async function del(id) {
+      if (!confirm('Delete this notice?')) return;
+      try {
+        const r = await fetch('/api/admin/notices/' + id, { method: 'DELETE' });
+        if (!r.ok) throw new Error('Failed');
+        toast('Notice deleted');
+        load();
+      } catch (e) { toast(e.message, 'error'); }
+    }
 
-      // Delete
-      async function deleteNotice(id) {
-        if (!confirm('Delete this notice? This cannot be undone in the UI (it is soft-deleted in the database).')) return;
-        try {
-          const res = await fetch('/api/admin/notices/' + id, { method: 'DELETE' });
-          if (!res.ok) throw new Error('Delete failed');
-          toast('Notice deleted');
-          load();
-        } catch (e) { toast(e.message, 'error'); }
-      }
+    document.getElementById('edit-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'edit-modal') e.target.classList.remove('open');
+    });
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await fetch('/api/admin/auth', { method: 'DELETE' });
+      location.href = '/admin/login.html';
+    });
 
-      // Filters
-      ['search', 'filter-category', 'filter-status'].forEach((id) => {
-        document.getElementById(id).addEventListener('input', render);
-      });
-
-      document.getElementById('logout-btn').addEventListener('click', async () => {
-        await fetch('/api/admin/auth', { method: 'DELETE' });
-        location.href = '/admin/login.html';
-      });
-
-      load();
-    })();
+    load();
+  })();
   </script>
 </body>
 </html>

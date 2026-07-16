@@ -3,77 +3,108 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Results | Admin | Virat Public School</title>
+  <title>Results | Virat Public School Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=2" />
 </head>
 <body class="admin-body">
-
   <header class="admin-header">
     <div class="container-wide">
-      <a href="/admin/" class="admin-brand">
-        <span class="brand-logo">V</span>
-        <span style="font-size:14px;">VPS Admin</span>
-      </a>
-      <nav class="admin-nav" aria-label="Admin">
-        <a href="/admin/">Dashboard</a>
-        <a href="/admin/notices.html">Notices</a>
-        <a href="/admin/gallery.html">Gallery</a>
-        <a href="/admin/results.html" class="active">Results</a>
-        <a href="/admin/inquiries.html">Inquiries</a>
-        <a href="/admin/messages.html">Messages</a>
-        <a href="/admin/audit.html">Audit</a>
-      </nav>
-      <div class="admin-user">
-        <button class="btn btn-ghost btn-sm" id="logout-btn" style="color:var(--color-white);">Sign out</button>
+      <div class="admin-header-inner">
+        <a href="/admin/" class="admin-brand">
+          <span class="logo">V</span>
+          <div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div>
+        </a>
+        <nav class="admin-nav" aria-label="Admin">
+          <a href="/admin/">Dashboard</a>
+          <a href="/admin/notices.html">Notices</a>
+          <a href="/admin/gallery.html">Gallery</a>
+          <a href="/admin/results.html" class="active">Results</a>
+          <a href="/admin/inquiries.html">Inquiries</a>
+          <a href="/admin/messages.html">Messages</a>
+          <a href="/admin/audit.html">Audit</a>
+        </nav>
+        <div class="admin-user">
+          <span id="admin-name">…</span>
+          <button class="logout" id="logout-btn">Sign out</button>
+        </div>
       </div>
     </div>
   </header>
 
   <main class="admin-main">
     <div class="container-wide">
-      <h1 class="page-title">Result Sets</h1>
-      <p class="page-sub">Published examination results. Each set is a batch of student results for a specific exam and class.</p>
+      <h1 class="page-title">Results Lookup</h1>
+      <p class="page-sub">Search a student's published result by roll number and date of birth.</p>
 
-      <div class="alert alert-info">
-        <span>ℹ️</span>
-        <span>Result upload via CSV is available via the API endpoint at <code>POST /api/admin/results</code> (documented in README). Use <code>wrangler d1 execute</code> to insert result sets directly until the upload UI is wired in v2.1.</span>
+      <div class="form-card" style="max-width:640px;">
+        <form id="search-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Roll number</label>
+              <input class="form-input" id="roll" required placeholder="e.g. 10-001" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of birth</label>
+              <input class="form-input" type="date" id="dob" required />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="search-btn">Look up</button>
+        </form>
       </div>
 
-      <div class="form-card mt-6">
-        <div id="list"><p class="text-mute text-center" style="padding:var(--space-6);">Loading…</p></div>
-      </div>
+      <div id="result-out" class="mt-7" style="margin-top:24px;"></div>
     </div>
   </main>
 
+  <div id="toast-area"></div>
+
   <script>
-    (function () {
-      const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-      const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
-      async function load() {
-        const res = await fetch('/api/results');
-        const data = await res.json();
-        const container = document.getElementById('list');
-        if (!data.sets.length) { container.innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">No result sets published yet.</p>'; return; }
-        container.innerHTML = `
-          <table class="admin-table">
-            <thead><tr><th>Academic Year</th><th>Exam</th><th>Class</th><th>Declared</th><th>Status</th></tr></thead>
-            <tbody>${data.sets.map((s) => `
-              <tr>
-                <td>${esc(s.academic_year)}</td>
-                <td><strong>${esc(s.exam_name)}</strong></td>
-                <td>${esc(s.class_name)}</td>
-                <td>${fmt(s.declared_at)}</td>
-                <td><span class="badge-status status-published">Published</span></td>
-              </tr>`).join('')}</tbody>
-          </table>`;
+  (async function () {
+    const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+
+    const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
+    if (!me || !me.user) { location.href = '/admin/login.html'; return; }
+    document.getElementById('admin-name').textContent = me.user.name;
+
+    document.getElementById('search-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const out = document.getElementById('result-out');
+      const roll = document.getElementById('roll').value.trim();
+      const dob = document.getElementById('dob').value;
+      out.innerHTML = '<div class="empty-state"><p>Looking up…</p></div>';
+      try {
+        const r = await fetch('/api/results/lookup?roll=' + encodeURIComponent(roll) + '&dob=' + encodeURIComponent(dob));
+        const d = await r.json();
+        if (!r.ok || d.error) {
+          out.innerHTML = '<div class="form-card text-center"><h3>No result found</h3><p>Check the roll number and date of birth.</p></div>';
+          return;
+        }
+        const s = d.student || {};
+        const marks = d.marks || [];
+        out.innerHTML = `
+          <div class="form-card">
+            <h3 style="margin-bottom:4px;">${esc(s.name || '')}</h3>
+            <p class="text-mute" style="font-size:13px;margin-bottom:16px;">Class ${esc(s.class || '')} · Roll ${esc(s.roll || roll)}</p>
+            <table class="admin-table">
+              <thead><tr><th>Subject</th><th>Marks</th><th>Grade</th></tr></thead>
+              <tbody>${marks.map((m) => `<tr><td>${esc(m.subject)}</td><td>${esc(String(m.marks))}</td><td>${esc(m.grade || '')}</td></tr>`).join('')}</tbody>
+            </table>
+            <p style="margin-top:16px;color:var(--plum-700);font-weight:600;">Total: ${esc(String(d.total || marks.reduce((a,b) => a + Number(b.marks||0), 0)))}</p>
+          </div>`;
+      } catch (err) {
+        out.innerHTML = '<div class="form-card text-center"><h3>Network error</h3><p>Please try again.</p></div>';
       }
-      document.getElementById('logout-btn').addEventListener('click', async () => { await fetch('/api/admin/auth', { method: 'DELETE' }); location.href = '/admin/login.html'; });
-      load();
-    })();
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await fetch('/api/admin/auth', { method: 'DELETE' });
+      location.href = '/admin/login.html';
+    });
+  })();
   </script>
 </body>
 </html>
