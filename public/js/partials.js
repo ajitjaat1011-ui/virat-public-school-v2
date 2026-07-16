@@ -56,24 +56,19 @@
       <div class="container-wide">
         <div class="footer-grid">
           <div>
-            <div class="brand" style="margin-bottom:16px;">
+            <div class="brand" style="margin-bottom:12px;">
               <span class="brand-logo">V</span>
               <span class="brand-text">
-                <span class="brand-name" style="color:white;">Virat Public School</span>
-                <span class="brand-sub" style="color:rgba(255,255,255,0.7);">Virat Nagar · Kotputli</span>
+                <span class="brand-name">Virat Public School</span>
+                <span class="brand-sub">Virat Nagar · Kotputli</span>
               </span>
             </div>
-            <p style="font-size:14px;line-height:1.6;">A co-educational, RBSE-affiliated school in Virat Nagar, Kotputli — for children from LKG to Class 12.</p>
-            <p style="font-size:14px;line-height:1.7;margin-top:16px;">
-              Virat Nagar, Kotputli<br>
-              Behror, Rajasthan — 303102<br>
-              <a href="tel:+919000000000">+91 90000 00000</a>
-            </p>
+            <p>RBSE-affiliated. LKG to Class 12.<br><a href="tel:+919000000000">+91 90000 00000</a> · <a href="mailto:office@viratpublicschool.in">office@viratpublicschool.in</a></p>
           </div>
           <div>
             <h4>Visit</h4>
             <ul>
-              <li><a href="about.html">About us</a></li>
+              <li><a href="about.html">About</a></li>
               <li><a href="infrastructure.html">Campus</a></li>
               <li><a href="faculty.html">Faculty</a></li>
               <li><a href="gallery.html">Gallery</a></li>
@@ -83,26 +78,23 @@
             <h4>Families</h4>
             <ul>
               <li><a href="admissions.html">Admissions</a></li>
-              <li><a href="admissions-fee.html">Fee structure</a></li>
               <li><a href="results.html">Results</a></li>
               <li><a href="notices.html">Notices</a></li>
-              <li><a href="holidays.html">Holiday list</a></li>
+              <li><a href="holidays.html">Holidays</a></li>
             </ul>
           </div>
           <div>
-            <h4>Information</h4>
+            <h4>Info</h4>
             <ul>
               <li><a href="contact.html">Contact</a></li>
               <li><a href="disclosures.html">Disclosures</a></li>
               <li><a href="privacy.html">Privacy</a></li>
-              <li><a href="terms.html">Terms</a></li>
               <li><a href="accessibility.html">Accessibility</a></li>
             </ul>
           </div>
         </div>
         <div class="footer-bottom">
           <span>© 2026 Virat Public School</span>
-          <span>Made with care in Kotputli.</span>
         </div>
       </div>
     </footer>`;

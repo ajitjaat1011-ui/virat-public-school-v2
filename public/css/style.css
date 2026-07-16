@@ -489,32 +489,45 @@ p  { margin: 0 0 1em; color: var(--color-text-soft); }
 .cta-pill h2 { margin-bottom: var(--s-3); }
 .cta-pill p { color: var(--color-text-soft); margin-bottom: var(--s-5); max-width: 480px; margin-left: auto; margin-right: auto; }
 
-/* === Footer (very light) === */
+/* === Footer (soft, minimal) === */
 .site-footer {
-  background: var(--plum-700);
-  color: rgba(255,255,255,0.85);
-  padding: var(--s-8) 0 var(--s-5);
+  background: var(--plum-50);
+  color: var(--ink-700);
+  padding: var(--s-7) 0 var(--s-5);
   margin-top: var(--s-9);
+  border-top: 1px solid var(--color-line);
 }
 .footer-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--s-6);
-  margin-bottom: var(--s-6);
+  gap: var(--s-5);
+  margin-bottom: var(--s-5);
 }
 @media (min-width: 720px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
-.site-footer h4 { color: white; font-size: 14px; font-weight: 600; margin-bottom: var(--s-3); font-family: var(--font-body); }
+.site-footer h4 {
+  color: var(--plum-700);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: var(--s-3);
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 .site-footer ul { list-style: none; padding: 0; margin: 0; }
-.site-footer li { margin-bottom: 8px; }
-.site-footer a { color: rgba(255,255,255,0.75); font-size: 14px; }
-.site-footer a:hover { color: white; }
+.site-footer li { margin-bottom: 6px; }
+.site-footer a { color: var(--ink-700); font-size: 14px; }
+.site-footer a:hover { color: var(--plum-700); }
+.site-footer p { color: var(--ink-500); font-size: 14px; line-height: 1.6; }
+.site-footer .brand-name { color: var(--ink-900); }
+.site-footer .brand-sub  { color: var(--ink-500); }
+
 .footer-bottom {
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid var(--color-line);
   padding-top: var(--s-4);
   display: flex; justify-content: space-between; align-items: center;
   flex-wrap: wrap; gap: var(--s-3);
   font-size: 13px;
-  color: rgba(255,255,255,0.6);
+  color: var(--ink-500);
 }
 
 /* === Forms (soft) === */
