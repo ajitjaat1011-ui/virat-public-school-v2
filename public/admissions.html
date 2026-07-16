@@ -10,7 +10,35 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link rel="stylesheet" href="css/style.css?v=5" />
+  <style>
+    .form-error-banner {
+      background: #ffe5ec;
+      color: #d63e6b;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 12px;
+      display: none;
+    }
+    .form-success-banner {
+      background: #d6f0e3;
+      color: #2f9e6b;
+      padding: 16px;
+      border-radius: 18px;
+      font-size: 15px;
+      text-align: center;
+      margin-top: 16px;
+      display: none;
+    }
+    .form-error-banner.show, .form-success-banner.show { display: block; }
+    .honeypot { position: absolute; left: -9999px; top: -9999px; opacity: 0; }
+    .form-input[aria-invalid="true"], .form-textarea[aria-invalid="true"], .form-select[aria-invalid="true"] {
+      border-color: #d63e6b;
+      box-shadow: 0 0 0 4px #ffe5ec;
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -49,45 +77,62 @@
           <h2 class="section-title">Tell us about your child.</h2>
           <p>We'll get back to you within a working day.</p>
         </div>
-        <form id="inquiry-form" class="form" style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
+
+        <form id="inquiry-form" class="form" novalidate style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
+          <!-- honeypot -->
+          <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="parent_name">Parent's name</label>
-              <input class="form-input" type="text" id="parent_name" name="parent_name" required />
+              <input class="form-input" type="text" id="parent_name" name="parent_name" required autocomplete="name" />
             </div>
             <div class="form-group">
               <label class="form-label" for="phone">Phone</label>
-              <input class="form-input" type="tel" id="phone" name="phone" required />
+              <input class="form-input" type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="10-digit number" inputmode="numeric" />
             </div>
           </div>
+
           <div class="form-group">
-            <label class="form-label" for="email">Email</label>
-            <input class="form-input" type="email" id="email" name="email" />
+            <label class="form-label" for="email">Email <span style="color:var(--ink-500);font-weight:400;">(optional)</span></label>
+            <input class="form-input" type="email" id="email" name="email" autocomplete="email" />
           </div>
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="student_name">Child's name</label>
-              <input class="form-input" type="text" id="student_name" name="student_name" required />
+              <input class="form-input" type="text" id="student_name" name="student_name" required autocomplete="off" />
             </div>
             <div class="form-group">
-              <label class="form-label" for="applying_for">Applying for class</label>
-              <select class="form-select" id="applying_for" name="applying_for" required>
-                <option value="">Select…</option>
-                <option>LKG</option><option>UKG</option>
-                <option>Class 1</option><option>Class 2</option><option>Class 3</option>
-                <option>Class 4</option><option>Class 5</option><option>Class 6</option>
-                <option>Class 7</option><option>Class 8</option><option>Class 9</option>
-                <option>Class 10</option><option>Class 11</option>
-              </select>
+              <label class="form-label" for="dob">Child's date of birth <span style="color:var(--ink-500);font-weight:400;">(optional)</span></label>
+              <input class="form-input" type="date" id="dob" name="dob" />
             </div>
           </div>
+
           <div class="form-group">
-            <label class="form-label" for="message">Anything we should know? (optional)</label>
-            <textarea class="form-textarea" id="message" name="message" rows="3"></textarea>
+            <label class="form-label" for="applying_for">Applying for class</label>
+            <select class="form-select" id="applying_for" name="applying_for" required>
+              <option value="">Select a class…</option>
+              <option>LKG</option><option>UKG</option>
+              <option>Class 1</option><option>Class 2</option><option>Class 3</option>
+              <option>Class 4</option><option>Class 5</option><option>Class 6</option>
+              <option>Class 7</option><option>Class 8</option><option>Class 9</option>
+              <option>Class 10</option><option>Class 11</option>
+            </select>
           </div>
-          <button type="submit" class="btn btn-accent btn-lg" style="justify-content:center;">Send inquiry</button>
+
+          <div class="form-group">
+            <label class="form-label" for="message">Anything we should know? <span style="color:var(--ink-500);font-weight:400;">(optional)</span></label>
+            <textarea class="form-textarea" id="message" name="message" rows="3" placeholder="Allergies, learning needs, siblings already at VPS…"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-accent btn-lg" id="submit-btn" style="justify-content:center;">Send inquiry</button>
           <p class="form-help text-center">By submitting, you agree to our <a href="privacy.html">privacy policy</a>.</p>
-          <div id="form-status"></div>
+
+          <div id="form-error" class="form-error-banner" role="alert"></div>
+          <div id="form-success" class="form-success-banner" role="status">
+            <strong>Thank you.</strong> We've received your note and will reply within a working day.
+          </div>
         </form>
       </div>
     </section>
@@ -112,29 +157,70 @@
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=4"></script>
+  <script src="js/main.js?v=4"></script>
   <script>
-    document.getElementById('inquiry-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const status = document.getElementById('form-status');
-      const data = Object.fromEntries(new FormData(e.target));
-      try {
-        const r = await fetch('/api/inquiries', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if (r.ok) {
-          status.innerHTML = '<div class="form-success">Thank you. We\'ll be in touch within a working day.</div>';
-          e.target.reset();
-        } else {
-          status.innerHTML = '<p class="form-error">Something went wrong. Please call us at +91 90000 00000.</p>';
-        }
-      } catch (err) {
-        status.innerHTML = '<p class="form-error">Network error. Please try again or call us.</p>';
+    (function () {
+      const form = document.getElementById('inquiry-form');
+      const btn = document.getElementById('submit-btn');
+      const errBox = document.getElementById('form-error');
+      const okBox = document.getElementById('form-success');
+
+      function showError(msg) {
+        errBox.textContent = msg;
+        errBox.classList.add('show');
+        okBox.classList.remove('show');
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-    });
+      function clearError() {
+        errBox.classList.remove('show');
+      }
+
+      // Phone: strip non-digits on input
+      const phoneEl = document.getElementById('phone');
+      phoneEl.addEventListener('input', () => {
+        const digits = phoneEl.value.replace(/\D/g, '').slice(-10);
+        phoneEl.value = digits;
+        phoneEl.setAttribute('aria-invalid', 'false');
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+        // Reset invalid states
+        form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.setAttribute('aria-invalid', 'false'));
+
+        const data = Object.fromEntries(new FormData(form));
+        // Client-side quick checks
+        if (!data.parent_name) { showError('Please tell us the parent\'s name.'); document.getElementById('parent_name').setAttribute('aria-invalid','true'); return; }
+        if (!data.student_name) { showError('Please tell us the child\'s name.'); document.getElementById('student_name').setAttribute('aria-invalid','true'); return; }
+        if (!data.applying_for) { showError('Please choose a class.'); document.getElementById('applying_for').setAttribute('aria-invalid','true'); return; }
+        if (!data.phone) { showError('Please share a phone number.'); document.getElementById('phone').setAttribute('aria-invalid','true'); return; }
+        if (!/^[6-9]\d{9}$/.test(data.phone)) { showError('Phone number must be 10 digits, starting with 6, 7, 8 or 9.'); document.getElementById('phone').setAttribute('aria-invalid','true'); return; }
+        if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { showError('Please enter a valid email.'); document.getElementById('email').setAttribute('aria-invalid','true'); return; }
+
+        btn.disabled = true; btn.textContent = 'Sending…';
+        try {
+          const r = await fetch('/api/inquiries', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const out = await r.json().catch(() => ({}));
+          if (r.ok && out.ok) {
+            okBox.classList.add('show');
+            form.reset();
+            okBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            showError(out.error || `Could not send (${r.status}). Please call +91 90000 00000.`);
+          }
+        } catch (err) {
+          showError('Network error. Please try again or call +91 90000 00000.');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Send inquiry';
+        }
+      });
+    })();
   </script>
 </body>
 </html>

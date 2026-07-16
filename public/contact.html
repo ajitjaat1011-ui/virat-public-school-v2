@@ -10,7 +10,27 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link rel="stylesheet" href="css/style.css?v=5" />
+  <style>
+    .form-error-banner {
+      background: #ffe5ec; color: #d63e6b;
+      padding: 12px 16px; border-radius: 14px;
+      font-size: 14px; text-align: center; margin-top: 12px;
+      display: none;
+    }
+    .form-success-banner {
+      background: #d6f0e3; color: #2f9e6b;
+      padding: 16px; border-radius: 18px;
+      font-size: 15px; text-align: center; margin-top: 16px;
+      display: none;
+    }
+    .form-error-banner.show, .form-success-banner.show { display: block; }
+    .honeypot { position: absolute; left: -9999px; top: -9999px; opacity: 0; }
+    .form-input[aria-invalid="true"], .form-textarea[aria-invalid="true"] {
+      border-color: #d63e6b;
+      box-shadow: 0 0 0 4px #ffe5ec;
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -29,24 +49,22 @@
 
     <section class="section">
       <div class="container-wide">
-        <div style="display:grid;grid-template-columns:1fr;gap:32px;" class="contact-grid">
+        <div style="display:grid;grid-template-columns:1fr;gap:24px;" class="contact-grid">
           <div class="card" style="text-align:center;">
             <h3 style="color:var(--plum-700);margin-bottom:8px;">Visit</h3>
-            <p style="margin:0;">Virat Nagar, Kotputli<br>Behror, Rajasthan — 303102</p>
+            <p style="margin:0;font-size:14px;">Virat Nagar, Kotputli<br>Behror, Rajasthan — 303102</p>
           </div>
           <div class="card" style="text-align:center;">
             <h3 style="color:var(--plum-700);margin-bottom:8px;">Call</h3>
-            <p style="margin:0;"><a href="tel:+919000000000">+91 90000 00000</a></p>
+            <p style="margin:0;font-size:14px;"><a href="tel:+919000000000">+91 90000 00000</a></p>
           </div>
           <div class="card" style="text-align:center;">
             <h3 style="color:var(--plum-700);margin-bottom:8px;">Email</h3>
-            <p style="margin:0;"><a href="mailto:office@viratpublicschool.in">office@viratpublicschool.in</a></p>
+            <p style="margin:0;font-size:14px;"><a href="mailto:office@viratpublicschool.in">office@viratpublicschool.in</a></p>
           </div>
         </div>
         <style>
-          @media (min-width: 720px) {
-            .contact-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          }
+          @media (min-width: 720px) { .contact-grid { grid-template-columns: repeat(3, 1fr) !important; } }
         </style>
       </div>
     </section>
@@ -56,21 +74,24 @@
         <div class="text-center mb-6">
           <span class="section-eyebrow">Write to us</span>
           <h2 class="section-title">Send us a message.</h2>
+          <p>We'll get back within a working day.</p>
         </div>
-        <form id="contact-form" class="form" style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
+        <form id="contact-form" class="form" novalidate style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
+          <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="name">Your name</label>
-              <input class="form-input" type="text" id="name" name="name" required />
+              <input class="form-input" type="text" id="name" name="name" required autocomplete="name" />
             </div>
             <div class="form-group">
               <label class="form-label" for="email">Email</label>
-              <input class="form-input" type="email" id="email" name="email" required />
+              <input class="form-input" type="email" id="email" name="email" required autocomplete="email" />
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label" for="phone">Phone (optional)</label>
-            <input class="form-input" type="tel" id="phone" name="phone" />
+            <label class="form-label" for="phone">Phone <span style="color:var(--ink-500);font-weight:400;">(optional)</span></label>
+            <input class="form-input" type="tel" id="phone" name="phone" autocomplete="tel" />
           </div>
           <div class="form-group">
             <label class="form-label" for="subject">Subject</label>
@@ -80,8 +101,12 @@
             <label class="form-label" for="message">Message</label>
             <textarea class="form-textarea" id="message" name="message" rows="5" required></textarea>
           </div>
-          <button type="submit" class="btn btn-accent btn-lg" style="justify-content:center;">Send message</button>
-          <div id="form-status"></div>
+          <button type="submit" class="btn btn-accent btn-lg" id="contact-btn" style="justify-content:center;">Send message</button>
+
+          <div id="form-error" class="form-error-banner" role="alert"></div>
+          <div id="form-success" class="form-success-banner" role="status">
+            <strong>Thank you.</strong> Your message is on its way. We'll reply within a working day.
+          </div>
         </form>
       </div>
     </section>
@@ -90,29 +115,56 @@
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=4"></script>
+  <script src="js/main.js?v=4"></script>
   <script>
-    document.getElementById('contact-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const status = document.getElementById('form-status');
-      const data = Object.fromEntries(new FormData(e.target));
-      try {
-        const r = await fetch('/api/contact', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if (r.ok) {
-          status.innerHTML = '<div class="form-success">Thank you. We\'ll get back to you soon.</div>';
-          e.target.reset();
-        } else {
-          status.innerHTML = '<p class="form-error">Something went wrong. Please try again.</p>';
-        }
-      } catch (err) {
-        status.innerHTML = '<p class="form-error">Network error. Please try again.</p>';
+    (function () {
+      const form = document.getElementById('contact-form');
+      const btn = document.getElementById('contact-btn');
+      const errBox = document.getElementById('form-error');
+      const okBox = document.getElementById('form-success');
+
+      function showError(msg) {
+        errBox.textContent = msg;
+        errBox.classList.add('show');
+        okBox.classList.remove('show');
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-    });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errBox.classList.remove('show');
+        form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.setAttribute('aria-invalid', 'false'));
+
+        const data = Object.fromEntries(new FormData(form));
+        if (!data.name) { showError('Please tell us your name.'); document.getElementById('name').setAttribute('aria-invalid','true'); return; }
+        if (!data.email) { showError('Please share your email.'); document.getElementById('email').setAttribute('aria-invalid','true'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { showError('Please enter a valid email.'); document.getElementById('email').setAttribute('aria-invalid','true'); return; }
+        if (!data.subject) { showError('Please add a subject.'); document.getElementById('subject').setAttribute('aria-invalid','true'); return; }
+        if (!data.message) { showError('Please write a short message.'); document.getElementById('message').setAttribute('aria-invalid','true'); return; }
+
+        btn.disabled = true; btn.textContent = 'Sending…';
+        try {
+          const r = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const out = await r.json().catch(() => ({}));
+          if (r.ok && (out.ok || out === undefined)) {
+            okBox.classList.add('show');
+            form.reset();
+            okBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            showError(out.error || `Could not send (${r.status}). Please try again.`);
+          }
+        } catch (err) {
+          showError('Network error. Please try again.');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Send message';
+        }
+      });
+    })();
   </script>
 </body>
 </html>
