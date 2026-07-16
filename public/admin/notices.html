@@ -44,6 +44,11 @@
         <button class="btn btn-primary" id="new-notice-btn">+ New Notice</button>
       </div>
 
+      <div id="readonly-banner" class="alert alert-info mb-6" hidden>
+        <span>ℹ️</span>
+        <span><strong>Read-only mode:</strong> The current deployment is using static JSON content (no database bound). You can browse all notices here, but to add or edit them, a D1 database binding needs to be configured in the Cloudflare Pages project settings. See the README for setup instructions.</span>
+      </div>
+
       <div class="filter-bar">
         <input type="text" id="search" class="form-control" placeholder="Search notices…" style="max-width:280px;" />
         <select id="filter-category" class="form-select" style="max-width:200px;">
@@ -150,7 +155,12 @@
           const res = await fetch('/api/admin/notices?all=1');
           if (!res.ok) throw new Error('Failed to load');
           const data = await res.json();
-          notices = data.notices;
+          notices = data.notices || [];
+          if (data.readOnly) {
+            document.getElementById('readonly-banner').hidden = false;
+            document.getElementById('new-notice-btn').disabled = true;
+            document.getElementById('new-notice-btn').textContent = 'Read-only';
+          }
           render();
         } catch (e) {
           document.getElementById('notices-list').innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">Could not load notices.</p>';
