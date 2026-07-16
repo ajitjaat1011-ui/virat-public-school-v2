@@ -12,6 +12,6 @@
     "db:seed:remote": "wrangler d1 execute vps-database --remote --file=./seed.sql"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.86.0"
   }
 }

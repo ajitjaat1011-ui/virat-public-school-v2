@@ -1,9 +1,12 @@
-name = "virat-public-school-new"
+name = "virat-public-school-v2"
 compatibility_date = "2025-05-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./public"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "vps-database"
-database_id = "PLACEHOLDER_WILL_BE_SET_AFTER_D1_CREATE"
+# D1 binding is optional. If you have access to a D1 database, uncomment
+# and update database_id after running:
+#   npx wrangler d1 create vps-database
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "vps-database"
+# database_id = "your-d1-uuid-here"

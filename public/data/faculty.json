@@ -1,0 +1,20 @@
+{
+  "faculty": [
+    { "id": "fac_001", "name": "Dr. Meera Singh",   "qualification": "M.A. (English), M.Ed., Ph.D.", "subject": "English · Principal", "department": "SENIOR_SECONDARY", "photo_url": null, "display_order": 1, "is_active": 1 },
+    { "id": "fac_002", "name": "Mrs. Sunita Yadav", "qualification": "M.Sc. (Physics), B.Ed.",       "subject": "Physics · Vice-Principal", "department": "SENIOR_SECONDARY", "photo_url": null, "display_order": 2, "is_active": 1 },
+    { "id": "fac_003", "name": "Mr. Rajesh Gupta",  "qualification": "M.Sc., M.Ed.",                 "subject": "Mathematics", "department": "SECONDARY", "photo_url": null, "display_order": 3, "is_active": 1 },
+    { "id": "fac_004", "name": "Mrs. Priya Verma",  "qualification": "M.A. (Hindi), B.Ed.",          "subject": "Hindi", "department": "SECONDARY", "photo_url": null, "display_order": 4, "is_active": 1 },
+    { "id": "fac_005", "name": "Mr. Anil Sharma",   "qualification": "M.Sc. (Chemistry), B.Ed.",     "subject": "Chemistry", "department": "SENIOR_SECONDARY", "photo_url": null, "display_order": 5, "is_active": 1 },
+    { "id": "fac_006", "name": "Mrs. Sneha Kumari", "qualification": "M.Sc. (Biology), B.Ed.",       "subject": "Biology", "department": "SENIOR_SECONDARY", "photo_url": null, "display_order": 6, "is_active": 1 },
+    { "id": "fac_007", "name": "Mr. Deepak Meena",  "qualification": "M.A. (History), B.Ed.",        "subject": "Social Science", "department": "SECONDARY", "photo_url": null, "display_order": 7, "is_active": 1 },
+    { "id": "fac_008", "name": "Mrs. Neha Khandelwal","qualification": "M.A. (Sanskrit), B.Ed.",     "subject": "Sanskrit", "department": "SECONDARY", "photo_url": null, "display_order": 8, "is_active": 1 },
+    { "id": "fac_009", "name": "Mr. Ravi Joshi",    "qualification": "MCA, B.Ed.",                   "subject": "Computer Science", "department": "SENIOR_SECONDARY", "photo_url": null, "display_order": 9, "is_active": 1 },
+    { "id": "fac_010", "name": "Mr. Pramod Yadav",  "qualification": "M.P.Ed.",                      "subject": "Physical Education", "department": "SECONDARY", "photo_url": null, "display_order": 10, "is_active": 1 },
+    { "id": "fac_011", "name": "Mrs. Asha Rathore", "qualification": "M.A. (Music), B.Ed.",          "subject": "Music & Dance", "department": "PRIMARY", "photo_url": null, "display_order": 11, "is_active": 1 },
+    { "id": "fac_012", "name": "Mr. Vinod Kumar",   "qualification": "M.A. (Art), B.Ed.",            "subject": "Art & Craft", "department": "PRIMARY", "photo_url": null, "display_order": 12, "is_active": 1 },
+    { "id": "fac_013", "name": "Mrs. Suman Saini",  "qualification": "M.A. (English), B.Ed.",        "subject": "English", "department": "PRIMARY", "photo_url": null, "display_order": 13, "is_active": 1 },
+    { "id": "fac_014", "name": "Mrs. Jaya Dhaka",   "qualification": "B.Ed., NTT",                   "subject": "Pre-Primary Coordinator", "department": "PRE_PRIMARY", "photo_url": null, "display_order": 14, "is_active": 1 },
+    { "id": "fac_015", "name": "Mr. Ram Prasad",    "qualification": "M.Com., B.Ed.",                "subject": "Commerce", "department": "SENIOR_SECONDARY", "photo_url": null, "display_order": 15, "is_active": 1 },
+    { "id": "fac_016", "name": "Mrs. Kavita Singh", "qualification": "M.A. (Geography), B.Ed.",      "subject": "Geography", "department": "SECONDARY", "photo_url": null, "display_order": 16, "is_active": 1 }
+  ]
+}

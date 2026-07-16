@@ -1,0 +1,24 @@
+{
+  "holidays": [
+    { "id": "hol_001", "holiday_date": "2026-04-03", "end_date": "2026-04-03", "name": "Good Friday", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_002", "holiday_date": "2026-04-14", "end_date": "2026-04-14", "name": "Dr. Ambedkar Jayanti", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_003", "holiday_date": "2026-05-01", "end_date": "2026-05-01", "name": "Labour Day", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_004", "holiday_date": "2026-05-15", "end_date": "2026-05-15", "name": "Buddha Purnima", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_005", "holiday_date": "2026-06-01", "end_date": "2026-06-30", "name": "Summer Vacation", "type": "VACATION", "academic_year": "2026-27" },
+    { "id": "hol_006", "holiday_date": "2026-08-15", "end_date": "2026-08-15", "name": "Independence Day", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_007", "holiday_date": "2026-08-26", "end_date": "2026-08-26", "name": "Raksha Bandhan", "type": "FESTIVAL", "academic_year": "2026-27" },
+    { "id": "hol_008", "holiday_date": "2026-09-05", "end_date": "2026-09-05", "name": "Janmashtami", "type": "FESTIVAL", "academic_year": "2026-27" },
+    { "id": "hol_009", "holiday_date": "2026-10-02", "end_date": "2026-10-02", "name": "Gandhi Jayanti", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_010", "holiday_date": "2026-10-12", "end_date": "2026-10-18", "name": "Dussehra Break", "type": "VACATION", "academic_year": "2026-27" },
+    { "id": "hol_011", "holiday_date": "2026-11-08", "end_date": "2026-11-08", "name": "Diwali", "type": "FESTIVAL", "academic_year": "2026-27" },
+    { "id": "hol_012", "holiday_date": "2026-11-09", "end_date": "2026-11-14", "name": "Diwali Vacation", "type": "VACATION", "academic_year": "2026-27" },
+    { "id": "hol_013", "holiday_date": "2026-11-25", "end_date": "2026-11-25", "name": "Guru Nanak Jayanti", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_014", "holiday_date": "2026-12-25", "end_date": "2026-12-25", "name": "Christmas", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_015", "holiday_date": "2026-12-28", "end_date": "2027-01-05", "name": "Winter Break", "type": "VACATION", "academic_year": "2026-27" },
+    { "id": "hol_016", "holiday_date": "2027-01-14", "end_date": "2027-01-14", "name": "Makar Sankranti", "type": "FESTIVAL", "academic_year": "2026-27" },
+    { "id": "hol_017", "holiday_date": "2027-01-26", "end_date": "2027-01-26", "name": "Republic Day", "type": "GAZETTED", "academic_year": "2026-27" },
+    { "id": "hol_018", "holiday_date": "2027-02-19", "end_date": "2027-02-19", "name": "Mahashivratri", "type": "FESTIVAL", "academic_year": "2026-27" },
+    { "id": "hol_019", "holiday_date": "2027-03-08", "end_date": "2027-03-08", "name": "Holi", "type": "FESTIVAL", "academic_year": "2026-27" },
+    { "id": "hol_020", "holiday_date": "2027-03-31", "end_date": "2027-03-31", "name": "Last day of academic session", "type": "SCHOOL", "academic_year": "2026-27" }
+  ]
+}

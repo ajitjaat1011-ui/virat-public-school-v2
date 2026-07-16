@@ -1,0 +1,75 @@
+{
+  "resultSets": [
+    {
+      "id": "rst_2026_annual_10",
+      "academic_year": "2025-26",
+      "exam_name": "Annual Examination 2025-26",
+      "class_name": "Class 10",
+      "declared_at": "2026-05-12T11:00:00",
+      "is_published": 1,
+      "results": [
+        {
+          "roll_number": "10-001",
+          "student_name": "Aarav Sharma",
+          "dob": "2011-04-12",
+          "class_name": "Class 10",
+          "section": "A",
+          "marks": { "Hindi": 88, "English": 92, "Mathematics": 95, "Science": 90, "Social Science": 86, "Sanskrit": 78 },
+          "max_total": 600,
+          "total": 529,
+          "percentage": 88.17,
+          "grade": "A2",
+          "rank": 1
+        },
+        {
+          "roll_number": "10-002",
+          "student_name": "Priya Yadav",
+          "dob": "2011-05-18",
+          "class_name": "Class 10",
+          "section": "A",
+          "marks": { "Hindi": 92, "English": 89, "Mathematics": 87, "Science": 94, "Social Science": 91, "Sanskrit": 85 },
+          "max_total": 600,
+          "total": 538,
+          "percentage": 89.67,
+          "grade": "A2",
+          "rank": 2
+        },
+        {
+          "roll_number": "10-003",
+          "student_name": "Rohan Verma",
+          "dob": "2011-03-22",
+          "class_name": "Class 10",
+          "section": "B",
+          "marks": { "Hindi": 78, "English": 82, "Mathematics": 88, "Science": 75, "Social Science": 80, "Sanskrit": 72 },
+          "max_total": 600,
+          "total": 475,
+          "percentage": 79.17,
+          "grade": "B1",
+          "rank": 5
+        },
+        {
+          "roll_number": "8-015",
+          "student_name": "Ananya Singh",
+          "dob": "2012-08-05",
+          "class_name": "Class 8",
+          "section": "B",
+          "marks": { "Hindi": 82, "English": 88, "Mathematics": 91, "Science": 85, "Social Science": 78, "Sanskrit": 80 },
+          "max_total": 600,
+          "total": 504,
+          "percentage": 84.0,
+          "grade": "A2",
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "id": "rst_2026_mid_10",
+      "academic_year": "2025-26",
+      "exam_name": "Mid-Term Examination 2025-26",
+      "class_name": "Class 10",
+      "declared_at": "2026-01-18T11:00:00",
+      "is_published": 1,
+      "results": []
+    }
+  ]
+}

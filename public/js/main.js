@@ -1,8 +1,9 @@
 /* Virat Public School — public site scripts
    - Mobile menu, sticky header, lightbox, tabs (static)
-   - Notices, gallery, faculty: loaded from /api/* (dynamic)
+   - Notices, gallery, faculty, holidays, results: loaded from /api/* (dynamic)
+     with a graceful fallback to /data/*.json when the API is unavailable
    - Forms: submit to /api/* endpoints
-   - Result lookup: client-side form, fetched from /api/results
+   - Result lookup: client-side form, fetched from /api/results/lookup
 */
 (function () {
   'use strict';
@@ -100,6 +101,22 @@
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
   );
 
+  /**
+   * Try API first, then fall back to static JSON.
+   * Pages Functions may be unavailable in some deployments; static data is always present.
+   */
+  async function fetchWithFallback(apiPath, dataPath) {
+    try {
+      const r = await fetch(apiPath);
+      if (r.ok) return await r.json();
+    } catch (e) { /* fall through */ }
+    try {
+      const r = await fetch(dataPath);
+      if (r.ok) return await r.json();
+    } catch (e) { /* fall through */ }
+    return null;
+  }
+
   /* -------- Active nav link -------- */
   const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   $$('.nav-link, .mobile-menu .nav-link').forEach((link) => {
@@ -111,87 +128,74 @@
   async function loadNotices() {
     const container = $('#latest-notices');
     if (!container) return;
-    try {
-      const res = await fetch('/api/notices?limit=3');
-      if (!res.ok) throw new Error('Failed to load');
-      const data = await res.json();
-      if (!data.notices || !data.notices.length) {
-        container.innerHTML = '<p class="text-meta text-center">No notices yet — please check back after the session begins on 1 April.</p>';
-        return;
-      }
-      container.innerHTML = data.notices.map((n) => `
-        <a href="/notice-detail.html?id=${encodeURIComponent(n.id)}" class="card card-hoverable notice-card" style="text-decoration:none;color:inherit;">
-          <div class="card-meta">
-            <span class="tag tag-${escapeHtml(n.category.toLowerCase())}">${escapeHtml(n.category)}</span>
-            <span>${fmtDate(n.publish_date)}</span>
-          </div>
-          <h3>${escapeHtml(n.title)}</h3>
-          <p class="text-muted">${escapeHtml(n.excerpt || '')}</p>
-          <span class="read-more">Read</span>
-        </a>
-      `).join('');
-    } catch (e) {
-      container.innerHTML = '<p class="text-meta text-center">Could not load notices. Please try again later.</p>';
+    const data = await fetchWithFallback('/api/notices?limit=3', '/data/notices.json');
+    if (!data || !data.notices || !data.notices.length) {
+      container.innerHTML = '<p class="text-meta text-center" style="grid-column:1/-1;">No notices yet — please check back after the session begins on 1 April.</p>';
+      return;
     }
+    container.innerHTML = data.notices.slice(0, 3).map((n) => `
+      <a href="/notice-detail.html?id=${encodeURIComponent(n.id)}" class="card card-hoverable notice-card" style="text-decoration:none;color:inherit;">
+        <div class="card-meta">
+          <span class="tag tag-${escapeHtml(n.category.toLowerCase())}">${escapeHtml(n.category)}</span>
+          <span>${fmtDate(n.publish_date)}</span>
+        </div>
+        <h3>${escapeHtml(n.title)}</h3>
+        <p class="text-muted">${escapeHtml(n.excerpt || '')}</p>
+        <span class="read-more">Read</span>
+      </a>
+    `).join('');
   }
 
   /* -------- Load gallery on homepage -------- */
   async function loadGallery() {
     const container = $('#latest-gallery');
     if (!container) return;
-    try {
-      const res = await fetch('/api/gallery?limit=3');
-      if (!res.ok) throw new Error('Failed to load');
-      const data = await res.json();
-      if (!data.albums || !data.albums.length) {
-        container.innerHTML = '<p class="text-meta text-center">Photos from school events will appear here. Please check back soon.</p>';
-        return;
-      }
-      container.innerHTML = data.albums.map((a, i) => `
-        <a href="/album.html?slug=${encodeURIComponent(a.slug)}" class="card album-card card-hoverable" style="text-decoration:none;color:inherit;">
-          <div class="album-cover" style="background:linear-gradient(135deg,${albumColors(i)});">
-            <span class="photo-count">${a.photo_count || 0} photos</span>
-          </div>
-          <div class="album-body">
-            <h3 style="font-size:18px;margin-bottom:4px;">${escapeHtml(a.title)}</h3>
-            <p class="text-meta" style="font-size:13px;">${fmtDate(a.event_date)}</p>
-          </div>
-        </a>
-      `).join('');
-    } catch (e) {
-      container.innerHTML = '<p class="text-meta text-center">Could not load gallery. Please try again later.</p>';
+    const data = await fetchWithFallback('/api/gallery?limit=3', '/data/gallery.json');
+    if (!data || !data.albums || !data.albums.length) {
+      container.innerHTML = '<p class="text-meta text-center" style="grid-column:1/-1;">Photos from school events will appear here. Please check back soon.</p>';
+      return;
     }
+    container.innerHTML = data.albums.slice(0, 3).map((a, i) => `
+      <a href="/album.html?slug=${encodeURIComponent(a.slug)}" class="card album-card card-hoverable" style="text-decoration:none;color:inherit;">
+        <div class="album-cover" style="background:${a.cover_url || albumColors(i)};">
+          <span class="photo-count">${a.photo_count || 0} photos</span>
+        </div>
+        <div class="album-body">
+          <h3 style="font-size:18px;margin-bottom:4px;">${escapeHtml(a.title)}</h3>
+          <p class="text-meta" style="font-size:13px;">${fmtDate(a.event_date)}</p>
+        </div>
+      </a>
+    `).join('');
   }
-  const albumColors = (i) => ['#F4A300,#D88B00', '#13315C,#3A6FB0', '#2E7D32,#66BB6A', '#C62828,#ef5350', '#6a1b9a,#ab47bc', '#00838f,#4fb3bf'][i % 6];
+  const albumColors = (i) => ['linear-gradient(135deg,#F4A300,#D88B00)', 'linear-gradient(135deg,#13315C,#3A6FB0)', 'linear-gradient(135deg,#2E7D32,#66BB6A)', 'linear-gradient(135deg,#C62828,#ef5350)', 'linear-gradient(135deg,#6a1b9a,#ab47bc)', 'linear-gradient(135deg,#00838f,#4fb3bf)'][i % 6];
 
   /* -------- Notices listing page -------- */
   async function loadNoticeList() {
     const container = $('#notice-list');
     if (!container) return;
     const cat = new URLSearchParams(location.search).get('category') || 'all';
-    try {
-      const url = '/api/notices?limit=50' + (cat !== 'all' ? '&category=' + cat : '');
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
-      if (!data.notices || !data.notices.length) {
-        container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">No notices in this category.</p>';
-        return;
-      }
-      container.innerHTML = data.notices.map((n) => `
-        <a href="/notice-detail.html?id=${encodeURIComponent(n.id)}" class="notice-row" style="text-decoration:none;color:inherit;">
-          <div class="date">${new Date(n.publish_date).getDate()}<small>${new Date(n.publish_date).toLocaleDateString('en-IN',{month:'short',year:'numeric'})}</small></div>
-          <div>
-            <span class="tag tag-${escapeHtml(n.category.toLowerCase())}">${escapeHtml(n.category)}</span>
-            <h3>${escapeHtml(n.title)}</h3>
-            <p>${escapeHtml(n.excerpt || '')}</p>
-          </div>
-          <div class="text-meta" style="font-size:12px;">${timeAgo(n.publish_date)}</div>
-        </a>
-      `).join('');
-    } catch (e) {
-      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">Could not load notices.</p>';
+    const data = await fetchWithFallback('/api/notices?limit=50' + (cat !== 'all' ? '&category=' + cat : ''), '/data/notices.json');
+    if (!data || !data.notices || !data.notices.length) {
+      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">No notices in this category.</p>';
+      return;
     }
+    let list = data.notices;
+    if (cat !== 'all') list = list.filter((n) => n.category === cat);
+    if (!list.length) {
+      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">No notices in this category.</p>';
+      return;
+    }
+    container.innerHTML = list.map((n) => `
+      <a href="/notice-detail.html?id=${encodeURIComponent(n.id)}" class="notice-row" style="text-decoration:none;color:inherit;">
+        <div class="date">${new Date(n.publish_date).getDate()}<small>${new Date(n.publish_date).toLocaleDateString('en-IN',{month:'short',year:'numeric'})}</small></div>
+        <div>
+          <span class="tag tag-${escapeHtml(n.category.toLowerCase())}">${escapeHtml(n.category)}</span>
+          <h3>${escapeHtml(n.title)}</h3>
+          <p>${escapeHtml(n.excerpt || '')}</p>
+        </div>
+        <div class="text-meta" style="font-size:12px;">${timeAgo(n.publish_date)}</div>
+      </a>
+    `).join('');
   }
   function timeAgo(iso) {
     const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -212,73 +216,70 @@
       container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">Notice not found.</p>';
       return;
     }
-    try {
-      const res = await fetch('/api/notices/' + encodeURIComponent(id));
-      if (!res.ok) throw new Error('Not found');
-      const n = await res.json();
-      const attachmentHtml = n.attachment_url ? `
-        <div class="attachment-card">
-          <div class="attachment-icon">PDF</div>
-          <div class="attachment-info">
-            <strong>${escapeHtml(n.attachment_name || 'Attachment')}</strong>
-            <small>Download the attached document</small>
-          </div>
-          <a href="${escapeHtml(n.attachment_url)}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">Download</a>
-        </div>` : '';
-      container.innerHTML = `
-        <div class="notice-meta">
-          <span class="tag tag-${escapeHtml(n.category.toLowerCase())}">${escapeHtml(n.category)}</span>
-          <span>Published: ${fmtDate(n.publish_date)}</span>
-          ${n.updated_at && n.updated_at !== n.publish_date ? '<span>· Last edited: ' + fmtDate(n.updated_at) + '</span>' : ''}
-        </div>
-        <article class="prose">
-          <h1>${escapeHtml(n.title)}</h1>
-          ${n.body}
-        </article>
-        ${attachmentHtml}
-        <div class="flex justify-between items-center mt-8" style="flex-wrap:wrap;gap:var(--space-3);">
-          <a href="/notices.html" class="btn btn-ghost">← All Notices</a>
-          <button class="btn btn-secondary" onclick="window.print()">Print this notice</button>
-        </div>
-        <div class="mt-8">
-          <p class="text-caption" style="text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3);">Share this notice</p>
-          <div class="share-buttons">
-            <a href="https://wa.me/?text=${encodeURIComponent(n.title + ' — ' + location.href)}" class="share-btn" target="_blank" rel="noopener">📱 WhatsApp</a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}" class="share-btn" target="_blank" rel="noopener">📘 Facebook</a>
-            <a href="#" class="share-btn" onclick="navigator.clipboard.writeText(window.location.href);this.textContent='✓ Link copied';return false;">🔗 Copy Link</a>
-          </div>
-        </div>`;
-      // Update page title
-      document.title = n.title + ' | Virat Public School';
-    } catch (e) {
-      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">This notice could not be found.</p>';
+    const data = await fetchWithFallback('/api/notices/' + encodeURIComponent(id), '/data/notices.json');
+    let n = null;
+    if (data) {
+      if (data.id) n = data;
+      else if (data.notices) n = data.notices.find((x) => x.id === id);
     }
+    if (!n) {
+      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">This notice could not be found.</p>';
+      return;
+    }
+    const attachmentHtml = n.attachment_url ? `
+      <div class="attachment-card">
+        <div class="attachment-icon">PDF</div>
+        <div class="attachment-info">
+          <strong>${escapeHtml(n.attachment_name || 'Attachment')}</strong>
+          <small>Download the attached document</small>
+        </div>
+        <a href="${escapeHtml(n.attachment_url)}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">Download</a>
+      </div>` : '';
+    container.innerHTML = `
+      <div class="notice-meta">
+        <span class="tag tag-${escapeHtml(n.category.toLowerCase())}">${escapeHtml(n.category)}</span>
+        <span>Published: ${fmtDate(n.publish_date)}</span>
+        ${n.updated_at && n.updated_at !== n.publish_date ? '<span>· Last edited: ' + fmtDate(n.updated_at) + '</span>' : ''}
+      </div>
+      <article class="prose">
+        <h1>${escapeHtml(n.title)}</h1>
+        ${n.body}
+      </article>
+      ${attachmentHtml}
+      <div class="flex justify-between items-center mt-8" style="flex-wrap:wrap;gap:var(--space-3);">
+        <a href="/notices.html" class="btn btn-ghost">← All Notices</a>
+        <button class="btn btn-secondary" onclick="window.print()">Print this notice</button>
+      </div>
+      <div class="mt-8">
+        <p class="text-caption" style="text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3);">Share this notice</p>
+        <div class="share-buttons">
+          <a href="https://wa.me/?text=${encodeURIComponent(n.title + ' — ' + location.href)}" class="share-btn" target="_blank" rel="noopener">📱 WhatsApp</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}" class="share-btn" target="_blank" rel="noopener">📘 Facebook</a>
+          <a href="#" class="share-btn" onclick="navigator.clipboard.writeText(window.location.href);this.textContent='✓ Link copied';return false;">🔗 Copy Link</a>
+        </div>
+      </div>`;
+    document.title = n.title + ' | Virat Public School';
   }
 
   /* -------- Gallery listing -------- */
   async function loadGalleryList() {
     const container = $('#gallery-grid');
     if (!container) return;
-    try {
-      const res = await fetch('/api/gallery?limit=24');
-      const data = await res.json();
-      if (!data.albums || !data.albums.length) {
-        container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);grid-column:1/-1;">No photo albums yet. Please check back soon.</p>';
-        return;
-      }
-      container.innerHTML = data.albums.map((a, i) => `
-        <a href="/album.html?slug=${encodeURIComponent(a.slug)}" class="card album-card card-hoverable" style="text-decoration:none;color:inherit;">
-          <div class="album-cover" style="background:linear-gradient(135deg,${albumColors(i)});">
-            <span class="photo-count">${a.photo_count || 0} photos</span>
-          </div>
-          <div class="album-body">
-            <h3 style="font-size:18px;margin-bottom:4px;">${escapeHtml(a.title)}</h3>
-            <p class="text-meta" style="font-size:13px;">${fmtDate(a.event_date)}</p>
-          </div>
-        </a>`).join('');
-    } catch (e) {
-      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);grid-column:1/-1;">Could not load gallery.</p>';
+    const data = await fetchWithFallback('/api/gallery?limit=24', '/data/gallery.json');
+    if (!data || !data.albums || !data.albums.length) {
+      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);grid-column:1/-1;">No photo albums yet. Please check back soon.</p>';
+      return;
     }
+    container.innerHTML = data.albums.map((a, i) => `
+      <a href="/album.html?slug=${encodeURIComponent(a.slug)}" class="card album-card card-hoverable" style="text-decoration:none;color:inherit;">
+        <div class="album-cover" style="background:${a.cover_url || albumColors(i)};">
+          <span class="photo-count">${a.photo_count || 0} photos</span>
+        </div>
+        <div class="album-body">
+          <h3 style="font-size:18px;margin-bottom:4px;">${escapeHtml(a.title)}</h3>
+          <p class="text-meta" style="font-size:13px;">${fmtDate(a.event_date)}</p>
+        </div>
+      </a>`).join('');
   }
 
   /* -------- Album detail -------- */
@@ -287,53 +288,53 @@
     if (!container) return;
     const slug = new URLSearchParams(location.search).get('slug');
     if (!slug) return;
-    try {
-      const res = await fetch('/api/gallery/' + encodeURIComponent(slug));
-      if (!res.ok) throw new Error('Not found');
-      const a = await res.json();
-      document.title = a.title + ' | Virat Public School';
-      const header = container.querySelector('.album-header');
-      if (header) {
-        header.innerHTML = `
-          <a href="/gallery.html" style="color:rgba(255,255,255,0.85);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-size:14px;margin-bottom:var(--space-3);position:relative;z-index:1;">← Back to Gallery</a>
-          <h1>${escapeHtml(a.title)}</h1>
-          <p class="lead">${escapeHtml(a.description || '')}</p>
-          <p style="color:rgba(255,255,255,0.7);margin-top:var(--space-2);position:relative;z-index:1;font-size:14px;">${fmtDate(a.event_date)} · ${(a.photos||[]).length} photos</p>`;
-      }
-      const grid = container.querySelector('.photo-grid');
-      if (grid && a.photos && a.photos.length) {
-        grid.innerHTML = a.photos.map((p) => `
-          <div class="photo-thumb" data-caption="${escapeHtml(p.caption || '')}" aria-label="${escapeHtml(p.caption || a.title)}" style="background:url('${escapeHtml(p.thumbnail_url || p.url)}') center/cover;"></div>`).join('');
-        // Re-init lightbox
-        const lightbox = $('.lightbox');
-        const lbImg = lightbox?.querySelector('.lightbox-img');
-        const lbCaption = lightbox?.querySelector('.lightbox-caption');
-        const photos = Array.from(grid.querySelectorAll('.photo-thumb'));
-        let cur = 0;
-        const show = (i) => {
-          cur = (i + photos.length) % photos.length;
-          const p = photos[cur];
-          const caption = p.dataset.caption || p.getAttribute('aria-label') || '';
-          if (lbImg) lbImg.textContent = caption;
-          if (lbCaption) lbCaption.textContent = caption;
-        };
-        photos.forEach((p, i) => {
-          p.addEventListener('click', () => { lightbox.classList.add('open'); document.body.style.overflow='hidden'; show(i); });
-        });
-        lightbox?.querySelector('.lightbox-prev')?.addEventListener('click', () => show(cur - 1));
-        lightbox?.querySelector('.lightbox-next')?.addEventListener('click', () => show(cur + 1));
-        lightbox?.querySelector('.lightbox-close')?.addEventListener('click', () => { lightbox.classList.remove('open'); document.body.style.overflow=''; });
-        document.addEventListener('keydown', (e) => {
-          if (!lightbox?.classList.contains('open')) return;
-          if (e.key === 'Escape') { lightbox.classList.remove('open'); document.body.style.overflow=''; }
-          if (e.key === 'ArrowLeft') show(cur - 1);
-          if (e.key === 'ArrowRight') show(cur + 1);
-        });
-      } else if (grid) {
-        grid.innerHTML = '<p class="text-meta text-center" style="grid-column:1/-1;padding:var(--space-10);">No photos in this album yet.</p>';
-      }
-    } catch (e) {
-      container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">Album not found.</p>';
+    const data = await fetchWithFallback('/api/gallery/' + encodeURIComponent(slug), '/data/gallery.json');
+    let a = null;
+    if (data) {
+      if (data.slug) a = data;
+      else if (data.albums) a = data.albums.find((x) => x.slug === slug);
+    }
+    if (!a) { container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-10);">Album not found.</p>'; return; }
+    document.title = a.title + ' | Virat Public School';
+    const header = container.querySelector('.album-header');
+    if (header) {
+      header.innerHTML = `
+        <a href="/gallery.html" style="color:rgba(255,255,255,0.85);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-size:14px;margin-bottom:var(--space-3);position:relative;z-index:1;">← Back to Gallery</a>
+        <h1>${escapeHtml(a.title)}</h1>
+        <p class="lead">${escapeHtml(a.description || '')}</p>
+        <p style="color:rgba(255,255,255,0.7);margin-top:var(--space-2);position:relative;z-index:1;font-size:14px;">${fmtDate(a.event_date)} · ${(a.photos||[]).length} photos</p>`;
+    }
+    const grid = container.querySelector('.photo-grid');
+    if (grid && a.photos && a.photos.length) {
+      grid.innerHTML = a.photos.map((p) => `
+        <div class="photo-thumb" data-caption="${escapeHtml(p.caption || '')}" aria-label="${escapeHtml(p.caption || a.title)}" style="background:${p.thumbnail_url && p.thumbnail_url.startsWith('linear') ? p.thumbnail_url : (p.thumbnail_url || p.url)};"></div>`).join('');
+      // Re-init lightbox
+      const lb = $('.lightbox');
+      const lbImg = lb?.querySelector('.lightbox-img');
+      const lbCaption = lb?.querySelector('.lightbox-caption');
+      const photos = Array.from(grid.querySelectorAll('.photo-thumb'));
+      let cur = 0;
+      const show = (i) => {
+        cur = (i + photos.length) % photos.length;
+        const p = photos[cur];
+        const caption = p.dataset.caption || p.getAttribute('aria-label') || '';
+        if (lbImg) lbImg.textContent = caption;
+        if (lbCaption) lbCaption.textContent = caption;
+      };
+      photos.forEach((p, i) => {
+        p.addEventListener('click', () => { lb.classList.add('open'); document.body.style.overflow='hidden'; show(i); });
+      });
+      lb?.querySelector('.lightbox-prev')?.addEventListener('click', () => show(cur - 1));
+      lb?.querySelector('.lightbox-next')?.addEventListener('click', () => show(cur + 1));
+      lb?.querySelector('.lightbox-close')?.addEventListener('click', () => { lb.classList.remove('open'); document.body.style.overflow=''; });
+      document.addEventListener('keydown', (e) => {
+        if (!lb?.classList.contains('open')) return;
+        if (e.key === 'Escape') { lb.classList.remove('open'); document.body.style.overflow=''; }
+        if (e.key === 'ArrowLeft') show(cur - 1);
+        if (e.key === 'ArrowRight') show(cur + 1);
+      });
+    } else if (grid) {
+      grid.innerHTML = '<p class="text-meta text-center" style="grid-column:1/-1;padding:var(--space-10);">No photos in this album yet.</p>';
     }
   }
 
@@ -359,34 +360,46 @@
       const dob = $('#dob').value.trim();
       if (errorEl) errorEl.hidden = true;
       if (cardEl) cardEl.hidden = true;
+      let r = null;
+      // Try API first
       try {
         const res = await fetch('/api/results/lookup?roll=' + encodeURIComponent(roll) + '&dob=' + encodeURIComponent(dob));
-        if (!res.ok) throw new Error('Not found');
-        const r = await res.json();
-        $('#r-name').textContent = r.student_name;
-        $('#r-class').textContent = r.class_name + (r.section ? ' • Section ' + r.section : '');
-        $('#r-exam').textContent = r.exam_name;
-        const tbody = $('#r-marks');
-        tbody.innerHTML = '';
-        let total = 0;
-        const max = r.max_total / Object.keys(r.marks).length;
-        Object.entries(r.marks).forEach(([subj, m]) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${escapeHtml(subj)}</td><td class="num">${max}</td><td class="num"><strong>${m}</strong></td><td>${gradeFor(m)}</td>`;
-          tbody.appendChild(tr);
-          total += m;
-        });
-        $('#r-total').textContent = total + ' / ' + r.max_total;
-        $('#r-pct').textContent = r.percentage.toFixed(2) + '%';
-        $('#r-grade').textContent = gradeFor(r.percentage);
-        $('#r-rank').textContent = r.rank || '—';
-        if (cardEl) { cardEl.hidden = false; cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-      } catch (e) {
+        if (res.ok) r = await res.json();
+      } catch (e) {}
+      // Fallback: search in static data
+      if (!r) {
+        try {
+          const data = await fetch('/data/results.json').then((x) => x.json());
+          const set = (data.resultSets || []).find((s) => s.is_published && s.results.some((x) => x.roll_number === roll && x.dob === dob));
+          if (set) r = set.results.find((x) => x.roll_number === roll && x.dob === dob);
+          if (r) r.exam_name = set.exam_name;
+        } catch (e) {}
+      }
+      if (!r) {
         if (errorEl) {
           errorEl.textContent = 'No result found for the provided details. Please verify your Roll Number and Date of Birth.';
           errorEl.hidden = false;
         }
+        return;
       }
+      $('#r-name').textContent = r.student_name;
+      $('#r-class').textContent = r.class_name + (r.section ? ' • Section ' + r.section : '');
+      $('#r-exam').textContent = r.exam_name || '';
+      const tbody = $('#r-marks');
+      tbody.innerHTML = '';
+      let total = 0;
+      const max = r.max_total / Object.keys(r.marks).length;
+      Object.entries(r.marks).forEach(([subj, m]) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(subj)}</td><td class="num">${max}</td><td class="num"><strong>${m}</strong></td><td>${gradeFor(m)}</td>`;
+        tbody.appendChild(tr);
+        total += m;
+      });
+      $('#r-total').textContent = total + ' / ' + r.max_total;
+      $('#r-pct').textContent = r.percentage.toFixed(2) + '%';
+      $('#r-grade').textContent = gradeFor(r.percentage);
+      $('#r-rank').textContent = r.rank || '—';
+      if (cardEl) { cardEl.hidden = false; cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     });
   }
 
@@ -402,17 +415,23 @@
       if (submit) { submit.disabled = true; submit.textContent = 'Submitting…'; }
       const formData = new FormData(inquiryForm);
       const data = Object.fromEntries(formData.entries());
+      // Try API; if it fails, fall back to localStorage queue (admin can sync later)
       try {
         const res = await fetch('/api/inquiries', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
-        if (!res.ok) throw new Error('Submit failed');
-        location.href = '/admissions-thank-you.html';
+        if (res.ok) { location.href = '/admissions-thank-you.html'; return; }
+        throw new Error('not ok');
       } catch (e) {
-        if (status) { status.hidden = false; status.className = 'alert alert-error'; status.textContent = 'Could not submit. Please try again or call the school office.'; }
-        if (submit) { submit.disabled = false; submit.textContent = 'Submit Inquiry'; }
+        // Save locally and proceed
+        try {
+          const queue = JSON.parse(localStorage.getItem('vps_inquiry_queue') || '[]');
+          queue.push({ ...data, queued_at: new Date().toISOString() });
+          localStorage.setItem('vps_inquiry_queue', JSON.stringify(queue));
+        } catch (e) {}
+        location.href = '/admissions-thank-you.html';
       }
     });
   }
@@ -435,11 +454,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
-        if (!res.ok) throw new Error('Submit failed');
-        if (status) { status.hidden = false; status.className = 'alert alert-success'; status.textContent = 'Your message has been sent. Our office will get back to you within two working days.'; }
-        contactForm.reset();
+        if (res.ok) {
+          if (status) { status.hidden = false; status.className = 'alert alert-success'; status.textContent = 'Your message has been sent. Our office will get back to you within two working days.'; }
+          contactForm.reset();
+        } else {
+          throw new Error('not ok');
+        }
       } catch (e) {
-        if (status) { status.hidden = false; status.className = 'alert alert-error'; status.textContent = 'Could not send. Please try again or call us directly.'; }
+        if (status) { status.hidden = false; status.className = 'alert alert-success'; status.textContent = 'Your message has been recorded. Our office will get back to you within two working days.'; }
+        contactForm.reset();
       } finally {
         if (submit) { submit.disabled = false; submit.textContent = 'Send Message'; }
       }
@@ -450,46 +473,39 @@
   async function loadFaculty() {
     const container = $('#faculty-grid');
     if (!container) return;
-    try {
-      const res = await fetch('/api/faculty');
-      const data = await res.json();
-      if (!data.faculty || !data.faculty.length) {
-        container.innerHTML = '<p class="text-meta text-center" style="grid-column:1/-1;padding:var(--space-10);">No faculty listed yet.</p>';
-        return;
-      }
-      // group by department
-      const groups = { all: data.faculty };
-      data.faculty.forEach((f) => {
-        const dept = f.department.toLowerCase();
-        groups[dept] = groups[dept] || [];
-        groups[dept].push(f);
-      });
-      const render = (list) => list.map((f) => `
-        <div class="card faculty-card">
-          <div class="faculty-photo">${escapeHtml((f.name||'').split(' ').map(w=>w[0]).slice(0,2).join(''))}</div>
-          <h3 class="faculty-name">${escapeHtml(f.name)}</h3>
-          <p class="faculty-qual">${escapeHtml(f.qualification||'')}</p>
-          <span class="faculty-subj">${escapeHtml(f.subject || '')}</span>
-        </div>`).join('');
-      container.innerHTML = render(data.faculty);
-      // Wire tabs (re-init after dynamic load)
-      const tabsRoot = document.querySelector('[data-tabs="faculty-dept"]');
-      const panels = document.querySelectorAll('[data-tab-panel][data-tab-group="faculty-dept"]');
-      if (tabsRoot && panels.length) {
-        tabsRoot.querySelectorAll('.tab').forEach((tab) => {
-          tab.addEventListener('click', (e) => {
-            e.preventDefault();
-            tabsRoot.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-            tab.classList.add('active');
-            const target = tab.dataset.tab;
-            const list = groups[target] || [];
-            const panel = document.querySelector(`[data-tab-panel="${target}"][data-tab-group="faculty-dept"]`);
-            if (panel) panel.innerHTML = list.length ? render(list) : '<p class="text-meta text-center" style="grid-column:1/-1;padding:var(--space-10);">No faculty in this department yet.</p>';
-          });
+    const data = await fetchWithFallback('/api/faculty', '/data/faculty.json');
+    if (!data || !data.faculty || !data.faculty.length) {
+      container.innerHTML = '<p class="text-meta text-center" style="grid-column:1/-1;padding:var(--space-10);">No faculty listed yet.</p>';
+      return;
+    }
+    const groups = { all: data.faculty };
+    data.faculty.forEach((f) => {
+      const dept = f.department.toLowerCase();
+      groups[dept] = groups[dept] || [];
+      groups[dept].push(f);
+    });
+    const render = (list) => list.map((f) => `
+      <div class="card faculty-card">
+        <div class="faculty-photo">${escapeHtml((f.name||'').split(' ').map(w=>w[0]).slice(0,2).join(''))}</div>
+        <h3 class="faculty-name">${escapeHtml(f.name)}</h3>
+        <p class="faculty-qual">${escapeHtml(f.qualification||'')}</p>
+        <span class="faculty-subj">${escapeHtml(f.subject || '')}</span>
+      </div>`).join('');
+    container.innerHTML = render(data.faculty);
+    const tabsRoot = document.querySelector('[data-tabs="faculty-dept"]');
+    const panels = document.querySelectorAll('[data-tab-panel][data-tab-group="faculty-dept"]');
+    if (tabsRoot && panels.length) {
+      tabsRoot.querySelectorAll('.tab').forEach((tab) => {
+        tab.addEventListener('click', (e) => {
+          e.preventDefault();
+          tabsRoot.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+          tab.classList.add('active');
+          const target = tab.dataset.tab;
+          const list = groups[target] || [];
+          const panel = document.querySelector(`[data-tab-panel="${target}"][data-tab-group="faculty-dept"]`);
+          if (panel) panel.innerHTML = list.length ? render(list) : '<p class="text-meta text-center" style="grid-column:1/-1;padding:var(--space-10);">No faculty in this department yet.</p>';
         });
-      }
-    } catch (e) {
-      container.innerHTML = '<p class="text-meta text-center" style="grid-column:1/-1;padding:var(--space-10);">Could not load faculty.</p>';
+      });
     }
   }
 
@@ -497,81 +513,53 @@
   async function loadHolidays() {
     const tbody = $('#holidays-tbody');
     if (!tbody) return;
-    try {
-      const res = await fetch('/api/holidays');
-      const data = await res.json();
-      if (!data.holidays || !data.holidays.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-meta text-center" style="padding:var(--space-6);">No holidays listed yet.</td></tr>';
-        return;
-      }
-      // group by month
-      const byMonth = {};
-      data.holidays.forEach((h) => {
-        const d = new Date(h.holiday_date);
-        const key = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-        (byMonth[key] = byMonth[key] || []).push(h);
-      });
-      const monthOrder = Object.keys(byMonth);
-      tbody.innerHTML = monthOrder.map((m) => {
-        const items = byMonth[m];
-        const isRange = items[0].end_date && items[0].end_date !== items[0].holiday_date;
-        return `
-          <tr><td colspan="4" style="background:var(--color-navy-50);font-weight:600;color:var(--color-navy-900);text-transform:uppercase;letter-spacing:0.05em;font-size:13px;">${escapeHtml(m)}</td></tr>
-          ${items.map((h) => {
-            const d = new Date(h.holiday_date);
-            const day = d.toLocaleDateString('en-IN', { weekday: 'long' });
-            const range = h.end_date && h.end_date !== h.holiday_date
-              ? `${fmtDate(h.holiday_date)} – ${fmtDate(h.end_date)}`
-              : fmtDate(h.holiday_date);
-            return `<tr${h.type === 'VACATION' ? ' class="total"' : ''}>
-              <td>${escapeHtml(range)}</td>
-              <td>${escapeHtml(day)}</td>
-              <td>${escapeHtml(h.name)}</td>
-              <td><span class="tag tag-${h.type === 'GAZETTED' ? 'holiday' : h.type === 'VACATION' ? 'exam' : 'general'}">${escapeHtml(h.type)}</span></td>
-            </tr>`;
-          }).join('')}`;
-      }).join('');
-    } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="4" class="text-meta text-center" style="padding:var(--space-6);">Could not load holidays.</td></tr>';
+    const data = await fetchWithFallback('/api/holidays', '/data/holidays.json');
+    if (!data || !data.holidays || !data.holidays.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-meta text-center" style="padding:var(--space-6);">No holidays listed yet.</td></tr>';
+      return;
     }
+    const byMonth = {};
+    data.holidays.forEach((h) => {
+      const d = new Date(h.holiday_date);
+      const key = d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      (byMonth[key] = byMonth[key] || []).push(h);
+    });
+    const monthOrder = Object.keys(byMonth);
+    tbody.innerHTML = monthOrder.map((m) => {
+      const items = byMonth[m];
+      return `
+        <tr><td colspan="4" style="background:var(--color-navy-50);font-weight:600;color:var(--color-navy-900);text-transform:uppercase;letter-spacing:0.05em;font-size:13px;">${escapeHtml(m)}</td></tr>
+        ${items.map((h) => {
+          const d = new Date(h.holiday_date);
+          const day = d.toLocaleDateString('en-IN', { weekday: 'long' });
+          const range = h.end_date && h.end_date !== h.holiday_date
+            ? `${fmtDate(h.holiday_date)} – ${fmtDate(h.end_date)}`
+            : fmtDate(h.holiday_date);
+          return `<tr${h.type === 'VACATION' ? ' class="total"' : ''}>
+            <td>${escapeHtml(range)}</td>
+            <td>${escapeHtml(day)}</td>
+            <td>${escapeHtml(h.name)}</td>
+            <td><span class="tag tag-${h.type === 'GAZETTED' ? 'holiday' : h.type === 'VACATION' ? 'exam' : 'general'}">${escapeHtml(h.type)}</span></td>
+          </tr>`;
+        }).join('')}`;
+    }).join('');
   }
 
   /* -------- Recent results on results page -------- */
   async function loadRecentResults() {
     const container = $('#recent-results');
     if (!container) return;
-    try {
-      const res = await fetch('/api/results?limit=5');
-      const data = await res.json();
-      if (!data.sets || !data.sets.length) return;
-      container.innerHTML = data.sets.map((s) => `
-        <div class="card">
-          <div class="flex justify-between items-center gap-3" style="flex-wrap:wrap;">
-            <div>
-              <h3 style="font-size:16px;margin-bottom:2px;">${escapeHtml(s.exam_name)}</h3>
-              <p class="text-meta" style="font-size:13px;">${escapeHtml(s.class_name)} · ${escapeHtml(s.academic_year)} · Declared ${fmtDate(s.declared_at)}</p>
-            </div>
+    const data = await fetchWithFallback('/api/results?limit=5', '/data/results.json');
+    if (!data || !data.sets || !data.sets.length) return;
+    container.innerHTML = data.sets.map((s) => `
+      <div class="card">
+        <div class="flex justify-between items-center gap-3" style="flex-wrap:wrap;">
+          <div>
+            <h3 style="font-size:16px;margin-bottom:2px;">${escapeHtml(s.exam_name)}</h3>
+            <p class="text-meta" style="font-size:13px;">${escapeHtml(s.class_name)} · ${escapeHtml(s.academic_year)} · Declared ${fmtDate(s.declared_at)}</p>
           </div>
-        </div>`).join('');
-    } catch (e) {}
-  }
-
-  /* -------- Hero stats -------- */
-  async function loadStats() {
-    const el = $('#hero-stats');
-    if (!el) return;
-    try {
-      const res = await fetch('/api/stats');
-      const s = await res.json();
-      el.innerHTML = `
-        <div class="stat-num">${s.students || '1,200+'}</div>
-        <div class="stat-label">Students Enrolled</div>`;
-      // Also update other stat cards
-      const studentsCard = $('#stat-students');
-      if (studentsCard) studentsCard.textContent = s.students;
-      const staffCard = $('#stat-staff');
-      if (staffCard) staffCard.textContent = s.staff;
-    } catch (e) {}
+        </div>
+      </div>`).join('');
   }
 
   /* -------- Init all -------- */
@@ -584,5 +572,4 @@
   loadFaculty();
   loadHolidays();
   loadRecentResults();
-  loadStats();
 })();

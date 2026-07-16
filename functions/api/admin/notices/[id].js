@@ -34,13 +34,11 @@ export async function onRequestPut(context) {
   const cleanBody = body.body ? sanitizeHtml(body.body) : existing.body;
   const excerpt = body.excerpt || (body.body ? cleanBody.replace(/<[^>]+>/g, '').slice(0, 200) : existing.excerpt);
 
-  await env.DB.prepare(`
-    UPDATE notices SET
+  await env.DB.prepare(`UPDATE notices SET
       title = ?1, body = ?2, excerpt = ?3, category = ?4, is_published = ?5,
       publish_date = ?6, expiry_date = ?7, attachment_url = ?8, attachment_name = ?9,
       updated_at = datetime('now')
-    WHERE id = ?10
-  `).bind(
+    WHERE id = ?10`).bind(
     body.title ?? existing.title,
     cleanBody,
     excerpt,
@@ -67,7 +65,7 @@ export async function onRequestDelete(context) {
   const existing = await env.DB.prepare('SELECT id FROM notices WHERE id = ?1').bind(params.id).first();
   if (!existing) return errorResponse('Notice not found', 404);
 
-  await env.DB.prepare('UPDATE notices SET deleted_at = datetime(''now'') WHERE id = ?1').bind(params.id).run();
+  await env.DB.prepare("UPDATE notices SET deleted_at = datetime('now') WHERE id = ?1").bind(params.id).run();
   await audit(env, user.id, 'notice.delete', 'Notice', params.id, null, null);
   return json({ ok: true });
 }

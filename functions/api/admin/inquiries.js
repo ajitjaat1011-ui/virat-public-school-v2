@@ -45,7 +45,7 @@ export async function onRequestPost(context) {
   const existing = await env.DB.prepare('SELECT id FROM admission_inquiries WHERE id = ?1').bind(id).first();
   if (!existing) return errorResponse('Inquiry not found', 404);
 
-  await env.DB.prepare('UPDATE admission_inquiries SET status = COALESCE(?1, status), notes = COALESCE(?2, notes), updated_at = datetime(''now'') WHERE id = ?3')
+  await env.DB.prepare("UPDATE admission_inquiries SET status = COALESCE(?1, status), notes = COALESCE(?2, notes), updated_at = datetime('now') WHERE id = ?3")
     .bind(body.status || null, body.notes || null, id).run();
   await audit(env, user.id, 'inquiry.update', 'AdmissionInquiry', id, null, { status: body.status });
   return json({ ok: true });
