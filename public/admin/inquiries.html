@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inquiries | Admin | Virat Public School</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="container-wide">
+      <a href="/admin/" class="admin-brand">
+        <span class="brand-logo">V</span>
+        <span style="font-size:14px;">VPS Admin</span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin">
+        <a href="/admin/">Dashboard</a>
+        <a href="/admin/notices.html">Notices</a>
+        <a href="/admin/gallery.html">Gallery</a>
+        <a href="/admin/results.html">Results</a>
+        <a href="/admin/inquiries.html" class="active">Inquiries</a>
+        <a href="/admin/messages.html">Messages</a>
+        <a href="/admin/audit.html">Audit</a>
+      </nav>
+      <div class="admin-user">
+        <button class="btn btn-ghost btn-sm" id="logout-btn" style="color:var(--color-white);">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="container-wide">
+      <h1 class="page-title">Admission Inquiries</h1>
+      <p class="page-subtitle">All submitted admission inquiries. Mark as contacted or admitted as you follow up.</p>
+
+      <div class="filter-bar">
+        <input type="text" id="search" class="form-control" placeholder="Search by name or phone…" style="max-width:280px;" />
+        <select id="filter-status" class="form-select" style="max-width:200px;">
+          <option value="">All statuses</option>
+          <option value="NEW">New</option>
+          <option value="CONTACTED">Contacted</option>
+          <option value="ADMITTED">Admitted</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+
+      <div class="form-card">
+        <div id="list"><p class="text-meta text-center" style="padding:var(--space-6);">Loading…</p></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toasts"></div>
+
+  <script>
+    (function () {
+      const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+      const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+      const toast = (msg, type='success') => {
+        const t = document.createElement('div');
+        t.className = 'toast ' + type;
+        t.textContent = msg;
+        document.getElementById('toasts').appendChild(t);
+        setTimeout(() => t.remove(), 4000);
+      };
+
+      let inquiries = [];
+      async function load() {
+        try {
+          const res = await fetch('/api/admin/inquiries');
+          if (!res.ok) throw new Error('Failed');
+          const data = await res.json();
+          inquiries = data.inquiries;
+          render();
+        } catch (e) {
+          document.getElementById('list').innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">Could not load.</p>';
+        }
+      }
+
+      function render() {
+        const q = document.getElementById('search').value.toLowerCase();
+        const st = document.getElementById('filter-status').value;
+        const filtered = inquiries.filter((i) => {
+          if (q && !((i.parent_name||'').toLowerCase().includes(q) || (i.student_name||'').toLowerCase().includes(q) || (i.parent_phone||'').includes(q))) return false;
+          if (st && i.status !== st) return false;
+          return true;
+        });
+        const container = document.getElementById('list');
+        if (!filtered.length) {
+          container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">No inquiries match.</p>';
+          return;
+        }
+        container.innerHTML = `
+          <table class="admin-table">
+            <thead><tr><th>Received</th><th>Parent</th><th>Student</th><th>Class</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>${filtered.map((i) => `
+              <tr ${i.status === 'NEW' ? 'style="background:#fffbeb;"' : ''}>
+                <td style="white-space:nowrap;">${fmt(i.created_at)}</td>
+                <td><strong>${esc(i.parent_name)}</strong></td>
+                <td>${esc(i.student_name)}</td>
+                <td>${esc(i.class_seeking)}</td>
+                <td><a href="tel:${esc(i.parent_phone)}">${esc(i.parent_phone)}</a> · <a href="https://wa.me/91${esc(i.parent_phone)}" target="_blank" rel="noopener" style="color:var(--color-success);">WhatsApp</a></td>
+                <td><span class="badge-status status-${esc(i.status)}">${esc(i.status)}</span></td>
+                <td>
+                  <div class="actions">
+                    <button data-action="view" data-id="${i.id}">View</button>
+                    <button data-action="contacted" data-id="${i.id}">Contacted</button>
+                    <button data-action="admitted" data-id="${i.id}">Admitted</button>
+                    <button data-action="delete" data-id="${i.id}" class="danger">Delete</button>
+                  </div>
+                </td>
+              </tr>`).join('')}</tbody>
+          </table>`;
+        container.querySelectorAll('[data-action]').forEach((b) => {
+          b.addEventListener('click', async () => {
+            const id = b.dataset.id;
+            if (b.dataset.action === 'view') viewInquiry(inquiries.find((i) => i.id === id));
+            else if (b.dataset.action === 'contacted') updateStatus(id, 'CONTACTED');
+            else if (b.dataset.action === 'admitted') updateStatus(id, 'ADMITTED');
+            else if (b.dataset.action === 'delete') deleteInquiry(id);
+          });
+        });
+      }
+
+      function viewInquiry(i) {
+        const html = `
+          <p><strong>Parent:</strong> ${esc(i.parent_name)}</p>
+          <p><strong>Student:</strong> ${esc(i.student_name)}</p>
+          <p><strong>DOB:</strong> ${esc(i.dob || '—')}</p>
+          <p><strong>Class:</strong> ${esc(i.class_seeking)}</p>
+          <p><strong>Phone:</strong> <a href="tel:${esc(i.parent_phone)}">${esc(i.parent_phone)}</a></p>
+          <p><strong>Email:</strong> ${esc(i.parent_email || '—')}</p>
+          <p><strong>Address:</strong> ${esc(i.address)}</p>
+          <p><strong>Message:</strong><br>${esc(i.message || '—')}</p>
+          <p><strong>Status:</strong> <span class="badge-status status-${esc(i.status)}">${esc(i.status)}</span></p>
+          <p><strong>Received:</strong> ${fmt(i.created_at)}</p>
+        `;
+        const w = window.open('', '_blank', 'width=520,height=600');
+        w.document.write('<html><head><title>Inquiry ' + i.id + '</title><style>body{font-family:Inter,sans-serif;padding:24px;line-height:1.6;color:#1A1A1A;}h1{margin-top:0;}</style></head><body><h1>Inquiry Details</h1>' + html + '</body></html>');
+      }
+
+      async function updateStatus(id, status) {
+        try {
+          const res = await fetch('/api/admin/inquiries/' + id, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+          if (!res.ok) throw new Error('Failed');
+          toast('Status updated to ' + status);
+          load();
+        } catch (e) { toast(e.message, 'error'); }
+      }
+
+      async function deleteInquiry(id) {
+        if (!confirm('Delete this inquiry?')) return;
+        try {
+          const res = await fetch('/api/admin/inquiries/' + id, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed');
+          toast('Inquiry deleted');
+          load();
+        } catch (e) { toast(e.message, 'error'); }
+      }
+
+      ['search', 'filter-status'].forEach((id) => document.getElementById(id).addEventListener('input', render));
+      document.getElementById('logout-btn').addEventListener('click', async () => { await fetch('/api/admin/auth', { method: 'DELETE' }); location.href = '/admin/login.html'; });
+
+      load();
+    })();
+  </script>
+</body>
+</html>

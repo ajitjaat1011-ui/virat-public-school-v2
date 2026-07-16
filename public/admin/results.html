@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Results | Admin | Virat Public School</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="container-wide">
+      <a href="/admin/" class="admin-brand">
+        <span class="brand-logo">V</span>
+        <span style="font-size:14px;">VPS Admin</span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin">
+        <a href="/admin/">Dashboard</a>
+        <a href="/admin/notices.html">Notices</a>
+        <a href="/admin/gallery.html">Gallery</a>
+        <a href="/admin/results.html" class="active">Results</a>
+        <a href="/admin/inquiries.html">Inquiries</a>
+        <a href="/admin/messages.html">Messages</a>
+        <a href="/admin/audit.html">Audit</a>
+      </nav>
+      <div class="admin-user">
+        <button class="btn btn-ghost btn-sm" id="logout-btn" style="color:var(--color-white);">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="container-wide">
+      <h1 class="page-title">Result Sets</h1>
+      <p class="page-subtitle">Published examination results. Each set is a batch of student results for a specific exam and class.</p>
+
+      <div class="alert alert-info">
+        <span>ℹ️</span>
+        <span>Result upload via CSV is available via the API endpoint at <code>POST /api/admin/results</code> (documented in README). Use <code>wrangler d1 execute</code> to insert result sets directly until the upload UI is wired in v2.1.</span>
+      </div>
+
+      <div class="form-card mt-6">
+        <div id="list"><p class="text-meta text-center" style="padding:var(--space-6);">Loading…</p></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+      const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
+      async function load() {
+        const res = await fetch('/api/results');
+        const data = await res.json();
+        const container = document.getElementById('list');
+        if (!data.sets.length) { container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">No result sets published yet.</p>'; return; }
+        container.innerHTML = `
+          <table class="admin-table">
+            <thead><tr><th>Academic Year</th><th>Exam</th><th>Class</th><th>Declared</th><th>Status</th></tr></thead>
+            <tbody>${data.sets.map((s) => `
+              <tr>
+                <td>${esc(s.academic_year)}</td>
+                <td><strong>${esc(s.exam_name)}</strong></td>
+                <td>${esc(s.class_name)}</td>
+                <td>${fmt(s.declared_at)}</td>
+                <td><span class="badge-status status-published">Published</span></td>
+              </tr>`).join('')}</tbody>
+          </table>`;
+      }
+      document.getElementById('logout-btn').addEventListener('click', async () => { await fetch('/api/admin/auth', { method: 'DELETE' }); location.href = '/admin/login.html'; });
+      load();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard | Admin | Virat Public School</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="container-wide">
+      <a href="/admin/" class="admin-brand">
+        <span class="brand-logo">V</span>
+        <span style="font-size:14px;">VPS Admin</span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin">
+        <a href="/admin/" class="active">Dashboard</a>
+        <a href="/admin/notices.html">Notices</a>
+        <a href="/admin/gallery.html">Gallery</a>
+        <a href="/admin/results.html">Results</a>
+        <a href="/admin/inquiries.html">Inquiries</a>
+        <a href="/admin/messages.html">Messages</a>
+        <a href="/admin/audit.html">Audit</a>
+      </nav>
+      <div class="admin-user">
+        <span id="admin-name">…</span>
+        <span class="role-badge" id="admin-role">…</span>
+        <button class="btn btn-ghost btn-sm" id="logout-btn" style="color:var(--color-white);">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="container-wide">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">A quick overview of what needs attention.</p>
+
+      <div class="stat-grid-admin" id="stats">
+        <div class="stat-card-admin" id="card-inquiries">
+          <div class="label">New admission inquiries</div>
+          <div class="value">—</div>
+          <a href="/admin/inquiries.html" class="link">View all →</a>
+        </div>
+        <div class="stat-card-admin" id="card-messages">
+          <div class="label">Unread messages</div>
+          <div class="value">—</div>
+          <a href="/admin/messages.html" class="link">View all →</a>
+        </div>
+        <div class="stat-card-admin">
+          <div class="label">Published notices</div>
+          <div class="value" id="stat-notices">—</div>
+          <a href="/admin/notices.html" class="link">Manage →</a>
+        </div>
+        <div class="stat-card-admin">
+          <div class="label">Gallery albums</div>
+          <div class="value" id="stat-albums">—</div>
+          <a href="/admin/gallery.html" class="link">Manage →</a>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;gap:var(--space-6);">
+        <div class="form-card">
+          <h2 style="font-size:18px;margin-bottom:var(--space-4);">Recent inquiries</h2>
+          <div id="recent-inquiries">
+            <p class="text-meta">Loading…</p>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h2 style="font-size:18px;margin-bottom:var(--space-4);">Recent activity</h2>
+          <div id="recent-audit">
+            <p class="text-meta">Loading…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (async function () {
+      // Get current user
+      try {
+        const me = await fetch('/api/admin/auth').then((r) => r.ok ? r.json() : null);
+        if (me && me.user) {
+          document.getElementById('admin-name').textContent = me.user.name;
+          document.getElementById('admin-role').textContent = me.user.role;
+        }
+      } catch (e) { location.href = '/admin/login.html'; return; }
+
+      // Load stats
+      try {
+        const data = await fetch('/api/admin/dashboard').then((r) => r.json());
+        const c = data.counts;
+        document.querySelector('#card-inquiries .value').textContent = c.newInquiries;
+        document.querySelector('#card-messages .value').textContent = c.unreadMessages;
+        document.getElementById('stat-notices').textContent = c.notices;
+        document.getElementById('stat-albums').textContent = c.albums;
+        if (c.oldInquiries > 0) document.getElementById('card-inquiries').classList.add('alert');
+
+        const fmt = (iso) => new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+
+        const inq = data.recentInquiries;
+        document.getElementById('recent-inquiries').innerHTML = inq.length ? `
+          <table class="admin-table">
+            <thead><tr><th>Parent</th><th>Student</th><th>Class</th><th>When</th></tr></thead>
+            <tbody>${inq.map((i) => `
+              <tr>
+                <td>${esc(i.parent_name)}</td>
+                <td>${esc(i.student_name)}</td>
+                <td>${esc(i.class_seeking)}</td>
+                <td>${fmt(i.created_at)}</td>
+              </tr>`).join('')}</tbody>
+          </table>
+          <p style="margin-top:var(--space-3);text-align:right;"><a href="/admin/inquiries.html" class="link" style="color:var(--color-navy-500);text-decoration:none;font-weight:600;">View all inquiries →</a></p>
+        ` : '<p class="text-meta">No inquiries yet.</p>';
+
+        const aud = data.recentAudit;
+        document.getElementById('recent-audit').innerHTML = aud.length ? `
+          <table class="admin-table">
+            <thead><tr><th>When</th><th>User</th><th>Action</th><th>Entity</th></tr></thead>
+            <tbody>${aud.map((a) => `
+              <tr>
+                <td style="white-space:nowrap;">${fmt(a.created_at)}</td>
+                <td>${esc(a.username || '—')}</td>
+                <td><code>${esc(a.action)}</code></td>
+                <td>${esc(a.entity || '—')}</td>
+              </tr>`).join('')}</tbody>
+          </table>
+        ` : '<p class="text-meta">No activity yet.</p>';
+      } catch (e) {
+        document.getElementById('recent-inquiries').innerHTML = '<p class="text-meta">Could not load dashboard data.</p>';
+      }
+
+      document.getElementById('logout-btn').addEventListener('click', async () => {
+        await fetch('/api/admin/auth', { method: 'DELETE' });
+        location.href = '/admin/login.html';
+      });
+    })();
+  </script>
+</body>
+</html>

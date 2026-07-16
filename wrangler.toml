@@ -1,0 +1,9 @@
+name = "virat-public-school-new"
+compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vps-database"
+database_id = "PLACEHOLDER_WILL_BE_SET_AFTER_D1_CREATE"

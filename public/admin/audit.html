@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Audit Log | Admin | Virat Public School</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="container-wide">
+      <a href="/admin/" class="admin-brand">
+        <span class="brand-logo">V</span>
+        <span style="font-size:14px;">VPS Admin</span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin">
+        <a href="/admin/">Dashboard</a>
+        <a href="/admin/notices.html">Notices</a>
+        <a href="/admin/gallery.html">Gallery</a>
+        <a href="/admin/results.html">Results</a>
+        <a href="/admin/inquiries.html">Inquiries</a>
+        <a href="/admin/messages.html">Messages</a>
+        <a href="/admin/audit.html" class="active">Audit</a>
+      </nav>
+      <div class="admin-user">
+        <button class="btn btn-ghost btn-sm" id="logout-btn" style="color:var(--color-white);">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="container-wide">
+      <h1 class="page-title">Audit Log</h1>
+      <p class="page-subtitle">Every admin action is recorded for accountability. Read-only.</p>
+
+      <div class="form-card">
+        <div id="list"><p class="text-meta text-center" style="padding:var(--space-6);">Loading…</p></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+      const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN') : '';
+      async function load() {
+        const res = await fetch('/api/admin/audit');
+        const data = await res.json();
+        const container = document.getElementById('list');
+        if (!data.entries.length) { container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">No activity yet.</p>'; return; }
+        container.innerHTML = `
+          <table class="admin-table">
+            <thead><tr><th>When</th><th>User</th><th>Action</th><th>Entity</th><th>IP</th></tr></thead>
+            <tbody>${data.entries.map((e) => `
+              <tr>
+                <td style="white-space:nowrap;">${fmt(e.created_at)}</td>
+                <td>${esc(e.username || '—')}</td>
+                <td><code>${esc(e.action)}</code></td>
+                <td>${esc(e.entity || '')}${e.entity_id ? ' <span class="text-meta" style="font-size:11px;">' + esc(e.entity_id.slice(0,8)) + '</span>' : ''}</td>
+                <td><code style="font-size:11px;">${esc(e.ip || '—')}</code></td>
+              </tr>`).join('')}</tbody>
+          </table>`;
+      }
+      document.getElementById('logout-btn').addEventListener('click', async () => { await fetch('/api/admin/auth', { method: 'DELETE' }); location.href = '/admin/login.html'; });
+      load();
+    })();
+  </script>
+</body>
+</html>

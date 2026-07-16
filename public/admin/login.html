@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login | Virat Public School</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+  <main>
+    <div class="login-wrap">
+      <div class="login-card">
+        <a href="/" class="brand" aria-label="Virat Public School home">
+          <span class="brand-logo">V</span>
+          <span class="brand-text">
+            <span class="brand-name">Virat Public School</span>
+            <span class="brand-sub">Admin Panel</span>
+          </span>
+        </a>
+        <h1>Sign in</h1>
+        <p class="sub">Access the school content management system</p>
+
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="username">Username or email</label>
+            <input type="text" id="username" name="username" class="form-control" required autocomplete="username" autofocus />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password" />
+          </div>
+          <div id="login-error" class="alert alert-error" hidden></div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg mt-4" id="login-btn">Sign In</button>
+        </form>
+
+        <p class="text-center mt-6 text-meta" style="font-size:13px;">
+          <a href="/" style="color:var(--color-navy-500);text-decoration:none;">← Back to website</a>
+        </p>
+        <p class="text-center mt-4 text-caption">Default credentials: <strong>admin</strong> / <strong>VPS@Kotputli2026</strong><br>Change after first login.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.getElementById('login-form');
+      const btn  = document.getElementById('login-btn');
+      const err  = document.getElementById('login-error');
+      const next = new URLSearchParams(location.search).get('next') || '/admin/';
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.hidden = true;
+        btn.disabled = true; btn.textContent = 'Signing in…';
+        try {
+          const res = await fetch('/api/admin/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: document.getElementById('username').value,
+              password: document.getElementById('password').value
+            })
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || 'Login failed');
+          }
+          location.href = next;
+        } catch (e) {
+          err.textContent = e.message;
+          err.hidden = false;
+          btn.disabled = false; btn.textContent = 'Sign In';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
