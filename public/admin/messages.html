@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body class="admin-body">
@@ -37,10 +36,10 @@
   <main class="admin-main">
     <div class="container-wide">
       <h1 class="page-title">Contact Messages</h1>
-      <p class="page-subtitle">Messages submitted through the website contact form.</p>
+      <p class="page-sub">Messages submitted through the website contact form.</p>
 
       <div class="form-card">
-        <div id="list"><p class="text-meta text-center" style="padding:var(--space-6);">Loading…</p></div>
+        <div id="list"><p class="text-mute text-center" style="padding:var(--space-6);">Loading…</p></div>
       </div>
     </div>
   </main>
@@ -62,7 +61,7 @@
         const res = await fetch('/api/admin/messages');
         const data = await res.json();
         const container = document.getElementById('list');
-        if (!data.messages.length) { container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">No messages yet.</p>'; return; }
+        if (!data.messages.length) { container.innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">No messages yet.</p>'; return; }
         container.innerHTML = `
           <table class="admin-table">
             <thead><tr><th>When</th><th>Name</th><th>Email</th><th>Subject</th><th>Status</th><th>Actions</th></tr></thead>

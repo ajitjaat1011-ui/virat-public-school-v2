@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body class="admin-body">
@@ -37,7 +36,7 @@
   <main class="admin-main">
     <div class="container-wide">
       <h1 class="page-title">Result Sets</h1>
-      <p class="page-subtitle">Published examination results. Each set is a batch of student results for a specific exam and class.</p>
+      <p class="page-sub">Published examination results. Each set is a batch of student results for a specific exam and class.</p>
 
       <div class="alert alert-info">
         <span>ℹ️</span>
@@ -45,7 +44,7 @@
       </div>
 
       <div class="form-card mt-6">
-        <div id="list"><p class="text-meta text-center" style="padding:var(--space-6);">Loading…</p></div>
+        <div id="list"><p class="text-mute text-center" style="padding:var(--space-6);">Loading…</p></div>
       </div>
     </div>
   </main>
@@ -58,7 +57,7 @@
         const res = await fetch('/api/results');
         const data = await res.json();
         const container = document.getElementById('list');
-        if (!data.sets.length) { container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">No result sets published yet.</p>'; return; }
+        if (!data.sets.length) { container.innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">No result sets published yet.</p>'; return; }
         container.innerHTML = `
           <table class="admin-table">
             <thead><tr><th>Academic Year</th><th>Exam</th><th>Class</th><th>Declared</th><th>Status</th></tr></thead>

@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body class="admin-body">
@@ -30,7 +29,7 @@
       </nav>
       <div class="admin-user">
         <span id="admin-name">…</span>
-        <span class="role-badge" id="admin-role">…</span>
+        <span class="role" id="admin-role">…</span>
         <button class="btn btn-ghost btn-sm" id="logout-btn" style="color:var(--color-white);">Sign out</button>
       </div>
     </div>
@@ -39,25 +38,25 @@
   <main class="admin-main">
     <div class="container-wide">
       <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">A quick overview of what needs attention.</p>
+      <p class="page-sub">A quick overview of what needs attention.</p>
 
-      <div class="stat-grid-admin" id="stats">
-        <div class="stat-card-admin" id="card-inquiries">
+      <div class="stat-grid" id="stats">
+        <div class="stat-card" id="card-inquiries">
           <div class="label">New admission inquiries</div>
           <div class="value">—</div>
           <a href="/admin/inquiries.html" class="link">View all →</a>
         </div>
-        <div class="stat-card-admin" id="card-messages">
+        <div class="stat-card" id="card-messages">
           <div class="label">Unread messages</div>
           <div class="value">—</div>
           <a href="/admin/messages.html" class="link">View all →</a>
         </div>
-        <div class="stat-card-admin">
+        <div class="stat-card">
           <div class="label">Published notices</div>
           <div class="value" id="stat-notices">—</div>
           <a href="/admin/notices.html" class="link">Manage →</a>
         </div>
-        <div class="stat-card-admin">
+        <div class="stat-card">
           <div class="label">Gallery albums</div>
           <div class="value" id="stat-albums">—</div>
           <a href="/admin/gallery.html" class="link">Manage →</a>
@@ -68,14 +67,14 @@
         <div class="form-card">
           <h2 style="font-size:18px;margin-bottom:var(--space-4);">Recent inquiries</h2>
           <div id="recent-inquiries">
-            <p class="text-meta">Loading…</p>
+            <p class="text-mute">Loading…</p>
           </div>
         </div>
 
         <div class="form-card">
           <h2 style="font-size:18px;margin-bottom:var(--space-4);">Recent activity</h2>
           <div id="recent-audit">
-            <p class="text-meta">Loading…</p>
+            <p class="text-mute">Loading…</p>
           </div>
         </div>
       </div>
@@ -119,7 +118,7 @@
               </tr>`).join('')}</tbody>
           </table>
           <p style="margin-top:var(--space-3);text-align:right;"><a href="/admin/inquiries.html" class="link" style="color:var(--color-sky-500);text-decoration:none;font-weight:600;">View all inquiries →</a></p>
-        ` : '<p class="text-meta">No inquiries yet.</p>';
+        ` : '<p class="text-mute">No inquiries yet.</p>';
 
         const aud = data.recentAudit;
         document.getElementById('recent-audit').innerHTML = aud.length ? `
@@ -133,9 +132,9 @@
                 <td>${esc(a.entity || '—')}</td>
               </tr>`).join('')}</tbody>
           </table>
-        ` : '<p class="text-meta">No activity yet.</p>';
+        ` : '<p class="text-mute">No activity yet.</p>';
       } catch (e) {
-        document.getElementById('recent-inquiries').innerHTML = '<p class="text-meta">Could not load dashboard data.</p>';
+        document.getElementById('recent-inquiries').innerHTML = '<p class="text-mute">Could not load dashboard data.</p>';
       }
 
       document.getElementById('logout-btn').addEventListener('click', async () => {

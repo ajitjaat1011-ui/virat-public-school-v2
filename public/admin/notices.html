@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body class="admin-body">
@@ -39,7 +38,7 @@
       <div class="flex justify-between items-center mb-6" style="flex-wrap:wrap;gap:var(--space-3);">
         <div>
           <h1 class="page-title">Notices</h1>
-          <p class="page-subtitle">Manage school notices, announcements, and updates.</p>
+          <p class="page-sub">Manage school notices, announcements, and updates.</p>
         </div>
         <button class="btn btn-primary" id="new-notice-btn">+ New Notice</button>
       </div>
@@ -68,7 +67,7 @@
 
       <div class="form-card">
         <div id="notices-list">
-          <p class="text-meta text-center" style="padding:var(--space-6);">Loading…</p>
+          <p class="text-mute text-center" style="padding:var(--space-6);">Loading…</p>
         </div>
       </div>
     </div>
@@ -163,7 +162,7 @@
           }
           render();
         } catch (e) {
-          document.getElementById('notices-list').innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">Could not load notices.</p>';
+          document.getElementById('notices-list').innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">Could not load notices.</p>';
         }
       }
 
@@ -181,7 +180,7 @@
 
         const container = document.getElementById('notices-list');
         if (!filtered.length) {
-          container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">No notices match your filters.</p>';
+          container.innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">No notices match your filters.</p>';
           return;
         }
         container.innerHTML = `

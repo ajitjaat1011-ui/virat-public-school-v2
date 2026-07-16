@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
 <body class="admin-body">
@@ -37,7 +36,7 @@
   <main class="admin-main">
     <div class="container-wide">
       <h1 class="page-title">Admission Inquiries</h1>
-      <p class="page-subtitle">All submitted admission inquiries. Mark as contacted or admitted as you follow up.</p>
+      <p class="page-sub">All submitted admission inquiries. Mark as contacted or admitted as you follow up.</p>
 
       <div class="filter-bar">
         <input type="text" id="search" class="form-control" placeholder="Search by name or phone…" style="max-width:280px;" />
@@ -51,7 +50,7 @@
       </div>
 
       <div class="form-card">
-        <div id="list"><p class="text-meta text-center" style="padding:var(--space-6);">Loading…</p></div>
+        <div id="list"><p class="text-mute text-center" style="padding:var(--space-6);">Loading…</p></div>
       </div>
     </div>
   </main>
@@ -79,7 +78,7 @@
           inquiries = data.inquiries;
           render();
         } catch (e) {
-          document.getElementById('list').innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">Could not load.</p>';
+          document.getElementById('list').innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">Could not load.</p>';
         }
       }
 
@@ -93,7 +92,7 @@
         });
         const container = document.getElementById('list');
         if (!filtered.length) {
-          container.innerHTML = '<p class="text-meta text-center" style="padding:var(--space-6);">No inquiries match.</p>';
+          container.innerHTML = '<p class="text-mute text-center" style="padding:var(--space-6);">No inquiries match.</p>';
           return;
         }
         container.innerHTML = `

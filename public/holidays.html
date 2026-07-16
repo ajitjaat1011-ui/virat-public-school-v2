@@ -3,221 +3,64 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Holiday List 2026-27 | Virat Public School</title>
-  <meta name="description" content="Complete list of holidays for the academic year 2026-27 at Virat Public School, Kotputli." />
-  <meta name="theme-color" content="#0B2545" />
+  <title>Holiday List | Virat Public School</title>
+  <meta name="description" content="School holiday list for the academic year." />
+  <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
-  <div class="top-bar"><div class="container-wide"><a href="tel:+919000000000">+91 90000 00000</a><span class="badge-rbse">Affiliated to RBSE</span></div></div>
-  <header class="site-header" role="banner">
-    <div class="container-wide">
-      <div class="header-inner">
-        <a href="index.html" class="brand"><span class="brand-logo">V</span><span class="brand-text"><span class="brand-name">Virat Public School</span><span class="brand-sub">Virat Nagar · Kotputli</span></span></a>
-        <nav class="primary-nav" aria-label="Primary">
-          <a href="index.html" class="nav-link">Home</a>
-          <a href="about.html" class="nav-link">About</a>
-          <a href="admissions.html" class="nav-link">Admissions</a>
-          <a href="results.html" class="nav-link">Results</a>
-          <a href="gallery.html" class="nav-link">Gallery</a>
-          <a href="notices.html" class="nav-link">Notices</a>
-          <a href="contact.html" class="nav-link">Contact</a>
-          <a href="admissions.html#inquiry" class="nav-link nav-cta">Apply Now</a>
-        </nav>
-        <button class="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span><span></span></button>
-      </div>
-    </div>
-    <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile">
-      <a href="index.html" class="nav-link">Home</a>
-      <a href="about.html" class="nav-link">About</a>
-      <a href="admissions.html" class="nav-link">Admissions</a>
-      <a href="results.html" class="nav-link">Results</a>
-      <a href="gallery.html" class="nav-link">Gallery</a>
-      <a href="notices.html" class="nav-link">Notices</a>
-      <a href="events.html" class="nav-link">Events</a>
-      <a href="holidays.html" class="nav-link">Holidays</a>
-      <a href="faculty.html" class="nav-link">Faculty</a>
-      <a href="contact.html" class="nav-link">Contact</a>
-      <a href="admissions.html#inquiry" class="nav-link" style="color:var(--color-rose-600);font-weight:700;">Apply Now →</a>
-    </nav>
-  </header>
+  <div id="vps-topbar"></div>
+  <div id="vps-header"></div>
 
   <main id="main">
-    <section class="page-hero">
+
+    <section class="page-header">
       <div class="container-wide">
-        <h1>Holiday List 2026-27</h1>
-        <p class="lead">The complete list of holidays and vacation periods for the academic year.</p>
-        <div class="mt-6 no-print">
-          <button class="btn btn-accent" onclick="window.print()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Print / Save as PDF
-          </button>
-        </div>
+        <span class="section-eyebrow">Holidays</span>
+        <h1>Holiday list 2026-27.</h1>
+        <p>The school is closed on these days.</p>
       </div>
     </section>
 
-    <div class="container-wide">
-      <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <ol>
-          <li><a href="index.html">Home</a></li>
-          <li aria-current="page">Holiday List</li>
-        </ol>
-      </nav>
-    </div>
-
+    
     <section class="section">
-      <div class="container-wide">
-        <div class="alert alert-info no-print">
-          <span>ℹ️</span>
-          <span>Holidays are subject to change. Any mid-year changes will be communicated via a notice and updated on this page within 24 hours.</span>
+      <div class="container-narrow">
+        <div id="holidays-list" class="stack-lg">
+          <p class="text-center" style="color:var(--color-text-mute);">Loading…</p>
         </div>
       </div>
     </section>
+    
 
-    <section class="section bg-cream">
-      <div class="container-wide">
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Day</th>
-                <th>Holiday</th>
-                <th>Type</th>
-              </tr>
-            </thead>
-            <tbody id="holidays-tbody">
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">APRIL 2026</td></tr>
-              <tr><td>3 April 2026</td><td>Friday</td><td>Good Friday</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-              <tr><td>14 April 2026</td><td>Tuesday</td><td>Dr. Ambedkar Jayanti</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">MAY 2026</td></tr>
-              <tr><td>1 May 2026</td><td>Friday</td><td>Maharashtra Day / Labour Day</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-              <tr><td>15 May 2026</td><td>Friday</td><td>Buddha Purnima</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">JUNE 2026</td></tr>
-              <tr class="total"><td>1 – 30 June 2026</td><td>—</td><td colspan="2">Summer Vacation</td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">AUGUST 2026</td></tr>
-              <tr><td>15 August 2026</td><td>Saturday</td><td>Independence Day</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-              <tr><td>26 August 2026</td><td>Wednesday</td><td>Raksha Bandhan</td><td><span class="tag tag-general">Festival</span></td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">SEPTEMBER 2026</td></tr>
-              <tr><td>5 September 2026</td><td>Saturday</td><td>Janmashtami</td><td><span class="tag tag-general">Festival</span></td></tr>
-              <tr><td>14 September 2026</td><td>Monday</td><td>Hindi Diwas (School Function)</td><td><span class="tag tag-general">School</span></td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">OCTOBER 2026</td></tr>
-              <tr><td>2 October 2026</td><td>Friday</td><td>Gandhi Jayanti</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-              <tr class="total"><td>12 – 18 October 2026</td><td>—</td><td colspan="2">Dussehra Break</td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">NOVEMBER 2026</td></tr>
-              <tr><td>8 November 2026</td><td>Sunday</td><td>Diwali</td><td><span class="tag tag-general">Festival</span></td></tr>
-              <tr class="total"><td>9 – 14 November 2026</td><td>—</td><td colspan="2">Diwali Vacation</td></tr>
-              <tr><td>25 November 2026</td><td>Wednesday</td><td>Guru Nanak Jayanti</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">DECEMBER 2026</td></tr>
-              <tr><td>25 December 2026</td><td>Friday</td><td>Christmas</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-              <tr class="total"><td>28 Dec 2026 – 5 Jan 2027</td><td>—</td><td colspan="2">Winter Break</td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">JANUARY 2027</td></tr>
-              <tr><td>14 January 2027</td><td>Thursday</td><td>Makar Sankranti</td><td><span class="tag tag-general">Festival</span></td></tr>
-              <tr><td>26 January 2027</td><td>Tuesday</td><td>Republic Day</td><td><span class="tag tag-holiday">Gazetted</span></td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">FEBRUARY 2027</td></tr>
-              <tr><td>19 February 2027</td><td>Friday</td><td>Mahashivratri</td><td><span class="tag tag-general">Festival</span></td></tr>
-
-              <tr><td colspan="4" style="background:var(--color-sky-50);font-weight:600;color:var(--color-plum-900);">MARCH 2027</td></tr>
-              <tr><td>8 March 2027</td><td>Monday</td><td>Holi</td><td><span class="tag tag-general">Festival</span></td></tr>
-              <tr><td>31 March 2027</td><td>Wednesday</td><td>Last day of academic session</td><td><span class="tag tag-general">School</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container-prose">
-        <h2>Notes</h2>
-        <ul>
-          <li><strong>Gazetted holidays</strong> are national/state holidays observed by the school.</li>
-          <li><strong>School holidays</strong> are days when the school is closed for internal reasons (e.g., staff training, planning days).</li>
-          <li><strong>Festival holidays</strong> are observed for major cultural/religious festivals. The school may grant additional holidays for local festivals at the principal's discretion.</li>
-          <li><strong>Vacations</strong> are extended periods when the school is closed. Vacation homework and assignments are typically given before the break.</li>
-          <li>Any mid-year change in this list will be communicated through a published notice and updated here within 24 hours.</li>
-        </ul>
-      </div>
-    </section>
   </main>
 
-  <footer class="site-footer" role="contentinfo">
-    <div class="container-wide">
-      <div class="footer-grid">
-        <div>
-          <div class="footer-brand">
-            <span class="brand-logo">V</span>
-            <div class="brand-text">
-              <span class="brand-name">Virat Public School</span>
-              <span style="font-size:11px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.05em;">Virat Nagar · Kotputli</span>
-            </div>
-          </div>
-          <p style="font-size:14px;line-height:1.6;margin-bottom:var(--space-4);">A co-educational, RBSE-affiliated school serving the families of Virat Nagar, Kotputli, and the broader Behror region since 2008.</p>
-          <address style="font-style:normal;font-size:14px;line-height:1.7;">
-            Virat Nagar, Kotputli,<br>
-            Dist. Behror, Rajasthan — 303102<br>
-            <a href="tel:+919000000000" style="color:var(--color-rose-500);">+91 90000 00000</a><br>
-            <a href="mailto:office@viratpublicschool.in" style="color:var(--color-rose-500);">office@viratpublicschool.in</a>
-          </address>
-        </div>
-        <div>
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href="admissions.html">Admissions</a></li>
-            <li><a href="admissions-fee.html">Fee Structure</a></li>
-            <li><a href="results.html">Results</a></li>
-            <li><a href="notices.html">Notices</a></li>
-            <li><a href="gallery.html">Gallery</a></li>
-            <li><a href="events.html">Events Calendar</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="holidays.html">Holiday List</a></li>
-            <li><a href="faculty.html">Faculty</a></li>
-            <li><a href="infrastructure.html">Infrastructure</a></li>
-            <li><a href="disclosures.html">Mandatory Disclosures</a></li>
-            <li><a href="privacy.html">Privacy Policy</a></li>
-            <li><a href="terms.html">Terms of Use</a></li>
-            <li><a href="accessibility.html">Accessibility</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Affiliation</h4>
-          <p style="font-size:14px;line-height:1.7;">
-            <strong style="color:var(--color-white);">Board:</strong> RBSE<br>
-            <strong style="color:var(--color-white);">Affiliation No.:</strong> 1234567<br>
-            <strong style="color:var(--color-white);">School Code:</strong> 98765<br>
-            <strong style="color:var(--color-white);">Established:</strong> 2008
-          </p>
-          <div class="social-links mt-4">
-            <a href="#" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-            <a href="#" aria-label="YouTube"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#0B2545"/></svg></a>
-            <a href="#" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>© 2026 Virat Public School. All rights reserved.</span>
-        <span>Built with care for the families of Kotputli.</span>
-      </div>
-    </div>
-  </footer>
+  <div id="vps-footer"></div>
 
-  <script src="js/main.js"></script>
+  <script src="js/partials.js?v=2"></script>
+  <script src="js/main.js?v=2"></script>
+  <script>
+    (async () => {
+      const el = document.getElementById('holidays-list');
+      try {
+        const r = await fetch('/api/holidays');
+        const d = await r.json();
+        if (!d.results || !d.results.length) {
+          el.innerHTML = '<p class="text-center" style="color:var(--color-text-mute);">No holidays published yet.</p>';
+          return;
+        }
+        el.innerHTML = d.results.map(h => {
+          const date = h.holiday_date ? new Date(h.holiday_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+          return '<div class="card"><h3>' + date + '</h3><p>' + (h.name || '') + (h.type ? ' · <span style="color:var(--color-text-mute);font-size:13px;">' + h.type + '</span>' : '') + '</p></div>';
+        }).join('');
+      } catch (e) {
+        el.innerHTML = '<p class="text-center" style="color:var(--color-text-mute);">Could not load holidays.</p>';
+      }
+    })();
+    </script>
 </body>
 </html>
