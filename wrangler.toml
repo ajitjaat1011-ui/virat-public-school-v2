@@ -3,14 +3,7 @@ compatibility_date = "2025-05-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./public"
 
-# Environment variables (set these in Cloudflare Pages → Settings → Environment variables):
-#   TURSO_URL      - libsql://<db>.<org>.turso.io
-#   TURSO_TOKEN    - database auth token
-#   RESEND_API_KEY - (optional) for inquiry notification emails
-#   NOTIFY_EMAIL   - (optional) office email for notifications
-#
-# Optionally bind a D1 database here if you'd rather use D1 instead of Turso.
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "vps-database"
-# database_id = "your-uuid"
+# Environment variables are baked into the worker (see functions/lib/turso.js FALLBACK)
+# For production, override via Cloudflare Pages env vars or `wrangler pages secret put`.
+[vars]
+TURSO_URL = "libsql://virat-public-school-ajitjaat1011-ui.aws-ap-south-1.turso.io"

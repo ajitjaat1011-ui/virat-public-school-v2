@@ -1,7 +1,7 @@
 /**
  * Notices API — D1 (if bound) or Turso (via HTTP).
  */
-import { errorResponse, isDbAvailable, jsonResponse } from '../lib/data.js';
+import { errorResponse, jsonResponse } from '../lib/data.js';
 import { db } from '../lib/db.js';
 
 export async function onRequestGet(context) {

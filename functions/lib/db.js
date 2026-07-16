@@ -23,47 +23,24 @@ export function db(env) {
 }
 
 function makeTursoAdapter(env) {
-  const exec = (sql, params = []) => {
-    const promise = tursoQuery(env, sql, params);
-    return {
-      first: () => promise.then((r) => r.rows?.[0] || null),
-      all: () => promise.then((r) => ({ results: r.rows || [] })),
-      run: () => promise.then((r) => ({
-        success: true,
-        meta: {
-          rows_written: r.rowsAffected || 0,
-          last_row_id: r.lastInsertRowid
-        }
-      })),
-      raw: () => promise
-    };
-  };
   return {
     prepare(sql) {
       let params = [];
+      const exec = () => tursoQuery(env, sql, params);
       return {
         bind(...args) {
           params = args;
-          return {
-            first: () => tursoQuery(env, sql, params).then((r) => r.rows?.[0] || null),
-            all: () => tursoQuery(env, sql, params).then((r) => ({ results: r.rows || [] })),
-            run: () => tursoQuery(env, sql, params).then((r) => ({
-              success: true,
-              meta: { rows_written: r.rowsAffected || 0, last_row_id: r.lastInsertRowid }
-            })),
-            raw: () => tursoQuery(env, sql, params)
-          };
+          return this;
         },
-        // Allow calling .bind(...) chain
-        first: () => tursoQuery(env, sql, []).then((r) => r.rows?.[0] || null),
-        all: () => tursoQuery(env, sql, []).then((r) => ({ results: r.rows || [] })),
-        run: () => tursoQuery(env, sql, []).then((r) => ({
+        first: () => exec().then((r) => r.rows?.[0] || null),
+        all: () => exec().then((r) => ({ results: r.rows || [] })),
+        run: () => exec().then((r) => ({
           success: true,
           meta: { rows_written: r.rowsAffected || 0, last_row_id: r.lastInsertRowid }
-        }))
+        })),
+        raw: () => exec()
       };
     },
-    // Allow direct exec(sql, params)
     exec: (sql, params) => tursoQuery(env, sql, params),
     batch: (stmts) => tursoBatch(env, stmts)
   };
