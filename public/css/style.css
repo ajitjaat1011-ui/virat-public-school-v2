@@ -200,27 +200,35 @@ p  { margin: 0 0 1em; color: var(--color-text-soft); }
 .nav-cta:hover { background: var(--rose-600); }
 
 .menu-toggle {
-  display: none; background: none; border: none; cursor: pointer;
-  width: 40px; height: 40px; padding: 0;
-  flex-direction: column; justify-content: center; gap: 5px;
+  display: none; background: var(--color-surface); border: 1.5px solid var(--color-line); cursor: pointer;
+  width: 44px; height: 44px; padding: 0; border-radius: 12px;
+  flex-direction: column; justify-content: center; align-items: center; gap: 5px;
+  box-shadow: 0 2px 6px rgba(106, 56, 119, 0.06);
 }
 .menu-toggle span {
-  display: block; height: 2px; background: var(--ink-900);
-  border-radius: 2px; transition: 0.2s;
+  display: block; width: 22px; height: 3px; background: #1a1226; border-radius: 3px;
+  transition: transform 0.2s, opacity 0.2s;
 }
-.mobile-menu { display: none; }
+.menu-toggle:hover { background: var(--plum-50); border-color: var(--plum-300); }
+.menu-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.menu-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  padding: var(--s-4) var(--s-5) var(--s-5);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  gap: var(--s-3);
+  box-shadow: 0 8px 20px rgba(106, 56, 119, 0.06);
+}
+.mobile-menu a { padding: 10px 0; color: var(--ink-700); font-size: 16px; }
+.mobile-menu a:hover { color: var(--plum-600); }
 
 @media (max-width: 880px) {
   .primary-nav { display: none; }
   .menu-toggle { display: flex; }
-  .mobile-menu.open {
-    display: flex; flex-direction: column;
-    padding: var(--s-4) var(--s-5) var(--s-5);
-    background: var(--color-surface);
-    border-top: 1px solid var(--color-line);
-    gap: var(--s-3);
-  }
-  .mobile-menu a { padding: 8px 0; color: var(--ink-700); }
+  .mobile-menu.open { display: flex; }
 }
 
 /* === Hero (soft, minimal) === */

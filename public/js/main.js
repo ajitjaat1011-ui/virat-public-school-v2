@@ -2,30 +2,27 @@
    Virat Public School — Main frontend script
    ============================================================ */
 
-// 1) Inject shared layout (top bar, header, footer)
+// 1) Inject shared layout (top bar, header, footer) — synchronously so the menu is ready before DOMContentLoaded
 (function injectPartials() {
-  const s = document.createElement('script');
-  s.src = 'js/partials.js?v=2';
-  s.defer = false;
-  document.head.appendChild(s);
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', 'js/partials.js?v=3', false); // synchronous
+  try {
+    xhr.send(null);
+    if (xhr.status === 200 || xhr.status === 0) {
+      const s = document.createElement('script');
+      s.textContent = xhr.responseText;
+      document.head.appendChild(s);
+    }
+  } catch (e) {
+    // Fallback: load async if XHR fails (e.g. file://)
+    const s = document.createElement('script');
+    s.src = 'js/partials.js?v=3';
+    document.head.appendChild(s);
+  }
 })();
 
-// 2) Mobile menu + page helpers
+// 2) Page helpers
 document.addEventListener('DOMContentLoaded', () => {
-  // Mobile menu (also re-bound after partials inject)
-  const bindMenu = () => {
-    const toggle = document.querySelector('.menu-toggle');
-    const mobile = document.getElementById('mobile-menu');
-    if (toggle && mobile && !toggle.dataset.bound) {
-      toggle.dataset.bound = '1';
-      toggle.addEventListener('click', () => {
-        const open = mobile.classList.toggle('open');
-        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      });
-    }
-  };
-  bindMenu();
-  setTimeout(bindMenu, 50);
 
   // 3) Latest notices
   const noticeEl = document.getElementById('latest-notices');
