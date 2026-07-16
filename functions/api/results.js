@@ -1,7 +1,7 @@
 /**
- * Results API — list recent result sets. D1 with /data/results.json fallback.
+ * Results API — D1 with embedded static fallback.
  */
-import { loadStatic, isD1Available } from '../lib/data.js';
+import { loadStatic, isD1Available, jsonResponse } from '../lib/data.js';
 
 export async function onRequestGet(context) {
   const { env } = context;
@@ -9,9 +9,9 @@ export async function onRequestGet(context) {
     const { results } = await env.DB.prepare(
       'SELECT id, academic_year, exam_name, class_name, declared_at FROM result_sets WHERE deleted_at IS NULL AND is_published = 1 ORDER BY declared_at DESC LIMIT 10'
     ).all();
-    return Response.json({ sets: results });
+    return jsonResponse({ sets: results });
   }
-  const data = await loadStatic(env, 'results.json');
+  const data = loadStatic(env, 'results.json');
   const sets = (data?.resultSets || []).filter((s) => s.is_published !== false);
-  return Response.json({ sets });
+  return jsonResponse({ sets });
 }

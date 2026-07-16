@@ -1,7 +1,7 @@
 /**
- * Holidays API — D1 with /data/holidays.json fallback
+ * Holidays API — D1 with embedded static fallback.
  */
-import { loadStatic, isD1Available } from '../lib/data.js';
+import { loadStatic, isD1Available, jsonResponse } from '../lib/data.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -11,9 +11,9 @@ export async function onRequestGet(context) {
     const { results } = await env.DB.prepare(
       'SELECT id, holiday_date, end_date, name, type FROM holidays WHERE academic_year = ?1 ORDER BY holiday_date ASC'
     ).bind(year).all();
-    return Response.json({ holidays: results });
+    return jsonResponse({ holidays: results });
   }
-  const data = await loadStatic(env, 'holidays.json');
+  const data = loadStatic(env, 'holidays.json');
   const holidays = (data?.holidays || []).filter((h) => h.academic_year === year);
-  return Response.json({ holidays });
+  return jsonResponse({ holidays });
 }

@@ -1,38 +1,32 @@
 /**
- * Admin: Notices CRUD — D1 if available, else read-only from static.
+ * Admin: Notices — D1 (read+write) or static fallback (read-only).
  */
 import { errorResponse, loadStatic, isD1Available, jsonResponse } from '../../lib/data.js';
-import { sanitizeHtml, slugify } from '../../lib/auth.js';
+import { sanitizeHtml, slugify, requireUser, checkOrigin, audit, cuid } from '../../lib/auth.js';
 
 export async function onRequestGet(context) {
   const { env } = context;
   if (!isD1Available(env)) {
-    const data = await loadStatic(env, 'notices.json');
+    const data = loadStatic(env, 'notices.json');
     return jsonResponse({ notices: data?.notices || [], readOnly: true });
   }
-  const { results } = await env.DB.prepare(
-    'SELECT * FROM notices WHERE deleted_at IS NULL ORDER BY publish_date DESC LIMIT 200'
-  ).all();
+  const { results } = await env.DB.prepare('SELECT * FROM notices WHERE deleted_at IS NULL ORDER BY publish_date DESC LIMIT 200').all();
   return jsonResponse({ notices: results });
 }
 
 export async function onRequestPost(context) {
   const { env, request } = context;
   if (!isD1Available(env)) {
-    return errorResponse('Editing content requires D1 to be configured. The current deployment is read-only.', 503);
+    return errorResponse('Editing requires a database. The current deployment is read-only.', 503);
   }
-  // ... rest requires auth + DB; the original lib/auth helpers handle this
-  const { requireUser, checkOrigin, audit, cuid } = await import('../../lib/auth.js');
   const { user, error } = await requireUser(request, env);
   if (error) return errorResponse(error, 401);
   const originErr = checkOrigin(request);
   if (originErr) return errorResponse(originErr, 403);
-
   let body;
   try { body = await request.json(); } catch { return errorResponse('Invalid JSON', 400); }
   if (!body.title || !body.body || !body.category) return errorResponse('Title, body, and category are required', 400);
   if (!['ADMISSION','HOLIDAY','EXAM','PTM','GENERAL'].includes(body.category)) return errorResponse('Invalid category', 400);
-
   const id = cuid();
   let slug = body.slug ? slugify(body.slug) : slugify(body.title);
   const existing = await env.DB.prepare('SELECT id FROM notices WHERE slug = ?1').bind(slug).first();

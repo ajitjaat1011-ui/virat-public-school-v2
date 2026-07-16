@@ -1,7 +1,6 @@
 /**
- * Result lookup — requires BOTH roll number AND DOB.
- * Returns generic error on miss (does not reveal which field was wrong)
- * per Rules.md BR-RES-04. D1 with /data/results.json fallback.
+ * Result lookup — D1 with embedded static fallback.
+ * Per Rules.md BR-RES-04: same generic error on miss regardless of which field was wrong.
  */
 import { errorResponse, loadStatic, isD1Available, jsonResponse } from '../../lib/data.js';
 
@@ -15,7 +14,6 @@ export async function onRequestGet(context) {
     return errorResponse('Roll number and date of birth are required', 400);
   }
 
-  // D1 path (when bound)
   if (isD1Available(env)) {
     const row = await env.DB.prepare(`
       SELECT r.roll_number, r.student_name, r.dob, r.class_name, r.section, r.marks_json,
@@ -28,35 +26,20 @@ export async function onRequestGet(context) {
       LIMIT 1
     `).bind(roll, dob).first();
     if (!row) {
-      return new Response(JSON.stringify({ error: 'No result found' }), {
-        status: 404, headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(JSON.stringify({ error: 'No result found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
     return jsonResponse({
-      roll_number: row.roll_number,
-      student_name: row.student_name,
-      class_name: row.class_name,
-      section: row.section,
-      exam_name: row.exam_name,
-      academic_year: row.academic_year,
-      marks: JSON.parse(row.marks_json),
-      total: row.total,
-      max_total: row.max_total,
-      percentage: row.percentage,
-      grade: row.grade,
-      rank: row.rank
+      roll_number: row.roll_number, student_name: row.student_name, class_name: row.class_name,
+      section: row.section, exam_name: row.exam_name, academic_year: row.academic_year,
+      marks: JSON.parse(row.marks_json), total: row.total, max_total: row.max_total,
+      percentage: row.percentage, grade: row.grade, rank: row.rank
     });
   }
 
-  // Static fallback
-  const data = await loadStatic(env, 'results.json');
-  const set = (data?.resultSets || []).find((s) =>
-    s.results && s.results.some((x) => x.roll_number === roll && x.dob === dob)
-  );
+  const data = loadStatic(env, 'results.json');
+  const set = (data?.resultSets || []).find((s) => s.results && s.results.some((x) => x.roll_number === roll && x.dob === dob));
   if (!set) {
-    return new Response(JSON.stringify({ error: 'No result found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(JSON.stringify({ error: 'No result found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
   }
   const r = set.results.find((x) => x.roll_number === roll && x.dob === dob);
   return jsonResponse({ ...r, exam_name: set.exam_name, academic_year: set.academic_year });

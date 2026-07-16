@@ -1,24 +1,22 @@
 /**
- * Admin: Inquiries — D1 with /data/inquiries.json fallback
+ * Admin: Inquiries — D1 with read-only fallback.
  */
 import { errorResponse, loadStatic, isD1Available, jsonResponse } from '../../lib/data.js';
+import { requireUser, checkOrigin, audit } from '../../lib/auth.js';
 
 export async function onRequestGet(context) {
   const { env } = context;
   if (!isD1Available(env)) {
-    const data = await loadStatic(env, 'inquiries.json');
+    const data = loadStatic(env, 'inquiries.json');
     return jsonResponse({ inquiries: data?.inquiries || [], readOnly: true });
   }
-  const { results } = await env.DB.prepare(
-    'SELECT * FROM admission_inquiries WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 200'
-  ).all();
+  const { results } = await env.DB.prepare('SELECT * FROM admission_inquiries WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 200').all();
   return jsonResponse({ inquiries: results });
 }
 
 export async function onRequestPost(context) {
   const { env, request } = context;
   if (!isD1Available(env)) return errorResponse('Read-only deployment', 503);
-  const { requireUser, checkOrigin, audit, cuid } = await import('../../lib/auth.js');
   const { user, error } = await requireUser(request, env);
   if (error) return errorResponse(error, 401);
   const originErr = checkOrigin(request);

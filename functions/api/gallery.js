@@ -1,7 +1,7 @@
 /**
- * Gallery API — reads from D1 if available, falls back to /data/gallery.json
+ * Gallery API — D1 with embedded static fallback.
  */
-import { errorResponse, loadStatic, isD1Available } from '../lib/data.js';
+import { errorResponse, loadStatic, isD1Available, jsonResponse } from '../lib/data.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -17,10 +17,9 @@ export async function onRequestGet(context) {
       ORDER BY a.event_date DESC
       LIMIT ?1
     `).bind(limit).all();
-    return Response.json({ albums: results });
+    return jsonResponse({ albums: results });
   }
-
-  const data = await loadStatic(env, 'gallery.json');
-  if (!data) return errorResponse('No data available', 500);
-  return Response.json({ albums: (data.albums || []).slice(0, limit) });
+  const data = loadStatic(env, 'gallery.json');
+  if (!data) return errorResponse('No data', 500);
+  return jsonResponse({ albums: (data.albums || []).slice(0, limit) });
 }
