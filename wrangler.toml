@@ -3,10 +3,14 @@ compatibility_date = "2025-05-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./public"
 
-# D1 binding is optional. If you have access to a D1 database, uncomment
-# and update database_id after running:
-#   npx wrangler d1 create vps-database
+# Environment variables (set these in Cloudflare Pages → Settings → Environment variables):
+#   TURSO_URL      - libsql://<db>.<org>.turso.io
+#   TURSO_TOKEN    - database auth token
+#   RESEND_API_KEY - (optional) for inquiry notification emails
+#   NOTIFY_EMAIL   - (optional) office email for notifications
+#
+# Optionally bind a D1 database here if you'd rather use D1 instead of Turso.
 # [[d1_databases]]
 # binding = "DB"
 # database_name = "vps-database"
-# database_id = "your-d1-uuid-here"
+# database_id = "your-uuid"

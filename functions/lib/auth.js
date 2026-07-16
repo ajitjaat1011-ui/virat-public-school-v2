@@ -95,11 +95,13 @@ export function clearSessionCookie(headers) {
 }
 
 // ---------- Session lookup ----------
+import { db } from './db.js';
+
 export async function getCurrentUser(request, env) {
   const cookies = parseCookies(request);
   const sid = cookies[SESSION_COOKIE];
   if (!sid) return null;
-  const session = await env.DB.prepare(
+  const session = await db(env).prepare(
     'SELECT s.id, s.user_id, s.expires_at, u.id as u_id, u.username, u.email, u.name, u.role, u.is_active FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?1'
   ).bind(sid).first();
   if (!session) return null;
@@ -149,10 +151,10 @@ export async function rateLimit(env, key, maxCount, windowSeconds) {
   const now = Math.floor(Date.now() / 1000);
   const windowStart = now - (now % windowSeconds);
   const fullKey = `${key}:${windowStart}`;
-  await env.DB.prepare(
+  await db(env).prepare(
     'INSERT INTO rate_limits (key, count, window_start) VALUES (?1, 1, ?2) ON CONFLICT(key) DO UPDATE SET count = count + 1'
   ).bind(fullKey, new Date(windowStart * 1000).toISOString()).run();
-  const row = await env.DB.prepare('SELECT count FROM rate_limits WHERE key = ?1').bind(fullKey).first();
+  const row = await db(env).prepare('SELECT count FROM rate_limits WHERE key = ?1').bind(fullKey).first();
   if (row && row.count > maxCount) {
     return { limited: true, retryAfter: windowSeconds - (now - windowStart) };
   }
@@ -163,13 +165,13 @@ export async function rateLimit(env, key, maxCount, windowSeconds) {
 export async function cleanupRateLimits(env) {
   try {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    await env.DB.prepare('DELETE FROM rate_limits WHERE window_start < ?1').bind(cutoff).run();
+    await db(env).prepare('DELETE FROM rate_limits WHERE window_start < ?1').bind(cutoff).run();
   } catch (e) { /* ignore */ }
 }
 
 // ---------- Audit log ----------
 export async function audit(env, userId, action, entity, entityId, ip, metadata) {
-  await env.DB.prepare(
+  await db(env).prepare(
     'INSERT INTO audit_log (id, user_id, action, entity, entity_id, ip, metadata) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)'
   ).bind(
     cuid(),
