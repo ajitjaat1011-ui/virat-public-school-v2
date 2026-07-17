@@ -54,7 +54,7 @@ export async function onRequestPost(context) {
   const max_marks = body.max_marks != null ? Number(body.max_marks) : null;
   const syllabus  = body.syllabus ? String(body.syllabus).trim() : null;
   const notes     = body.notes ? String(body.notes).trim() : null;
-  const is_published = body.is_published ? 1 : 0;
+  const is_published = body.is_published === undefined ? 1 : (body.is_published ? 1 : 0);
 
   if (!title)     return errorResponse('Title is required', 400);
   if (!class_name) return errorResponse('Class is required', 400);
