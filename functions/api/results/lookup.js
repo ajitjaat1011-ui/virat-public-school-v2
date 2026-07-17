@@ -19,7 +19,11 @@ export async function onRequestGet(context) {
   `).bind(roll, dob).first();
 
   if (legacy) {
-    const marks = typeof legacy.marks_json === 'string' ? JSON.parse(legacy.marks_json) : (legacy.marks_json || []);
+    const rawMarks = typeof legacy.marks_json === 'string' ? JSON.parse(legacy.marks_json) : (legacy.marks_json || []);
+    // Legacy records store marks as { Subject: number }; the UI consumes rows.
+    const marks = Array.isArray(rawMarks)
+      ? rawMarks
+      : Object.entries(rawMarks).map(([subject, value]) => ({ subject, marks: value, grade: '' }));
     return jsonResponse({
       student: { name: legacy.student_name, class: legacy.class_name, roll: legacy.roll_number },
       roll_number: legacy.roll_number, student_name: legacy.student_name, class_name: legacy.class_name,
