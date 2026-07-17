@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Results | Virat Public School, Kotputli</title>
+  <title>Results | Virat Public School</title>
   <meta name="description" content="Check your school results using your roll number and date of birth." />
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -18,18 +18,18 @@
   <div id="vps-header"></div>
 
   <main id="main">
-
-    <section class="page-header">
-      <div class="container-wide">
-        <span class="section-eyebrow">Results</span>
-        <h1>Check your result.</h1>
-        <p>Enter your roll number and date of birth to see your marks.</p>
-      </div>
-    </section>
+    
+  <section class="page-header">
+    <div class="container-wide">
+      <span class="section-eyebrow">Results</span>
+      <h1>Check your result.</h1>
+      <p>Enter your roll number and date of birth to see your marks.</p>
+    </div>
+  </section>
 
     <section class="section">
       <div class="container-narrow">
-        <form id="result-form" class="form" style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
+        <form id="result-form" class="form reveal" style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="roll">Roll number</label>
@@ -43,52 +43,41 @@
           <button type="submit" class="btn btn-accent btn-lg" style="justify-content:center;">View result</button>
           <p class="form-help text-center">Sample: roll <code>10-001</code>, dob <code>2011-04-12</code></p>
         </form>
-
         <div id="result-out" class="mt-7"></div>
       </div>
     </section>
-
+    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     document.getElementById('result-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const out = document.getElementById('result-out');
       const roll = document.getElementById('roll').value;
       const dob = document.getElementById('dob').value;
-      out.innerHTML = '<p class="text-center" style="color:var(--color-text-mute);">Looking up…</p>';
+      out.innerHTML = '<p class="text-center" style="color:var(--ink-500);">Looking up…</p>';
       try {
         const r = await fetch('/api/results/lookup?roll=' + encodeURIComponent(roll) + '&dob=' + encodeURIComponent(dob));
         const d = await r.json();
-        if (!r.ok || d.error) {
-          out.innerHTML = '<div class="form-error text-center">No result found. Check your roll number and date of birth.</div>';
-          return;
-        }
+        if (!r.ok || d.error) { out.innerHTML = '<div class="form-error-banner show">No result found. Check your roll number and date of birth.</div>'; return; }
         const s = d.student || {};
         const marks = d.marks || [];
-        out.innerHTML = `
-          <div class="table-wrap">
-            <h3 style="margin-bottom:16px;">${escapeHtml(s.name || '')}</h3>
-            <p style="color:var(--color-text-mute);font-size:14px;margin-bottom:16px;">Class ${escapeHtml(s.class || '')} · Roll ${escapeHtml(s.roll || roll)}</p>
-            <table class="table">
-              <thead><tr><th>Subject</th><th>Marks</th><th>Grade</th></tr></thead>
-              <tbody>
-                ${marks.map(m => `<tr><td>${escapeHtml(m.subject)}</td><td>${escapeHtml(String(m.marks))}</td><td>${escapeHtml(m.grade || '')}</td></tr>`).join('')}
-              </tbody>
-            </table>
-            <p style="margin-top:16px;color:var(--plum-700);font-weight:600;">Total: ${escapeHtml(String(d.total || marks.reduce((a,b) => a + Number(b.marks||0), 0)))}</p>
-          </div>`;
-      } catch (err) {
-        out.innerHTML = '<div class="form-error text-center">Could not reach the server. Please try again.</div>';
-      }
+        out.innerHTML = `<div class="table-wrap">
+          <h3 style="margin-bottom:8px;">${esc(s.name || '')}</h3>
+          <p style="color:var(--ink-500);font-size:13px;margin-bottom:16px;">Class ${esc(s.class || '')} · Roll ${esc(s.roll || roll)}</p>
+          <table class="table">
+            <thead><tr><th>Subject</th><th>Marks</th><th>Grade</th></tr></thead>
+            <tbody>${marks.map(m => `<tr><td>${esc(m.subject)}</td><td>${esc(String(m.marks))}</td><td>${esc(m.grade || '')}</td></tr>`).join('')}</tbody>
+          </table>
+          <p style="margin-top:16px;color:var(--plum-700);font-weight:600;">Total: ${esc(String(d.total || marks.reduce((a,b) => a + Number(b.marks||0), 0)))}</p>
+        </div>`;
+      } catch (err) { out.innerHTML = '<div class="form-error-banner show">Could not reach the server. Please try again.</div>'; }
     });
-    function escapeHtml(s) {
-      return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-    }
-  </script>
+    function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+    </script>
 </body>
 </html>

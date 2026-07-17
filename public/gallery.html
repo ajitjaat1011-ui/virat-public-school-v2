@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gallery | Virat Public School, Kotputli</title>
-  <meta name="description" content="Photos from the life of Virat Public School — annual day, sports day, science fairs, and more." />
+  <title>Gallery | Virat Public School</title>
+  <meta name="description" content="Photos from the life of Virat Public School." />
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -18,29 +18,29 @@
   <div id="vps-header"></div>
 
   <main id="main">
-
-    <section class="page-header">
-      <div class="container-wide">
-        <span class="section-eyebrow">Gallery</span>
-        <h1>Moments from school life.</h1>
-        <p>Classrooms, grounds, annual day, sports day, science fairs.</p>
-      </div>
-    </section>
+    
+  <section class="page-header">
+    <div class="container-wide">
+      <span class="section-eyebrow">Gallery</span>
+      <h1>Moments from school life.</h1>
+      <p>Classrooms, grounds, annual day, sports day, science fairs.</p>
+    </div>
+  </section>
 
     <section class="section">
       <div class="container-wide">
-        <div id="gallery-list" class="album-grid">
-          <p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">Loading albums…</p>
+        <div id="gallery-list" class="album-grid stagger">
+          <p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">Loading albums…</p>
         </div>
       </div>
     </section>
-
+    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     (async () => {
       const el = document.getElementById('gallery-list');
@@ -50,28 +50,30 @@
         if (!r.ok) throw new Error('fetch failed');
         const d = await r.json();
         const list = (d && (d.albums || d.results)) || [];
-        if (!list.length) {
-          el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">No albums yet.</p>';
-          return;
-        }
+        if (!list.length) { el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">No albums yet.</p>'; return; }
         el.innerHTML = list.map((a, i) => {
           const date = a.event_date ? new Date(a.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-          return `
-            <a href="album.html?slug=${encodeURIComponent(a.slug)}" class="album-card">
-              <div class="album-thumb ${tones[i % tones.length]}"></div>
-              <div class="album-body">
-                <h3>${escapeHtml(a.title)}</h3>
-                <p>${escapeHtml(date)}</p>
-              </div>
-            </a>`;
+          return `<a href="album.html?slug=${encodeURIComponent(a.slug)}" class="album-card reveal">
+            <div class="album-thumb ${tones[i % tones.length]}">
+              <span class="thumb-shape thumb-shape-1"></span>
+              <span class="thumb-shape thumb-shape-2"></span>
+              <span class="thumb-shape thumb-shape-3"></span>
+            </div>
+            <div class="album-body">
+              <h3>${esc(a.title)}</h3>
+              <p>${esc(date)}</p>
+            </div>
+          </a>`;
         }).join('');
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver(entries => { if (entries[0].isIntersecting) { el.classList.add('in'); io.disconnect(); } }, { threshold: 0.05 });
+          io.observe(el);
+        } else { el.classList.add('in'); }
       } catch (e) {
-        el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">Could not load albums.</p>';
+        el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">Could not load albums.</p>';
       }
-      function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-      }
+      function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
     })();
-  </script>
+    </script>
 </body>
 </html>

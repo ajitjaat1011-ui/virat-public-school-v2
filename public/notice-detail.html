@@ -4,12 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Notice | Virat Public School</title>
+  
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -17,37 +18,33 @@
   <div id="vps-header"></div>
 
   <main id="main">
-
+    
     <section class="page-header">
       <div class="container-narrow">
         <a href="notices.html" style="color:var(--plum-600);font-size:14px;">← All notices</a>
         <span class="section-eyebrow mt-5" id="notice-category" style="display:block;margin-top:16px;">Notice</span>
         <h1 id="notice-title" class="mt-4" style="margin-top:16px;">Loading…</h1>
-        <p id="notice-date" style="color:var(--color-text-mute);font-size:14px;"></p>
+        <p id="notice-date" style="color:var(--ink-500);font-size:14px;"></p>
       </div>
     </section>
-
     <section class="section">
       <div class="container-narrow">
         <article id="notice-body" class="prose" style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
-          <p style="color:var(--color-text-mute);">Loading…</p>
+          <p style="color:var(--ink-500);">Loading…</p>
         </article>
       </div>
     </section>
-
+    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     (async () => {
       const id = new URLSearchParams(location.search).get('id');
-      if (!id) {
-        document.getElementById('notice-title').textContent = 'Notice not found';
-        return;
-      }
+      if (!id) { document.getElementById('notice-title').textContent = 'Notice not found'; return; }
       try {
         const r = await fetch('/api/notices/' + encodeURIComponent(id));
         if (!r.ok) throw new Error('fetch failed');
@@ -63,6 +60,6 @@
         document.getElementById('notice-body').innerHTML = '<p>This notice may have been removed or the link is wrong.</p><a href="notices.html" class="btn btn-ghost">View all notices</a>';
       }
     })();
-  </script>
+    </script>
 </body>
 </html>

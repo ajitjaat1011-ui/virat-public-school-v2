@@ -4,41 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admissions 2026-27 | Virat Public School</title>
-  <meta name="description" content="Apply for admission to Virat Public School, Kotputli for the 2026-27 academic year. LKG to Class 11." />
+  <meta name="description" content="Apply for admission to Virat Public School, Kotputli for the 2026-27 academic year." />
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
-  <style>
-    .form-error-banner {
-      background: #ffe5ec;
-      color: #d63e6b;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-size: 14px;
-      text-align: center;
-      margin-top: 12px;
-      display: none;
-    }
-    .form-success-banner {
-      background: #d6f0e3;
-      color: #2f9e6b;
-      padding: 16px;
-      border-radius: 18px;
-      font-size: 15px;
-      text-align: center;
-      margin-top: 16px;
-      display: none;
-    }
-    .form-error-banner.show, .form-success-banner.show { display: block; }
-    .honeypot { position: absolute; left: -9999px; top: -9999px; opacity: 0; }
-    .form-input[aria-invalid="true"], .form-textarea[aria-invalid="true"], .form-select[aria-invalid="true"] {
-      border-color: #d63e6b;
-      box-shadow: 0 0 0 4px #ffe5ec;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -46,21 +18,21 @@
   <div id="vps-header"></div>
 
   <main id="main">
-
-    <section class="page-header">
-      <div class="container-wide">
-        <span class="section-eyebrow">Admissions 2026-27</span>
-        <h1>A few seats remain.<br>Apply gently.</h1>
-        <p>Online applications for LKG through Class 11. Our office replies within a working day.</p>
-      </div>
-    </section>
+    
+  <section class="page-header">
+    <div class="container-wide">
+      <span class="section-eyebrow">Admissions 2026-27</span>
+      <h1>A few seats remain.<br>Apply gently.</h1>
+      <p>Online applications for LKG through Class 11. Our office replies within a working day.</p>
+    </div>
+  </section>
 
     <section class="section">
       <div class="container-narrow">
-        <div class="prose">
-          <h2>How it works</h2>
-          <p>Four small steps. Nothing dramatic.</p>
-          <ol>
+        <div class="prose stagger">
+          <h2 class="reveal">How it works</h2>
+          <p class="reveal">Four small steps. Nothing dramatic.</p>
+          <ol class="reveal">
             <li><strong>Send an inquiry.</strong> Fill the form below — it takes two minutes.</li>
             <li><strong>Visit us.</strong> Come to the campus, see the classrooms, meet the teachers.</li>
             <li><strong>Submit documents.</strong> Birth certificate, previous report card, Aadhaar, four photographs.</li>
@@ -73,15 +45,12 @@
     <section class="section section-soft" id="inquiry">
       <div class="container-narrow">
         <div class="text-center mb-6">
-          <span class="section-eyebrow">Inquiry form</span>
-          <h2 class="section-title">Tell us about your child.</h2>
-          <p>We'll get back to you within a working day.</p>
+          <span class="section-eyebrow reveal">Inquiry form</span>
+          <h2 class="section-title reveal">Tell us about your child.</h2>
+          <p class="reveal">We'll get back to you within a working day.</p>
         </div>
-
-        <form id="inquiry-form" class="form" novalidate style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
-          <!-- honeypot -->
+        <form id="inquiry-form" class="form reveal" novalidate style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
           <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
-
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="parent_name">Parent's name</label>
@@ -92,12 +61,10 @@
               <input class="form-input" type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="10-digit number" inputmode="numeric" />
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="email">Email <span style="color:var(--ink-500);font-weight:400;">(optional)</span></label>
             <input class="form-input" type="email" id="email" name="email" autocomplete="email" />
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="student_name">Child's name</label>
@@ -108,7 +75,6 @@
               <input class="form-input" type="date" id="dob" name="dob" />
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="applying_for">Applying for class</label>
             <select class="form-select" id="applying_for" name="applying_for" required>
@@ -120,17 +86,14 @@
               <option>Class 10</option><option>Class 11</option>
             </select>
           </div>
-
           <div class="form-group">
             <label class="form-label" for="message">Anything we should know? <span style="color:var(--ink-500);font-weight:400;">(optional)</span></label>
             <textarea class="form-textarea" id="message" name="message" rows="3" placeholder="Allergies, learning needs, siblings already at VPS…"></textarea>
           </div>
-
           <button type="submit" class="btn btn-accent btn-lg" id="submit-btn" style="justify-content:center;">Send inquiry</button>
           <p class="form-help text-center">By submitting, you agree to our <a href="privacy.html">privacy policy</a>.</p>
-
           <div id="form-error" class="form-error-banner" role="alert"></div>
-          <div id="form-success" class="form-success-banner" role="status">
+          <div id="form-success" class="form-success" role="status">
             <strong>Thank you.</strong> We've received your note and will reply within a working day.
           </div>
         </form>
@@ -139,88 +102,67 @@
 
     <section class="section">
       <div class="container-narrow">
-        <div class="prose">
-          <h2>What to bring on visit day</h2>
-          <ul>
+        <div class="prose stagger">
+          <h2 class="reveal">What to bring on visit day</h2>
+          <ul class="reveal">
             <li>Birth certificate of the child (original + photocopy)</li>
             <li>Previous year's report card (if applicable)</li>
             <li>Aadhaar card of parent and child</li>
             <li>Four recent passport-size photographs</li>
             <li>Transfer certificate (for Class 2 and above)</li>
           </ul>
-          <p>For fee details, see our <a href="admissions-fee.html">fee structure</a>.</p>
+          <p class="reveal">For fee details, see our <a href="admissions-fee.html">fee structure</a>.</p>
         </div>
       </div>
     </section>
-
+    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=4"></script>
-  <script src="js/main.js?v=4"></script>
+  <script src="js/partials.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     (function () {
       const form = document.getElementById('inquiry-form');
       const btn = document.getElementById('submit-btn');
       const errBox = document.getElementById('form-error');
       const okBox = document.getElementById('form-success');
-
       function showError(msg) {
-        errBox.textContent = msg;
-        errBox.classList.add('show');
+        errBox.textContent = msg; errBox.classList.add('show');
         okBox.classList.remove('show');
         errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-      function clearError() {
-        errBox.classList.remove('show');
-      }
-
-      // Phone: strip non-digits on input
       const phoneEl = document.getElementById('phone');
       phoneEl.addEventListener('input', () => {
-        const digits = phoneEl.value.replace(/\D/g, '').slice(-10);
-        phoneEl.value = digits;
+        phoneEl.value = phoneEl.value.replace(/\D/g, '').slice(-10);
         phoneEl.setAttribute('aria-invalid', 'false');
       });
-
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        clearError();
-        // Reset invalid states
+        errBox.classList.remove('show');
         form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.setAttribute('aria-invalid', 'false'));
-
         const data = Object.fromEntries(new FormData(form));
-        // Client-side quick checks
-        if (!data.parent_name) { showError('Please tell us the parent\'s name.'); document.getElementById('parent_name').setAttribute('aria-invalid','true'); return; }
+        if (!data.parent_name)  { showError('Please tell us the parent\'s name.'); document.getElementById('parent_name').setAttribute('aria-invalid','true'); return; }
         if (!data.student_name) { showError('Please tell us the child\'s name.'); document.getElementById('student_name').setAttribute('aria-invalid','true'); return; }
         if (!data.applying_for) { showError('Please choose a class.'); document.getElementById('applying_for').setAttribute('aria-invalid','true'); return; }
-        if (!data.phone) { showError('Please share a phone number.'); document.getElementById('phone').setAttribute('aria-invalid','true'); return; }
+        if (!data.phone)         { showError('Please share a phone number.'); document.getElementById('phone').setAttribute('aria-invalid','true'); return; }
         if (!/^[6-9]\d{9}$/.test(data.phone)) { showError('Phone number must be 10 digits, starting with 6, 7, 8 or 9.'); document.getElementById('phone').setAttribute('aria-invalid','true'); return; }
         if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { showError('Please enter a valid email.'); document.getElementById('email').setAttribute('aria-invalid','true'); return; }
-
         btn.disabled = true; btn.textContent = 'Sending…';
         try {
-          const r = await fetch('/api/inquiries', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify(data)
-          });
+          const r = await fetch('/api/inquiries', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
           const out = await r.json().catch(() => ({}));
           if (r.ok && out.ok) {
-            okBox.classList.add('show');
-            form.reset();
+            okBox.classList.add('show'); form.reset();
             okBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
           } else {
-            showError(out.error || `Could not send (${r.status}). Please call +91 90000 00000.`);
+            showError(out.error || 'Could not send (' + r.status + '). Please call +91 90000 00000.');
           }
-        } catch (err) {
-          showError('Network error. Please try again or call +91 90000 00000.');
-        } finally {
-          btn.disabled = false; btn.textContent = 'Send inquiry';
-        }
+        } catch (err) { showError('Network error. Please try again or call +91 90000 00000.'); }
+        finally { btn.disabled = false; btn.textContent = 'Send inquiry'; }
       });
     })();
-  </script>
+    </script>
 </body>
 </html>

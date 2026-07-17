@@ -4,12 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Album | Virat Public School</title>
+  
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -17,29 +18,28 @@
   <div id="vps-header"></div>
 
   <main id="main">
-
+    
     <section class="page-header">
       <div class="container-narrow">
         <a href="gallery.html" style="color:var(--plum-600);font-size:14px;">← All albums</a>
         <h1 id="album-title" class="mt-4" style="margin-top:16px;">Loading…</h1>
-        <p id="album-date" style="color:var(--color-text-mute);"></p>
+        <p id="album-date" style="color:var(--ink-500);"></p>
       </div>
     </section>
-
     <section class="section">
       <div class="container-wide">
-        <div id="album-photos" class="album-grid">
-          <p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">Loading…</p>
+        <div id="album-photos" class="album-grid stagger">
+          <p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">Loading…</p>
         </div>
       </div>
     </section>
-
+    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     (async () => {
       const slug = new URLSearchParams(location.search).get('slug');
@@ -55,23 +55,21 @@
         const photos = a.photos || [];
         const el = document.getElementById('album-photos');
         if (!photos.length) {
-          el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">No photos in this album yet.</p>';
+          el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">No photos in this album yet.</p>';
         } else {
-          el.innerHTML = photos.map((p, i) => `
-            <div class="album-card">
-              <div class="album-thumb ${tones[i % tones.length]}" style="aspect-ratio:1/1;"></div>
-              ${p.caption ? '<div class="album-body"><p>' + escapeHtml(p.caption) + '</p></div>' : ''}
-            </div>
-          `).join('');
+          el.innerHTML = photos.map((p, i) => `<div class="album-card reveal">
+            <div class="album-thumb ${tones[i % tones.length]}" style="aspect-ratio:1/1;">
+              <span class="thumb-shape thumb-shape-1"></span>
+              <span class="thumb-shape thumb-shape-2"></span>
+            </div>${p.caption ? '<div class="album-body"><p>' + esc(p.caption) + '</p></div>' : ''}
+          </div>`).join('');
         }
       } catch (e) {
         document.getElementById('album-title').textContent = 'Album not found';
         document.getElementById('album-photos').innerHTML = '<p class="text-center" style="grid-column:1/-1;">This album may have been removed.</p>';
       }
-      function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-      }
+      function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
     })();
-  </script>
+    </script>
 </body>
 </html>

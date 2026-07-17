@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Faculty | Virat Public School, Kotputli</title>
+  <title>Faculty | Virat Public School</title>
   <meta name="description" content="Meet the teachers and staff of Virat Public School, Kotputli." />
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -18,29 +18,29 @@
   <div id="vps-header"></div>
 
   <main id="main">
-
-    <section class="page-header">
-      <div class="container-wide">
-        <span class="section-eyebrow">Faculty</span>
-        <h1>The people who teach here.</h1>
-        <p>Sixty-five teachers. Many of them have been with us for over a decade.</p>
-      </div>
-    </section>
+    
+  <section class="page-header">
+    <div class="container-wide">
+      <span class="section-eyebrow">Faculty</span>
+      <h1>The people who teach here.</h1>
+      <p>Sixty-five teachers. Many of them have been with us for over a decade.</p>
+    </div>
+  </section>
 
     <section class="section">
       <div class="container-wide">
-        <div id="faculty-list" class="faculty-grid">
-          <p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">Loading…</p>
+        <div id="faculty-list" class="faculty-grid stagger">
+          <p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">Loading…</p>
         </div>
       </div>
     </section>
-
+    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     (async () => {
       const el = document.getElementById('faculty-list');
@@ -49,27 +49,25 @@
         if (!r.ok) throw new Error('fetch failed');
         const d = await r.json();
         const list = (d && (d.faculty || d.results)) || [];
-        if (!list.length) {
-          el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">No faculty listed yet.</p>';
-          return;
-        }
+        if (!list.length) { el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">No faculty listed yet.</p>'; return; }
         el.innerHTML = list.map(f => {
           const initials = (f.name || '').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
-          return `
-            <div class="faculty-card">
-              <div class="faculty-avatar">${initials}</div>
-              <h3>${escapeHtml(f.name)}</h3>
-              <p class="role">${escapeHtml(f.designation || 'Teacher')}</p>
-              <p class="meta">${escapeHtml(f.department || '')}${f.qualification ? ' · ' + escapeHtml(f.qualification) : ''}</p>
-            </div>`;
+          return `<div class="faculty-card reveal">
+            <div class="faculty-avatar">${initials}</div>
+            <h3>${esc(f.name)}</h3>
+            <p class="role">${esc(f.designation || 'Teacher')}</p>
+            <p class="meta">${esc(f.department || '')}${f.qualification ? ' · ' + esc(f.qualification) : ''}</p>
+          </div>`;
         }).join('');
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver(entries => { if (entries[0].isIntersecting) { el.classList.add('in'); io.disconnect(); } }, { threshold: 0.1 });
+          io.observe(el);
+        } else { el.classList.add('in'); }
       } catch (e) {
-        el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--color-text-mute);">Could not load faculty right now.</p>';
+        el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">Could not load faculty right now.</p>';
       }
-      function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-      }
+      function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
     })();
-  </script>
+    </script>
 </body>
 </html>

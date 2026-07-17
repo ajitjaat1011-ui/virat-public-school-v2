@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Notices | Virat Public School, Kotputli</title>
-  <meta name="description" content="Latest notices, announcements, and circulars from Virat Public School." />
+  <title>Notices | Virat Public School</title>
+  <meta name="description" content="Latest notices and announcements from Virat Public School." />
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -18,29 +18,29 @@
   <div id="vps-header"></div>
 
   <main id="main">
-
-    <section class="page-header">
-      <div class="container-wide">
-        <span class="section-eyebrow">Notices</span>
-        <h1>What's happening at school.</h1>
-        <p>Holiday lists, exam dates, PTM schedules, and other announcements.</p>
-      </div>
-    </section>
+    
+  <section class="page-header">
+    <div class="container-wide">
+      <span class="section-eyebrow">Notices</span>
+      <h1>What's happening at school.</h1>
+      <p>Holiday lists, exam dates, PTM schedules, and other announcements.</p>
+    </div>
+  </section>
 
     <section class="section">
-      <div class="container-wide" style="max-width:720px;">
-        <div id="notices-list" class="notice-list">
-          <p class="text-center" style="color:var(--color-text-mute);">Loading…</p>
+      <div class="container-wide" style="max-width:760px;">
+        <div id="notices-list" class="notice-list stagger">
+          <p class="text-center" style="color:var(--ink-500);">Loading…</p>
         </div>
       </div>
     </section>
-
+    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/partials.js?v=5"></script>
+  <script src="js/main.js?v=5"></script>
   <script>
     (async () => {
       const el = document.getElementById('notices-list');
@@ -49,26 +49,24 @@
         if (!r.ok) throw new Error('fetch failed');
         const d = await r.json();
         const list = (d && (d.notices || d.results)) || [];
-        if (!list.length) {
-          el.innerHTML = '<p class="text-center" style="color:var(--color-text-mute);">No notices yet.</p>';
-          return;
-        }
+        if (!list.length) { el.innerHTML = '<p class="text-center" style="color:var(--ink-500);">No notices yet.</p>'; return; }
         el.innerHTML = list.map(n => {
           const date = (n.publish_date || n.published_at || n.created_at) ? new Date(n.publish_date || n.published_at || n.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-          return `
-            <a href="notice-detail.html?id=${encodeURIComponent(n.id)}" class="notice-item">
-              <span class="notice-tag">${escapeHtml(n.category || 'Notice')}</span>
-              <h3>${escapeHtml(n.title)}</h3>
-              <div class="notice-meta">${escapeHtml(date)}</div>
-            </a>`;
+          return `<a href="notice-detail.html?id=${encodeURIComponent(n.id)}" class="notice-item reveal">
+            <span class="notice-tag">${esc(n.category || 'Notice')}</span>
+            <h3>${esc(n.title)}</h3>
+            <div class="notice-meta">${esc(date)}</div>
+          </a>`;
         }).join('');
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver(entries => { if (entries[0].isIntersecting) { el.classList.add('in'); io.disconnect(); } }, { threshold: 0.05 });
+          io.observe(el);
+        } else { el.classList.add('in'); }
       } catch (e) {
-        el.innerHTML = '<p class="text-center" style="color:var(--color-text-mute);">Could not load notices.</p>';
+        el.innerHTML = '<p class="text-center" style="color:var(--ink-500);">Could not load notices.</p>';
       }
-      function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-      }
+      function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
     })();
-  </script>
+    </script>
 </body>
 </html>
