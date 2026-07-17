@@ -56,10 +56,10 @@ export async function onRequestPost(context) {
   const notes     = body.notes ? String(body.notes).trim() : null;
   const is_published = body.is_published === undefined ? 1 : (body.is_published ? 1 : 0);
 
-  if (!title)     return errorResponse('Title is required', 400);
   if (!class_name) return errorResponse('Class is required', 400);
   if (!subject)   return errorResponse('Subject is required', 400);
   if (!exam_date) return errorResponse('Exam date is required', 400);
+  if (!title)     title = `${subject} — ${class_name}`;
 
   const id = 'exm_' + cuid();
   try {
