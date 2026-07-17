@@ -82,3 +82,4 @@ export async function onRequestGet(context) {
     results
   });
 }
+// date range v2 - no upper bound
