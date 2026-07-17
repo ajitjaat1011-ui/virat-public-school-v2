@@ -72,6 +72,7 @@
               <li><a href="infrastructure.html">Campus</a></li>
               <li><a href="faculty.html">Faculty</a></li>
               <li><a href="gallery.html">Gallery</a></li>
+              <li><a href="animations.html">Animation lab</a></li>
             </ul>
           </div>
           <div>

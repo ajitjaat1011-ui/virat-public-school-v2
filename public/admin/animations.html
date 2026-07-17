@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Animation Lab (reference) | Virat Public School Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=3" />
+  <link rel="stylesheet" href="/css/animations.css?v=1" />
+  <style>
+    .lab-wrap { background: var(--cream); }
+    .lab-wrap .lab-section { padding: 48px 0; }
+    .lab-wrap .lab-hero { padding: 56px 0 40px; }
+  </style>
+</head>
+<body class="admin-body">
+  <header class="admin-header">
+    <div class="container-wide">
+      <div class="admin-header-inner">
+        <a href="/admin/" class="admin-brand">
+          <span class="logo">V</span>
+          <div><div class="name">VPS Admin</div><div class="sub">Animation Lab</div></div>
+        </a>
+        <nav class="admin-nav" aria-label="Admin">
+          <a href="/admin/">Dashboard</a>
+          <a href="/admin/notices.html">Notices</a>
+          <a href="/admin/inquiries.html">Inquiries</a>
+          <a href="/admin/messages.html">Messages</a>
+          <a href="/admin/animations.html" class="active">Lab</a>
+          <a href="/animations.html" target="_blank">↗ Public</a>
+        </nav>
+        <div class="admin-user">
+          <button class="logout" id="logout-btn">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main lab-wrap">
+    <div class="container-wide">
+      <p style="font-size:13px;color:var(--ink-500);text-align:center;margin-bottom:32px;">
+        All 31 animation techniques used across the VPS site. This is a private admin reference — the same page is publicly available at <a href="/animations.html" target="_blank">/animations.html</a>.
+      </p>
+    </div>
+
+    <div id="lab-mount"></div>
+  </main>
+
+  <div id="toast-area"></div>
+
+  <script>
+  (async function () {
+    const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
+    if (!me || !me.user) { location.href = '/admin/login.html'; return; }
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await fetch('/api/admin/auth', { method: 'DELETE' });
+      location.href = '/admin/login.html';
+    });
+  })();
+  </script>
+
+  <script>
+  // Load the public animations page contents into the admin iframe-like container
+  (async function () {
+    try {
+      const r = await fetch('/animations.html');
+      const html = await r.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const main = doc.querySelector('main#main');
+      const styles = doc.querySelectorAll('link[rel="stylesheet"]');
+      // Inject the animations CSS and any other needed styles
+      styles.forEach((s) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = s.getAttribute('href');
+        document.head.appendChild(link);
+      });
+      // Load the animations.js
+      const scripts = doc.querySelectorAll('script[src]');
+      scripts.forEach((s) => {
+        if (s.src.includes('animations.js')) {
+          const sc = document.createElement('script');
+          sc.src = s.getAttribute('src');
+          document.body.appendChild(sc);
+        }
+      });
+      // Mount the main content
+      if (main) {
+        document.getElementById('lab-mount').innerHTML = main.innerHTML;
+        // Re-init partials (inject header/footer is already done above)
+        // But we need to also load the lab page's script
+        const labScripts = main.parentNode.querySelectorAll('script');
+        labScripts.forEach((s) => { if (s.src && s.src.includes('animations.js')) { /* already added */ } });
+      }
+    } catch (e) {
+      document.getElementById('lab-mount').innerHTML = '<p class="text-center" style="padding:48px;color:var(--ink-500);">Could not load animation lab. Visit the <a href="/animations.html">public version</a> instead.</p>';
+    }
+  })();
+  </script>
+</body>
+</html>

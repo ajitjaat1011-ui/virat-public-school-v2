@@ -29,6 +29,7 @@
           <a href="/admin/inquiries.html">Inquiries</a>
           <a href="/admin/messages.html">Messages</a>
           <a href="/admin/audit.html">Audit</a>
+          <a href="/admin/animations.html" style="background:rgba(255,255,255,0.1);">Lab</a>
         </nav>
         <div class="admin-user">
           <span id="admin-name">…</span>
@@ -87,9 +88,13 @@
       </div>
 
       <div class="form-card" style="margin-top:24px;">
-        <h2 style="margin-bottom:16px;">Account</h2>
-        <p class="text-mute" style="font-size:14px;margin-bottom:16px;">Change your admin password.</p>
-        <button class="btn btn-ghost" onclick="document.getElementById('pw-modal').classList.add('open')">Change password</button>
+        <h2 style="margin-bottom:8px;">Design resources</h2>
+        <p class="text-mute" style="font-size:14px;margin-bottom:16px;">Reference materials for the VPS design system.</p>
+        <div class="flex" style="gap:8px;flex-wrap:wrap;">
+          <a href="/admin/animations.html" class="btn btn-ghost">Animation Lab</a>
+          <a href="/animations.html" target="_blank" class="btn btn-ghost">Public Lab →</a>
+          <button class="btn btn-ghost" onclick="document.getElementById('pw-modal').classList.add('open')">Change password</button>
+        </div>
       </div>
     </div>
   </main>
