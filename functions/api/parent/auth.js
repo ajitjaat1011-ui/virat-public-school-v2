@@ -10,7 +10,7 @@ import { db } from '../../lib/db.js';
 import {
   hashPassword, verifyPassword, cuid,
   setParentSessionCookie, clearParentSessionCookie,
-  getCurrentParent, checkOrigin, audit
+  getCurrentParent, checkOrigin, audit, rateLimit
 } from '../../lib/auth.js';
 
 const SESSION_COOKIE = 'vps_parent';
@@ -109,6 +109,11 @@ async function register(request, env, body) {
 
 // === Login (only for APPROVED parents) ===
 async function login(request, env, body) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  try {
+    const limit = await rateLimit(env, 'parent-login:' + ip, 12, 15 * 60);
+    if (limit.limited) return errorResponse('Too many login attempts. Please try again later.', 429);
+  } catch (_) {}
   const phone    = String(body.phone || '').trim().replace(/[^\d]/g, '');
   const password = String(body.password || '');
   if (!phone || !password) return errorResponse('Mobile number and password are required', 400);

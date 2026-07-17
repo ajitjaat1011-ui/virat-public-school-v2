@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/css/style.css?v=14" />
   <style>
     body.has-dock .auth-wrap { min-height: calc(100vh - 90px); }
+    .password-toggle { align-self:flex-end; margin-top:-4px; border:0; background:transparent; color:var(--pink-600); font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:4px 0; }
   </style>
 </head>
 <body>
@@ -37,7 +38,7 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="password">Password</label>
-            <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters" />
+            <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters" /> <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
           </div>
           <div id="loginError" class="form-error-banner" role="alert"></div>
           <button type="submit" class="btn btn-pink btn-lg" id="loginBtn">Sign in</button>
@@ -57,6 +58,15 @@
       const form = document.getElementById('loginForm');
       const errEl = document.getElementById('loginError');
       const btn   = document.getElementById('loginBtn');
+
+      document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
+        toggle.addEventListener('click', () => {
+          const input = document.getElementById(toggle.dataset.passwordToggle);
+          const visible = input.type === 'text';
+          input.type = visible ? 'password' : 'text';
+          toggle.textContent = visible ? 'Show' : 'Hide';
+        });
+      });
 
       function showError(msg) { errEl.textContent = msg; errEl.classList.add('show'); }
       function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; }
