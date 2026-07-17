@@ -150,12 +150,27 @@
           toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
           toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
         });
-        // Close menu when a link is clicked
+        // Close menu when a link is clicked — do NOT preventDefault
         mobile.querySelectorAll('a').forEach(a => {
-          a.addEventListener('click', () => {
+          a.addEventListener('click', (e) => {
+            // Let the browser handle the navigation
             mobile.classList.remove('open');
             toggle.setAttribute('aria-expanded', 'false');
           });
+        });
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+          if (!mobile.classList.contains('open')) return;
+          if (mobile.contains(e.target) || toggle.contains(e.target)) return;
+          mobile.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+        });
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && mobile.classList.contains('open')) {
+            mobile.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
+          }
         });
       }
     };
