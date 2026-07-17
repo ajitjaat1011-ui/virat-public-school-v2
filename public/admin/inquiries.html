@@ -3,108 +3,63 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Inquiries | Virat Public School Admin</title>
+  <title>Inquiries · VPS Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=5" />
   <style>
-    /* Inquiries specific — clean card list, not a wide table */
-    .inquiry-list { display: flex; flex-direction: column; gap: 12px; max-width: 920px; }
-    .inquiry-card {
-      background: var(--paper); border-radius: 18px;
-      padding: 20px 24px;
-      box-shadow: 0 2px 10px rgba(106, 56, 119, 0.04);
-      transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-    .inquiry-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(106, 56, 119, 0.08); }
-    .inquiry-card.is-new { border-left: 3px solid var(--rose-500); }
-    .inquiry-card.is-new::before {
-      content: 'NEW'; position: absolute; top: 20px; right: 24px;
-      background: var(--rose-100); color: var(--rose-600);
-      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-      padding: 3px 8px; border-radius: 999px;
-    }
-    .inquiry-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
-    .inquiry-name { font-size: 1.1rem; font-weight: 600; color: var(--ink-900); font-family: 'Inter', sans-serif; }
-    .inquiry-class { font-size: 13px; color: var(--plum-600); font-weight: 600; padding: 2px 10px; background: var(--plum-50); border-radius: 999px; }
-    .inquiry-meta { font-size: 13px; color: var(--ink-500); margin-bottom: 12px; }
-    .inquiry-meta a { color: var(--plum-600); }
-    .inquiry-msg { color: var(--ink-700); font-size: 14px; line-height: 1.55; margin: 0 0 16px; padding: 12px 14px; background: var(--cream); border-radius: 12px; }
-    .inquiry-msg.empty { color: var(--ink-500); font-style: italic; }
-    .inquiry-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .inquiry-actions .spacer { flex: 1; }
-    .inquiry-actions .btn { padding: 8px 14px; font-size: 13px; }
-    .inquiry-actions .when { font-size: 12px; color: var(--ink-500); }
-    .inquiry-card[data-status="CONTACTED"] { opacity: 0.7; }
-    .inquiry-card[data-status="ADMITTED"] { background: linear-gradient(135deg, #f0fff5, var(--paper)); }
-    .inquiry-card[data-status="REJECTED"] { opacity: 0.5; }
-
-    /* Filter bar */
-    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; max-width: 920px; }
-    .filter-bar input, .filter-bar select { min-height: 40px; padding: 8px 14px; border: 1.5px solid var(--ink-100); border-radius: 12px; background: var(--paper); font-family: inherit; font-size: 14px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .toolbar .count { font-size: 13px; color: var(--ink-3); }
+    .toolbar .count strong { color: var(--ink-1); }
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-bar input, .filter-bar select { min-height: 38px; padding: 8px 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--r-md); color: var(--ink-1); font: inherit; font-size: 13px; }
     .filter-bar input { flex: 1; min-width: 200px; }
-    .filter-bar select { min-width: 160px; }
-
-    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; max-width: 920px; flex-wrap: wrap; gap: 12px; }
-    .toolbar .count { font-size: 14px; color: var(--ink-500); }
-    .toolbar .count strong { color: var(--plum-700); font-weight: 600; }
-
-    /* Empty */
-    .empty { text-align: center; padding: 60px 24px; color: var(--ink-500); }
-    .empty h3 { color: var(--ink-700); font-family: 'Inter', sans-serif; margin-bottom: 8px; }
+    .filter-bar input::placeholder { color: var(--ink-3); }
+    .filter-bar input:focus, .filter-bar select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(168,98,180,0.18); }
+    .inquiry-card { display: flex; gap: 14px; padding: 16px 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--r-md); margin-bottom: 8px; transition: border-color 0.15s, background 0.15s; position: relative; }
+    .inquiry-card:hover { border-color: var(--glass-border-strong); background: var(--glass-bg-hover); }
+    .inquiry-card.is-new { border-left: 3px solid var(--rose); }
+    .inquiry-card.is-admitted { background: linear-gradient(90deg, rgba(47,158,107,0.06), var(--glass-bg)); }
+    .inquiry-card.is-rejected { opacity: 0.55; }
+    .inquiry-card .body { flex: 1; min-width: 0; }
+    .inquiry-card .head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .inquiry-card .name { font-size: 15px; font-weight: 500; color: var(--ink-1); }
+    .inquiry-card .meta { font-size: 12px; color: var(--ink-3); margin-bottom: 8px; }
+    .inquiry-card .msg { color: var(--ink-2); font-size: 13px; line-height: 1.5; padding: 10px 12px; background: rgba(0,0,0,0.18); border-radius: var(--r-sm); margin: 0 0 10px; }
+    .inquiry-card .msg.empty { color: var(--ink-3); font-style: italic; }
+    .inquiry-card .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .inquiry-card .when { margin-left: auto; font-size: 12px; color: var(--ink-3); }
   </style>
 </head>
 <body class="admin-body">
-  <header class="admin-header">
-    <div class="container-wide">
-      <div class="admin-header-inner">
-        <a href="/admin/" class="admin-brand">
-          <span class="logo">V</span>
-          <div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div>
-        </a>
-        <nav class="admin-nav" aria-label="Admin">
-          <a href="/admin/">Dashboard</a>
-          <a href="/admin/notices.html">Notices</a>
-          <a href="/admin/gallery.html">Gallery</a>
-          <a href="/admin/results.html">Results</a>
-          <a href="/admin/inquiries.html" class="active">Inquiries</a>
-          <a href="/admin/messages.html">Messages</a>
-          <a href="/admin/audit.html">Audit</a>
-        </nav>
-        <div class="admin-user">
-          <span id="admin-name">…</span>
-          <button class="logout" id="logout-btn">Sign out</button>
-        </div>
+  <div id="app-root"></div>
+  <div id="page-content" style="display:none;">
+    <div class="page-head">
+      <div>
+        <h1>Admission inquiries</h1>
+        <p>All submitted admission inquiries. Click a card to see full details, or update status inline.</p>
       </div>
     </div>
-  </header>
 
-  <main class="admin-main">
-    <div class="container-wide">
-      <h1 class="page-title">Admission Inquiries</h1>
-      <p class="page-sub">All submitted admission inquiries. Click a card to see full details, or update status inline.</p>
-
-      <div class="toolbar">
-        <div class="count" id="count">Loading…</div>
-      </div>
-
-      <div class="filter-bar">
-        <input type="text" id="search" placeholder="Search by name, phone, or class…" />
-        <select id="filter-status">
-          <option value="">All statuses</option>
-          <option value="NEW">New only</option>
-          <option value="CONTACTED">Contacted</option>
-          <option value="ADMITTED">Admitted</option>
-          <option value="REJECTED">Rejected</option>
-        </select>
-      </div>
-
-      <div id="list" class="inquiry-list"></div>
+    <div class="toolbar">
+      <div class="count" id="count">Loading…</div>
     </div>
-  </main>
+
+    <div class="filter-bar">
+      <input type="text" id="search" placeholder="Search by name, phone, or class…" />
+      <select id="filter-status">
+        <option value="">All statuses</option>
+        <option value="NEW">New only</option>
+        <option value="CONTACTED">Contacted</option>
+        <option value="ADMITTED">Admitted</option>
+        <option value="REJECTED">Rejected</option>
+      </select>
+    </div>
+
+    <div id="list"></div>
+  </div>
 
   <!-- Detail modal -->
   <div class="modal-backdrop" id="detail-modal">
@@ -118,34 +73,25 @@
     </div>
   </div>
 
-  <div id="toast-area"></div>
-
   <script>
-  (async function () {
-    const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-    const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
-    const toast = (msg, type='success') => {
-      const t = document.createElement('div');
-      t.className = 'toast ' + type;
-      t.textContent = msg;
-      document.getElementById('toast-area').appendChild(t);
-      setTimeout(() => t.remove(), 3500);
-    };
-
-    const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
-    if (!me || !me.user) { location.href = '/admin/login.html'; return; }
-    document.getElementById('admin-name').textContent = me.user.name;
+    window.ADMIN_PAGE = { title: 'Inquiries', crumb: 'Manage' };
+  </script>
+  <script src="/js/admin.js?v=1"></script>
+  <script>
+    const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const fmt = iso => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
 
     let inquiries = [];
+
     async function load() {
       try {
-        const res = await fetch('/api/admin/inquiries');
+        const res = await fetch('/api/admin/inquiries', { credentials: 'include' });
         if (res.status === 401) { location.href = '/admin/login.html'; return; }
         const data = await res.json();
         inquiries = data.inquiries || [];
         render();
       } catch (e) {
-        document.getElementById('list').innerHTML = '<div class="empty"><h3>Could not load</h3><p>Please refresh.</p></div>';
+        document.getElementById('list').innerHTML = '<div class="empty-state"><h3>Could not load</h3><p>Please refresh.</p></div>';
       }
     }
 
@@ -157,11 +103,8 @@
           const hay = ((i.parent_name||'') + ' ' + (i.student_name||'') + ' ' + (i.parent_phone||'') + ' ' + (i.class_seeking||'')).toLowerCase();
           if (!hay.includes(q)) return false;
         }
-        if (st === 'NEW') {
-          if (i.status !== 'NEW') return false;
-        } else if (st) {
-          if (i.status !== st) return false;
-        }
+        if (st === 'NEW') { if (i.status !== 'NEW') return false; }
+        else if (st) { if (i.status !== st) return false; }
         return true;
       });
 
@@ -170,44 +113,52 @@
 
       const el = document.getElementById('list');
       if (!filtered.length) {
-        el.innerHTML = '<div class="empty"><h3>No inquiries match</h3><p>Try a different filter or search term.</p></div>';
+        el.innerHTML = '<div class="empty-state"><h3>No inquiries match</h3><p>Try a different filter or search term.</p></div>';
         return;
       }
       el.innerHTML = filtered.map((i) => {
         const when = fmt(i.created_at);
         const msg = i.message ? esc(i.message) : '';
+        const cls = i.status === 'NEW' ? 'is-new' : (i.status === 'ADMITTED' ? 'is-admitted' : (i.status === 'REJECTED' ? 'is-rejected' : ''));
         return `
-          <div class="inquiry-card ${i.status === 'NEW' ? 'is-new' : ''}" data-status="${esc(i.status)}" data-id="${esc(i.id)}">
-            <div class="inquiry-head">
-              <span class="inquiry-name">${esc(i.parent_name)}</span>
-              <span class="inquiry-class">${esc(i.class_seeking || '—')}</span>
-            </div>
-            <div class="inquiry-meta">
-              For <strong>${esc(i.student_name)}</strong>
-              ${i.parent_email ? ' · <a href="mailto:' + esc(i.parent_email) + '">' + esc(i.parent_email) + '</a>' : ''}
-              ${i.parent_phone ? ' · <a href="tel:' + esc(i.parent_phone) + '">' + esc(i.parent_phone) + '</a> · <a href="https://wa.me/91' + esc(i.parent_phone) + '" target="_blank" rel="noopener" style="color:#2f9e6b;">WhatsApp</a>' : ''}
-            </div>
-            ${msg ? '<p class="inquiry-msg">' + msg + '</p>' : '<p class="inquiry-msg empty">No message.</p>'}
-            <div class="inquiry-actions">
-              <button class="btn btn-ghost btn-sm" data-action="view" data-id="${esc(i.id)}">View details</button>
-              ${i.status !== 'CONTACTED' ? `<button class="btn btn-ghost btn-sm" data-action="contacted" data-id="${esc(i.id)}">Mark contacted</button>` : '<span class="badge CONTACTED">Contacted</span>'}
-              ${i.status !== 'ADMITTED'  ? `<button class="btn btn-primary btn-sm" data-action="admitted"  data-id="${esc(i.id)}">Admit</button>` : '<span class="badge ADMITTED">Admitted ✓</span>'}
-              <button class="btn btn-ghost btn-sm" data-action="reject" data-id="${esc(i.id)}" style="color:var(--rose-600);">Reject</button>
-              <span class="spacer"></span>
-              <span class="when">${when}</span>
+          <div class="inquiry-card ${cls}" data-status="${esc(i.status)}" data-id="${esc(i.id)}">
+            <div class="body">
+              <div class="head">
+                <span class="name">${esc(i.parent_name)}</span>
+                <span class="pill pill-info">${esc(i.class_seeking || '—')}</span>
+                ${i.status === 'NEW' ? '<span class="pill pill-new">New</span>' : ''}
+                ${i.status === 'CONTACTED' ? '<span class="pill pill-warn">Contacted</span>' : ''}
+                ${i.status === 'ADMITTED' ? '<span class="pill pill-success">Admitted ✓</span>' : ''}
+                ${i.status === 'REJECTED' ? '<span class="pill pill-danger">Rejected</span>' : ''}
+              </div>
+              <div class="meta">
+                For <strong style="color:var(--ink-1);">${esc(i.student_name)}</strong>
+                ${i.parent_email ? ' · <a href="mailto:' + esc(i.parent_email) + '">' + esc(i.parent_email) + '</a>' : ''}
+                ${i.parent_phone ? ' · <a href="tel:' + esc(i.parent_phone) + '">' + esc(i.parent_phone) + '</a> · <a href="https://wa.me/91' + esc(i.parent_phone) + '" target="_blank" rel="noopener" style="color:#34d399;">WhatsApp</a>' : ''}
+              </div>
+              ${msg ? '<div class="msg">' + msg + '</div>' : '<div class="msg empty">No message.</div>'}
+              <div class="actions">
+                <button class="btn btn-ghost btn-sm" data-action="view">View</button>
+                ${i.status !== 'CONTACTED' ? '<button class="btn btn-ghost btn-sm" data-action="contacted">Mark contacted</button>' : ''}
+                ${i.status !== 'ADMITTED'  ? '<button class="btn btn-primary btn-sm" data-action="admitted">Admit</button>' : ''}
+                <button class="btn btn-ghost btn-sm btn-danger" data-action="reject">Reject</button>
+                <span class="when">${when}</span>
+              </div>
             </div>
           </div>`;
       }).join('');
 
-      el.querySelectorAll('[data-action]').forEach((b) => {
-        b.addEventListener('click', () => {
-          const id = b.dataset.id;
-          const inq = inquiries.find(x => x.id === id);
-          if (!inq) return;
-          if (b.dataset.action === 'view') openDetail(inq);
-          else if (b.dataset.action === 'contacted') updateStatus(id, 'CONTACTED');
-          else if (b.dataset.action === 'admitted')  updateStatus(id, 'ADMITTED');
-          else if (b.dataset.action === 'reject')    updateStatus(id, 'REJECTED');
+      el.querySelectorAll('.inquiry-card').forEach(card => {
+        const id = card.dataset.id;
+        card.querySelectorAll('[data-action]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const inq = inquiries.find(x => x.id === id);
+            if (!inq) return;
+            if (btn.dataset.action === 'view') openDetail(inq);
+            else if (btn.dataset.action === 'contacted') updateStatus(id, 'CONTACTED');
+            else if (btn.dataset.action === 'admitted')  updateStatus(id, 'ADMITTED');
+            else if (btn.dataset.action === 'reject')    updateStatus(id, 'REJECTED');
+          });
         });
       });
     }
@@ -215,36 +166,34 @@
     function openDetail(i) {
       document.getElementById('detail-when').textContent = 'Received ' + fmt(i.created_at);
       document.getElementById('detail-content').innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;">
+        <div style="display:grid;grid-template-columns:1fr;gap:16px;">
           <div>
             <div class="form-label" style="margin-bottom:4px;">Parent</div>
-            <div style="font-size:16px;font-weight:500;">${esc(i.parent_name)}</div>
+            <div style="font-size:16px;font-weight:500;color:var(--ink-1);">${esc(i.parent_name)}</div>
             <div style="margin-top:6px;">
               <a href="tel:${esc(i.parent_phone)}" style="margin-right:12px;">${esc(i.parent_phone) || '—'}</a>
-              ${i.parent_phone ? '<a href="https://wa.me/91' + esc(i.parent_phone) + '" target="_blank" rel="noopener" style="color:#2f9e6b;">WhatsApp</a>' : ''}
+              ${i.parent_phone ? '<a href="https://wa.me/91' + esc(i.parent_phone) + '" target="_blank" rel="noopener" style="color:#34d399;">WhatsApp</a>' : ''}
             </div>
             ${i.parent_email ? '<div style="margin-top:4px;"><a href="mailto:' + esc(i.parent_email) + '">' + esc(i.parent_email) + '</a></div>' : ''}
           </div>
           <div>
             <div class="form-label" style="margin-bottom:4px;">Student</div>
-            <div style="font-size:16px;font-weight:500;">${esc(i.student_name)}</div>
-            <div style="margin-top:4px;color:var(--ink-500);font-size:14px;">${i.dob ? 'DOB: ' + esc(i.dob) : 'DOB not given'}</div>
-            <div style="margin-top:4px;">
-              <span class="inquiry-class" style="display:inline-block;">${esc(i.class_seeking || '—')}</span>
-            </div>
+            <div style="font-size:16px;font-weight:500;color:var(--ink-1);">${esc(i.student_name)}</div>
+            <div style="margin-top:4px;color:var(--ink-3);font-size:13px;">${i.dob ? 'DOB: ' + esc(i.dob) : 'DOB not given'}</div>
+            <div style="margin-top:6px;"><span class="pill pill-info">${esc(i.class_seeking || '—')}</span></div>
           </div>
-          ${i.address ? '<div><div class="form-label" style="margin-bottom:4px;">Address</div><div style="font-size:14px;color:var(--ink-700);">' + esc(i.address) + '</div></div>' : ''}
-          ${i.message ? '<div><div class="form-label" style="margin-bottom:4px;">Message</div><div class="inquiry-msg" style="margin:0;">' + esc(i.message) + '</div></div>' : ''}
+          ${i.address ? '<div><div class="form-label" style="margin-bottom:4px;">Address</div><div style="font-size:14px;color:var(--ink-2);">' + esc(i.address) + '</div></div>' : ''}
+          ${i.message ? '<div><div class="form-label" style="margin-bottom:4px;">Message</div><div class="msg" style="margin:0;">' + esc(i.message) + '</div></div>' : ''}
           <div>
             <div class="form-label" style="margin-bottom:4px;">Status</div>
-            <div>
-              <select class="form-select" id="detail-status" style="max-width:200px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="detail-status" style="max-width:200px;">
                 <option value="NEW" ${i.status==='NEW'?'selected':''}>New</option>
                 <option value="CONTACTED" ${i.status==='CONTACTED'?'selected':''}>Contacted</option>
                 <option value="ADMITTED" ${i.status==='ADMITTED'?'selected':''}>Admitted</option>
                 <option value="REJECTED" ${i.status==='REJECTED'?'selected':''}>Rejected</option>
               </select>
-              <button class="btn btn-primary btn-sm" id="detail-save" style="margin-left:8px;">Save</button>
+              <button class="btn btn-primary btn-sm" id="detail-save">Save</button>
             </div>
           </div>
         </div>
@@ -262,7 +211,8 @@
     async function updateStatus(id, status) {
       try {
         const r = await fetch('/api/admin/inquiries/' + id, {
-          method: 'POST', headers: { 'content-type': 'application/json' },
+          method: 'POST', credentials: 'include',
+          headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ status })
         });
         if (!r.ok) throw new Error('Failed');
@@ -271,19 +221,15 @@
       } catch (e) { toast(e.message, 'error'); }
     }
 
-    document.getElementById('search').addEventListener('input', render);
-    document.getElementById('filter-status').addEventListener('change', render);
-    document.getElementById('detail-close').addEventListener('click', () => document.getElementById('detail-modal').classList.remove('open'));
-    document.getElementById('detail-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'detail-modal') e.target.classList.remove('open');
-    });
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await fetch('/api/admin/auth', { method: 'DELETE' });
-      location.href = '/admin/login.html';
-    });
-
-    load();
-  })();
+    window.onShellReady = function () {
+      document.getElementById('search').addEventListener('input', render);
+      document.getElementById('filter-status').addEventListener('change', render);
+      document.getElementById('detail-close').addEventListener('click', () => document.getElementById('detail-modal').classList.remove('open'));
+      document.getElementById('detail-modal').addEventListener('click', e => {
+        if (e.target.id === 'detail-modal') e.target.classList.remove('open');
+      });
+      load();
+    };
   </script>
 </body>
 </html>

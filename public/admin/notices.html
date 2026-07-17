@@ -3,50 +3,73 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Notices | Virat Public School Admin</title>
+  <title>Notices · VPS Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=5" />
+  <style>
+    .filter-bar {
+      display: flex; gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: var(--r-pill);
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      color: var(--ink-2);
+      font: inherit; font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { background: var(--glass-bg-hover); color: var(--ink-1); }
+    .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .list-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 20px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-md);
+      margin-bottom: 8px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .list-item:hover { border-color: var(--glass-border-strong); background: var(--glass-bg-hover); }
+    .list-item .body { flex: 1; min-width: 0; }
+    .list-item .title { font-size: 15px; font-weight: 500; color: var(--ink-1); margin-bottom: 4px; }
+    .list-item .meta { font-size: 12px; color: var(--ink-3); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .list-item .actions { display: flex; gap: 6px; }
+    .form-helper-text { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+  </style>
 </head>
 <body class="admin-body">
-  <header class="admin-header">
-    <div class="container-wide">
-      <div class="admin-header-inner">
-        <a href="/admin/" class="admin-brand"><span class="logo">V</span><div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div></a>
-        <nav class="admin-nav">
-          <a href="/admin/">Dashboard</a>
-          <a href="/admin/notices.html" class="active">Notices</a>
-          <a href="/admin/inquiries.html">Inquiries</a>
-          <a href="/admin/messages.html">Messages</a>
-          <a href="/admin/gallery.html">Gallery</a>
-          <a href="/admin/results.html">Results</a>
-          <a href="/admin/audit.html">Audit</a>
-        </nav>
-        <div class="admin-user">
-          <span id="admin-name">…</span>
-          <button class="logout" id="logout-btn">Sign out</button>
-        </div>
+  <div id="app-root"></div>
+  <div id="page-content" style="display:none;">
+    <div class="page-head">
+      <div>
+        <h1>Notices</h1>
+        <p>Publish announcements, exam schedules, and holiday lists.</p>
       </div>
+      <button class="btn btn-primary" id="new-btn">+ New notice</button>
     </div>
-  </header>
 
-  <main class="admin-main">
-    <div class="container-wide">
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
-        <div>
-          <h1 class="page-title">Notices</h1>
-          <p class="page-sub">Publish announcements, exam schedules, and holiday lists.</p>
-        </div>
-        <button class="btn btn-accent" id="new-btn">+ New notice</button>
-      </div>
-      <div id="list" class="list-cards">
-        <div class="empty"><p style="color:var(--ink-500);">Loading…</p></div>
-      </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="">All</button>
+      <button class="filter-btn" data-filter="GENERAL">General</button>
+      <button class="filter-btn" data-filter="ADMISSION">Admission</button>
+      <button class="filter-btn" data-filter="EXAM">Exam</button>
+      <button class="filter-btn" data-filter="HOLIDAY">Holiday</button>
+      <button class="filter-btn" data-filter="PTM">PTM</button>
     </div>
-  </main>
 
+    <div id="list">
+      <p style="color:var(--ink-3);">Loading…</p>
+    </div>
+  </div>
+
+  <!-- Modal: edit notice -->
   <div class="modal-backdrop" id="edit-modal">
     <div class="modal" style="max-width:640px;">
       <h2 id="edit-title">New notice</h2>
@@ -55,12 +78,12 @@
         <input type="hidden" id="edit-id" />
         <div class="form-group">
           <label class="form-label">Title</label>
-          <input class="form-input" id="edit-title-input" required maxlength="200" />
+          <input id="edit-title-input" required maxlength="200" />
         </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Category</label>
-            <select class="form-select" id="edit-category" required>
+            <select id="edit-category" required>
               <option value="GENERAL">General</option>
               <option value="ADMISSION">Admission</option>
               <option value="EXAM">Exam</option>
@@ -70,81 +93,79 @@
           </div>
           <div class="form-group">
             <label class="form-label">Publish date</label>
-            <input class="form-input" type="datetime-local" id="edit-publish" />
+            <input type="datetime-local" id="edit-publish" />
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">Body (HTML allowed)</label>
-          <textarea class="form-textarea" id="edit-body" rows="8" required></textarea>
-          <div class="form-help">Allowed: p, br, strong, em, ul, ol, li, a, h3, h4</div>
+          <textarea id="edit-body" rows="8" required></textarea>
+          <div class="form-helper-text">Allowed: p, br, strong, em, ul, ol, li, a, h3, h4</div>
         </div>
         <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;">
-          <input type="checkbox" id="edit-published" checked style="width:18px;height:18px;" />
+          <input type="checkbox" id="edit-published" style="width:18px;height:18px;" />
           <label class="form-label" for="edit-published" style="margin:0;">Published (visible on site)</label>
         </div>
-        <div id="edit-err" class="alert-error" hidden></div>
+        <div id="edit-err" class="form-error-banner"></div>
         <div class="modal-actions">
-          <button type="button" class="btn btn-ghost" onclick="document.getElementById('edit-modal').classList.remove('open')">Cancel</button>
+          <button type="button" class="btn btn-ghost" id="cancel-btn">Cancel</button>
           <button type="submit" class="btn btn-primary" id="save-btn">Save notice</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div id="toast-area"></div>
-
   <script>
-  (async function () {
-    const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-    const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
-    const toast = (msg, type='success') => {
-      const t = document.createElement('div');
-      t.className = 'toast ' + type;
-      t.textContent = msg;
-      document.getElementById('toast-area').appendChild(t);
-      setTimeout(() => t.remove(), 3500);
+    window.ADMIN_PAGE = {
+      title: 'Notices',
+      crumb: 'Manage'
     };
-
-    const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
-    if (!me || !me.user) { location.href = '/admin/login.html'; return; }
-    document.getElementById('admin-name').textContent = me.user.name.split(' ')[0];
+  </script>
+  <script src="/js/admin.js?v=1"></script>
+  <script>
+    const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const fmt = iso => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
 
     let notices = [];
+    let currentFilter = '';
+
     async function load() {
+      const el = document.getElementById('list');
       try {
-        const r = await fetch('/api/admin/notices');
+        const r = await fetch('/api/admin/notices', { credentials: 'include' });
         if (r.status === 401) { location.href = '/admin/login.html'; return; }
         const d = await r.json();
         notices = d.notices || [];
         render();
       } catch (e) {
-        document.getElementById('list').innerHTML = '<div class="empty"><p>Could not load.</p></div>';
+        el.innerHTML = '<p style="color:var(--ink-3);">Could not load.</p>';
       }
     }
 
     function render() {
       const el = document.getElementById('list');
-      if (!notices.length) {
-        el.innerHTML = '<div class="empty"><h3>No notices yet</h3><p>Click "+ New notice" to create your first one.</p></div>';
+      const filtered = currentFilter ? notices.filter(n => n.category === currentFilter) : notices;
+      if (!filtered.length) {
+        el.innerHTML = '<div class="empty-state"><h3>No notices</h3><p>Click "+ New notice" to create one.</p></div>';
         return;
       }
-      el.innerHTML = notices.map((n) => `
-        <div class="list-card">
-          <div class="row">
-            <span class="title">${esc(n.title)}</span>
-            <span class="meta">${fmt(n.publish_date)}</span>
-          </div>
-          <div class="desc" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <span class="badge">${esc(n.category)}</span>
-            <span class="badge ${n.is_published ? 'published' : 'draft'}">${n.is_published ? 'Published' : 'Draft'}</span>
+      el.innerHTML = filtered.map(n => `
+        <div class="list-item">
+          <div class="body">
+            <div class="title">${esc(n.title)}</div>
+            <div class="meta">
+              <span class="pill pill-info">${esc(n.category)}</span>
+              ${n.is_published ? '<span class="pill pill-pub">Published</span>' : '<span class="pill pill-draft">Draft</span>'}
+              <span>${fmt(n.publish_date)}</span>
+            </div>
           </div>
           <div class="actions">
-            <button data-action="edit" data-id="${n.id}">Edit</button>
-            <button data-action="toggle" data-id="${n.id}">${n.is_published ? 'Unpublish' : 'Publish'}</button>
-            <button data-action="delete" data-id="${n.id}" class="danger">Delete</button>
+            <button class="btn btn-ghost btn-sm" data-action="edit" data-id="${esc(n.id)}">Edit</button>
+            <button class="btn btn-ghost btn-sm" data-action="toggle" data-id="${esc(n.id)}">${n.is_published ? 'Unpublish' : 'Publish'}</button>
+            <button class="btn btn-ghost btn-sm btn-danger" data-action="delete" data-id="${esc(n.id)}">Delete</button>
           </div>
-        </div>`).join('');
-      el.querySelectorAll('[data-action]').forEach((b) => {
+        </div>
+      `).join('');
+      el.querySelectorAll('[data-action]').forEach(b => {
         b.addEventListener('click', () => {
           const id = b.dataset.id;
           if (b.dataset.action === 'edit') openEdit(notices.find(x => x.id === id));
@@ -162,51 +183,67 @@
       document.getElementById('edit-body').value = n ? n.body : '';
       document.getElementById('edit-published').checked = n ? !!n.is_published : true;
       document.getElementById('edit-title').textContent = n ? 'Edit notice' : 'New notice';
-      document.getElementById('edit-err').hidden = true;
+      document.getElementById('edit-err').classList.remove('show');
       document.getElementById('edit-modal').classList.add('open');
     }
 
-    document.getElementById('new-btn').addEventListener('click', () => openEdit(null));
-
-    document.getElementById('edit-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('edit-id').value;
-      const data = {
-        title: document.getElementById('edit-title-input').value,
-        category: document.getElementById('edit-category').value,
-        body: document.getElementById('edit-body').value,
-        is_published: document.getElementById('edit-published').checked ? 1 : 0,
-        publish_date: new Date(document.getElementById('edit-publish').value).toISOString()
-      };
-      const btn = document.getElementById('save-btn');
-      btn.disabled = true; btn.textContent = 'Saving…';
-      try {
-        const r = id
-          ? await fetch('/api/admin/notices/' + id, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
-          : await fetch('/api/admin/notices', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
-        const out = await r.json().catch(() => ({}));
-        if (!r.ok || !out.ok) {
-          document.getElementById('edit-err').textContent = out.error || 'Could not save';
-          document.getElementById('edit-err').hidden = false;
-          return;
+    function bindUI() {
+      document.getElementById('new-btn').addEventListener('click', () => openEdit(null));
+      document.getElementById('cancel-btn').addEventListener('click', () => document.getElementById('edit-modal').classList.remove('open'));
+      document.getElementById('edit-modal').addEventListener('click', e => {
+        if (e.target.id === 'edit-modal') e.target.classList.remove('open');
+      });
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          render();
+        });
+      });
+      document.getElementById('edit-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value;
+        const data = {
+          title: document.getElementById('edit-title-input').value,
+          category: document.getElementById('edit-category').value,
+          body: document.getElementById('edit-body').value,
+          is_published: document.getElementById('edit-published').checked ? 1 : 0,
+          publish_date: new Date(document.getElementById('edit-publish').value).toISOString()
+        };
+        const btn = document.getElementById('save-btn');
+        btn.disabled = true; btn.textContent = 'Saving…';
+        try {
+          const r = id
+            ? await fetch('/api/admin/notices/' + id, { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
+            : await fetch('/api/admin/notices', { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+          const out = await r.json().catch(() => ({}));
+          if (!r.ok || !out.ok) {
+            const e2 = document.getElementById('edit-err');
+            e2.textContent = out.error || 'Could not save';
+            e2.classList.add('show');
+            return;
+          }
+          document.getElementById('edit-modal').classList.remove('open');
+          toast('Notice saved');
+          load();
+        } catch (err) {
+          const e2 = document.getElementById('edit-err');
+          e2.textContent = 'Network error';
+          e2.classList.add('show');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Save notice';
         }
-        document.getElementById('edit-modal').classList.remove('open');
-        toast('Notice saved');
-        load();
-      } catch (err) {
-        document.getElementById('edit-err').textContent = 'Network error';
-        document.getElementById('edit-err').hidden = false;
-      } finally {
-        btn.disabled = false; btn.textContent = 'Save notice';
-      }
-    });
+      });
+    }
 
     async function togglePublish(id) {
       const n = notices.find(x => x.id === id);
       if (!n) return;
       try {
         const r = await fetch('/api/admin/notices/' + id, {
-          method: 'POST', headers: { 'content-type': 'application/json' },
+          method: 'POST', credentials: 'include',
+          headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ is_published: n.is_published ? 0 : 1 })
         });
         if (!r.ok) throw new Error('Failed');
@@ -218,23 +255,17 @@
     async function del(id) {
       if (!confirm('Delete this notice?')) return;
       try {
-        const r = await fetch('/api/admin/notices/' + id, { method: 'DELETE' });
+        const r = await fetch('/api/admin/notices/' + id, { method: 'DELETE', credentials: 'include' });
         if (!r.ok) throw new Error('Failed');
         toast('Notice deleted');
         load();
       } catch (e) { toast(e.message, 'error'); }
     }
 
-    document.getElementById('edit-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'edit-modal') e.target.classList.remove('open');
-    });
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await fetch('/api/admin/auth', { method: 'DELETE' });
-      location.href = '/admin/login.html';
-    });
-
-    load();
-  })();
+    window.onShellReady = function () {
+      bindUI();
+      load();
+    };
   </script>
 </body>
 </html>

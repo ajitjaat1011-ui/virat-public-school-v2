@@ -3,91 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Messages | Virat Public School Admin</title>
+  <title>Messages · VPS Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=5" />
+  <style>
+    .list-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--r-md); margin-bottom: 8px; transition: border-color 0.15s, background 0.15s; }
+    .list-item:hover { border-color: var(--glass-border-strong); background: var(--glass-bg-hover); }
+    .list-item.unread { border-left: 3px solid var(--rose); }
+    .list-item .body { flex: 1; min-width: 0; }
+    .list-item .title { font-size: 15px; font-weight: 500; color: var(--ink-1); margin-bottom: 4px; }
+    .list-item .meta { font-size: 12px; color: var(--ink-3); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .message-body { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: var(--r-md); padding: 14px; font-size: 14px; color: var(--ink-2); white-space: pre-wrap; line-height: 1.6; }
+  </style>
 </head>
 <body class="admin-body">
-  <header class="admin-header">
-    <div class="container-wide">
-      <div class="admin-header-inner">
-        <a href="/admin/" class="admin-brand"><span class="logo">V</span><div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div></a>
-        <nav class="admin-nav">
-          <a href="/admin/">Dashboard</a>
-          <a href="/admin/notices.html">Notices</a>
-          <a href="/admin/inquiries.html">Inquiries</a>
-          <a href="/admin/messages.html" class="active">Messages</a>
-          <a href="/admin/gallery.html">Gallery</a>
-          <a href="/admin/results.html">Results</a>
-          <a href="/admin/audit.html">Audit</a>
-        </nav>
-        <div class="admin-user">
-          <span id="admin-name">…</span>
-          <button class="logout" id="logout-btn">Sign out</button>
-        </div>
+  <div id="app-root"></div>
+  <div id="page-content" style="display:none;">
+    <div class="page-head">
+      <div>
+        <h1>Contact messages</h1>
+        <p>Submissions from the public contact form.</p>
       </div>
     </div>
-  </header>
-
-  <main class="admin-main">
-    <div class="container-wide">
-      <h1 class="page-title">Contact messages</h1>
-      <p class="page-sub">Messages submitted via the public contact form.</p>
-      <div id="list" class="list-cards">
-        <div class="empty"><p style="color:var(--ink-500);">Loading…</p></div>
-      </div>
-    </div>
-  </main>
+    <div id="list"><p style="color:var(--ink-3);">Loading…</p></div>
+  </div>
 
   <div class="modal-backdrop" id="view-modal">
     <div class="modal" id="view-content"></div>
   </div>
-  <div id="toast-area"></div>
 
   <script>
-  (async function () {
-    const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-    const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
-
-    const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
-    if (!me || !me.user) { location.href = '/admin/login.html'; return; }
-    document.getElementById('admin-name').textContent = me.user.name.split(' ')[0];
+    window.ADMIN_PAGE = { title: 'Messages', crumb: 'Manage' };
+  </script>
+  <script src="/js/admin.js?v=1"></script>
+  <script>
+    const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const fmt = iso => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
 
     let messages = [];
+
     async function load() {
       try {
-        const r = await fetch('/api/admin/messages');
+        const r = await fetch('/api/admin/messages', { credentials: 'include' });
         if (r.status === 401) { location.href = '/admin/login.html'; return; }
         const d = await r.json();
         messages = d.messages || [];
         render();
       } catch (e) {
-        document.getElementById('list').innerHTML = '<div class="empty"><p>Could not load.</p></div>';
+        document.getElementById('list').innerHTML = '<div class="empty-state"><h3>Could not load</h3></div>';
       }
     }
 
     function render() {
       const el = document.getElementById('list');
       if (!messages.length) {
-        el.innerHTML = '<div class="empty"><h3>No messages</h3><p>Submissions from the contact form will appear here.</p></div>';
+        el.innerHTML = '<div class="empty-state"><h3>No messages</h3><p>Submissions from the contact form will appear here.</p></div>';
         return;
       }
-      el.innerHTML = messages.map((m) => `
-        <div class="list-card" style="${!m.is_read ? 'border-left:3px solid var(--rose-500);' : ''}">
-          <div class="row">
-            <span class="title">${esc(m.name)} <span style="font-weight:400;color:var(--ink-500);">· ${esc(m.email)}</span></span>
-            <span class="meta">${fmt(m.created_at)} · <span class="badge ${m.is_read ? 'read' : 'unread'}">${m.is_read ? 'Read' : 'New'}</span></span>
+      el.innerHTML = messages.map(m => `
+        <div class="list-item ${!m.is_read ? 'unread' : ''}" data-id="${esc(m.id)}">
+          <div class="body">
+            <div class="title">${esc(m.name)} <span style="font-weight:400; color:var(--ink-3);">· ${esc(m.email)}</span></div>
+            <div class="meta">
+              <strong style="color:var(--ink-1); font-weight: 500;">${esc(m.subject)}</strong>
+              ${!m.is_read ? '<span class="pill pill-new">New</span>' : '<span class="pill pill-draft">Read</span>'}
+              <span>${fmt(m.created_at)}</span>
+            </div>
           </div>
-          <div class="desc"><strong>${esc(m.subject)}</strong></div>
-          <div class="actions">
-            <button data-action="view" data-id="${esc(m.id)}">Open message</button>
-          </div>
-        </div>`).join('');
-      el.querySelectorAll('[data-action="view"]').forEach((b) => {
-        b.addEventListener('click', () => openMessage(messages.find(x => x.id === b.dataset.id)));
+          <button class="btn btn-ghost btn-sm" data-action="view">Open</button>
+        </div>
+      `).join('');
+      el.querySelectorAll('[data-action="view"]').forEach(b => {
+        b.addEventListener('click', () => {
+          const m = messages.find(x => x.id === b.closest('.list-item').dataset.id);
+          openMessage(m);
+        });
       });
     }
 
@@ -96,38 +89,35 @@
       document.getElementById('view-content').innerHTML = `
         <h2>${esc(m.subject)}</h2>
         <p class="modal-sub">Received ${fmt(m.created_at)}</p>
-        <div style="margin-top:16px;display:grid;grid-template-columns:1fr;gap:16px;">
+        <div style="display:grid;grid-template-columns:1fr;gap:16px;">
           <div>
             <div class="form-label" style="margin-bottom:4px;">From</div>
-            <div style="font-size:15px;font-weight:500;">${esc(m.name)}</div>
+            <div style="font-size:15px;font-weight:500;color:var(--ink-1);">${esc(m.name)}</div>
             <div style="margin-top:4px;"><a href="mailto:${esc(m.email)}">${esc(m.email)}</a>${m.phone ? ' · <a href="tel:' + esc(m.phone) + '">' + esc(m.phone) + '</a>' : ''}</div>
           </div>
           <div>
             <div class="form-label" style="margin-bottom:4px;">Message</div>
-            <div class="inquiry-msg" style="margin:0;white-space:pre-wrap;">${esc(m.message)}</div>
+            <div class="message-body">${esc(m.message)}</div>
           </div>
         </div>
         <div class="modal-actions">
-          <button class="btn btn-ghost" onclick="document.getElementById('view-modal').classList.remove('open')">Close</button>
+          <button class="btn btn-ghost" id="close-btn">Close</button>
         </div>`;
       document.getElementById('view-modal').classList.add('open');
+      document.getElementById('close-btn').addEventListener('click', () => document.getElementById('view-modal').classList.remove('open'));
       if (!m.is_read) markRead(m.id);
     }
 
     async function markRead(id) {
-      try { await fetch('/api/admin/messages/' + id, { method: 'POST' }); load(); } catch (e) {}
+      try { await fetch('/api/admin/messages/' + id, { method: 'POST', credentials: 'include' }); load(); } catch (e) {}
     }
 
-    document.getElementById('view-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'view-modal') e.target.classList.remove('open');
-    });
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await fetch('/api/admin/auth', { method: 'DELETE' });
-      location.href = '/admin/login.html';
-    });
-
-    load();
-  })();
+    window.onShellReady = function () {
+      document.getElementById('view-modal').addEventListener('click', e => {
+        if (e.target.id === 'view-modal') e.target.classList.remove('open');
+      });
+      load();
+    };
   </script>
 </body>
 </html>

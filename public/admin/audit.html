@@ -3,91 +3,73 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Audit | Virat Public School Admin</title>
+  <title>Audit · VPS Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=5" />
+  <style>
+    .list-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--r-md); margin-bottom: 6px; }
+    .list-item:hover { border-color: var(--glass-border-strong); }
+    .list-item .body { flex: 1; min-width: 0; }
+    .list-item code { background: rgba(0,0,0,0.3); color: var(--accent-light); padding: 2px 8px; border-radius: 4px; font-size: 12px; font-family: 'SF Mono', Menlo, monospace; }
+    .list-item .meta-row { font-size: 12px; color: var(--ink-3); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 2px; }
+    .list-item .when { font-size: 12px; color: var(--ink-3); }
+  </style>
 </head>
 <body class="admin-body">
-  <header class="admin-header">
-    <div class="container-wide">
-      <div class="admin-header-inner">
-        <a href="/admin/" class="admin-brand"><span class="logo">V</span><div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div></a>
-        <nav class="admin-nav">
-          <a href="/admin/">Dashboard</a>
-          <a href="/admin/notices.html">Notices</a>
-          <a href="/admin/inquiries.html">Inquiries</a>
-          <a href="/admin/messages.html">Messages</a>
-          <a href="/admin/gallery.html">Gallery</a>
-          <a href="/admin/results.html">Results</a>
-          <a href="/admin/audit.html" class="active">Audit</a>
-        </nav>
-        <div class="admin-user">
-          <span id="admin-name">…</span>
-          <button class="logout" id="logout-btn">Sign out</button>
-        </div>
+  <div id="app-root"></div>
+  <div id="page-content" style="display:none;">
+    <div class="page-head">
+      <div>
+        <h1>Audit log</h1>
+        <p>Every admin action is recorded here for accountability.</p>
       </div>
     </div>
-  </header>
-
-  <main class="admin-main">
-    <div class="container-wide">
-      <h1 class="page-title">Audit log</h1>
-      <p class="page-sub">Every admin action is recorded here for accountability.</p>
-      <div id="list" class="list-cards">
-        <div class="empty"><p style="color:var(--ink-500);">Loading…</p></div>
-      </div>
-    </div>
-  </main>
-
-  <div id="toast-area"></div>
+    <div id="list"><p style="color:var(--ink-3);">Loading…</p></div>
+  </div>
 
   <script>
-  (async function () {
-    const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-    const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
-
-    const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
-    if (!me || !me.user) { location.href = '/admin/login.html'; return; }
-    document.getElementById('admin-name').textContent = me.user.name.split(' ')[0];
+    window.ADMIN_PAGE = { title: 'Audit log', crumb: 'System' };
+  </script>
+  <script src="/js/admin.js?v=1"></script>
+  <script>
+    const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const fmt = iso => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
 
     async function load() {
       try {
-        const r = await fetch('/api/admin/audit');
+        const r = await fetch('/api/admin/audit', { credentials: 'include' });
         if (r.status === 401) { location.href = '/admin/login.html'; return; }
         const d = await r.json();
         const list = d.audit || d.entries || d.results || [];
         render(list);
       } catch (e) {
-        document.getElementById('list').innerHTML = '<div class="empty"><p>Could not load.</p></div>';
+        document.getElementById('list').innerHTML = '<div class="empty-state"><h3>Could not load</h3></div>';
       }
     }
 
     function render(items) {
       const el = document.getElementById('list');
       if (!items.length) {
-        el.innerHTML = '<div class="empty"><h3>No activity yet</h3><p>Admin actions will appear here.</p></div>';
+        el.innerHTML = '<div class="empty-state"><h3>No activity yet</h3><p>Admin actions will appear here.</p></div>';
         return;
       }
       el.innerHTML = items.map((a) => `
-        <div class="list-card">
-          <div class="row">
-            <span class="title"><code style="background:var(--plum-50);color:var(--plum-700);padding:2px 8px;border-radius:6px;font-size:12px;">${esc(a.action)}</code> · <span style="font-weight:400;color:var(--ink-500);">${esc(a.entity || '—')}</span></span>
-            <span class="meta">${fmt(a.created_at)}</span>
+        <div class="list-item">
+          <div class="body">
+            <div><code>${esc(a.action)}</code> <span style="color:var(--ink-3); font-size:13px;">· ${esc(a.entity || '—')}</span></div>
+            <div class="meta-row">
+              <span>${esc(a.username || 'system')}</span>
+              ${a.ip ? '<span>·</span><span>' + esc(a.ip) + '</span>' : ''}
+            </div>
           </div>
-          <div class="desc">${esc(a.username || 'system')} ${a.ip ? ' · <span style="color:var(--ink-500);font-size:12px;">' + esc(a.ip) + '</span>' : ''}</div>
+          <div class="when">${fmt(a.created_at)}</div>
         </div>`).join('');
     }
 
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await fetch('/api/admin/auth', { method: 'DELETE' });
-      location.href = '/admin/login.html';
-    });
-
-    load();
-  })();
+    window.onShellReady = load;
   </script>
 </body>
 </html>

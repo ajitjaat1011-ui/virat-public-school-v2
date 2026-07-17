@@ -3,188 +3,153 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Parents · Admin · Virat Public School</title>
+  <title>Parents · VPS Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=5" />
   <style>
     .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
     .filter-btn {
       padding: 6px 14px;
       border-radius: var(--r-pill);
-      border: 1px solid rgba(106,56,119,0.12);
-      background: white;
-      color: var(--ink-700);
-      font-size: 13px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      color: var(--ink-2);
+      font: inherit; font-size: 13px;
       cursor: pointer;
-      font-family: inherit;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
-    .filter-btn:hover { border-color: var(--plum-500); }
-    .filter-btn.active { background: var(--plum-700); color: white; border-color: var(--plum-700); }
+    .filter-btn:hover { background: var(--glass-bg-hover); color: var(--ink-1); }
+    .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
     .parent-card {
-      background: white;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: var(--r-md);
-      padding: 20px;
-      margin-bottom: 12px;
-      box-shadow: var(--shadow-sm);
+      padding: 18px 20px;
+      margin-bottom: 10px;
+      transition: border-color 0.15s, background 0.15s;
     }
+    .parent-card:hover { border-color: var(--glass-border-strong); }
     .parent-card .row1 { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
-    .parent-card h3 { font-size: 1.05rem; font-family: 'Fraunces', serif; font-weight: 500; margin-bottom: 2px; }
-    .parent-card .meta { font-size: 13px; color: var(--ink-500); }
+    .parent-card h3 { margin: 0 0 2px; font-family: 'Fraunces', serif; font-weight: 500; font-size: 16px; color: var(--ink-1); }
+    .parent-card .meta { font-size: 12px; color: var(--ink-3); }
     .parent-card .children-info {
-      margin-top: 12px; padding: 10px 12px;
-      background: var(--plum-50); border-radius: 10px;
-      font-size: 13px; color: var(--ink-700);
+      margin-top: 10px; padding: 10px 12px;
+      background: rgba(0,0,0,0.18); border: 1px solid var(--glass-border);
+      border-radius: var(--r-sm);
+      font-size: 13px; color: var(--ink-2);
     }
-    .parent-card .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+    .parent-card .actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
     .note-input {
       width: 100%;
       padding: 8px 12px;
-      border: 1px solid var(--ink-100);
-      border-radius: 10px;
-      font-family: inherit; font-size: 13px;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-sm);
+      background: rgba(0,0,0,0.18);
+      color: var(--ink-1);
+      font: inherit; font-size: 13px;
       margin-top: 8px;
-      background: white;
     }
-    .note-input:focus { outline: none; border-color: var(--plum-500); }
-    .pill { display: inline-block; padding: 3px 10px; border-radius: var(--r-pill); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-    .pill-pending  { background: #fef3c7; color: #92400e; }
-    .pill-approved { background: #d1fae5; color: #065f46; }
-    .pill-rejected { background: #fee2e2; color: #991b1b; }
-    .btn-mini {
-      padding: 5px 12px; font-size: 12px; border-radius: var(--r-pill);
-      border: 1px solid rgba(106,56,119,0.12); background: white;
-      color: var(--ink-700); cursor: pointer; font-family: inherit;
-      transition: all 0.15s;
-    }
-    .btn-mini:hover { background: var(--plum-50); }
-    .btn-mini.primary { background: var(--plum-700); color: white; border-color: var(--plum-700); }
-    .btn-mini.primary:hover { background: var(--plum-800); }
-    .btn-mini.danger { color: var(--err); }
-    .btn-mini.danger:hover { background: #fef2f2; }
+    .note-input:focus { outline: none; border-color: var(--accent); }
   </style>
 </head>
 <body class="admin-body">
-  <header class="admin-header">
-    <div class="container-wide">
-      <div class="admin-header-inner">
-        <a href="/admin/" class="admin-brand">
-          <span class="logo">V</span>
-          <div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div>
-        </a>
-        <nav class="admin-nav" aria-label="Admin">
-          <a href="/admin/">Dashboard</a>
-          <a href="/admin/notices.html">Notices</a>
-          <a href="/admin/inquiries.html">Inquiries</a>
-          <a href="/admin/messages.html">Messages</a>
-          <a href="/admin/gallery.html">Gallery</a>
-          <a href="/admin/results.html">Results</a>
-          <a href="/admin/exams.html">Exams</a>
-          <a href="/admin/parents.html" class="active">Parents</a>
-          <a href="/admin/audit.html">Audit</a>
-        </nav>
-        <div class="admin-user">
-          <span id="admin-name">…</span>
-          <button class="logout" id="logout-btn">Sign out</button>
-        </div>
+  <div id="app-root"></div>
+  <div id="page-content" style="display:none;">
+    <div class="page-head">
+      <div>
+        <h1>Parent accounts</h1>
+        <p>Approve, reject, or reset parent registration requests. Approved parents can sign in to view their child's exam schedule and results.</p>
       </div>
     </div>
-  </header>
 
-  <main class="admin-main">
-    <div class="container-wide">
-      <h1 class="page-title">Parent accounts</h1>
-      <p class="page-sub">Approve, reject, or reset parent registration requests. Approved parents can sign in to view their child's exam schedule and results.</p>
-
-      <div class="filter-bar">
-        <button class="filter-btn active" data-filter="ALL">All</button>
-        <button class="filter-btn" data-filter="PENDING">Pending</button>
-        <button class="filter-btn" data-filter="APPROVED">Approved</button>
-        <button class="filter-btn" data-filter="REJECTED">Rejected</button>
-      </div>
-
-      <div id="list"></div>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="ALL">All</button>
+      <button class="filter-btn" data-filter="PENDING">Pending</button>
+      <button class="filter-btn" data-filter="APPROVED">Approved</button>
+      <button class="filter-btn" data-filter="REJECTED">Rejected</button>
     </div>
-  </main>
+
+    <div id="list"><p style="color:var(--ink-3);">Loading…</p></div>
+  </div>
 
   <script>
-    (function () {
-      'use strict';
-      const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      const fmt = iso => {
-        if (!iso) return '';
-        const d = new Date(iso);
-        if (isNaN(d)) return '';
-        return d.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-      };
+    window.ADMIN_PAGE = { title: 'Parents', crumb: 'Academics' };
+  </script>
+  <script src="/js/admin.js?v=1"></script>
+  <script>
+    const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const fmt = iso => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+
+    let currentFilter = 'ALL';
+
+    function pill(s) {
+      if (s === 'PENDING')  return '<span class="pill pill-pending">Pending</span>';
+      if (s === 'APPROVED') return '<span class="pill pill-approved">Approved</span>';
+      if (s === 'REJECTED') return '<span class="pill pill-rejected">Rejected</span>';
+      return `<span class="pill">${esc(s)}</span>`;
+    }
+
+    async function load() {
       const list = document.getElementById('list');
-      let currentFilter = 'ALL';
-
-      function pill(s) {
-        if (s === 'PENDING')  return '<span class="pill pill-pending">Pending</span>';
-        if (s === 'APPROVED') return '<span class="pill pill-approved">Approved</span>';
-        if (s === 'REJECTED') return '<span class="pill pill-rejected">Rejected</span>';
-        return `<span class="pill">${esc(s)}</span>`;
-      }
-
-      async function load() {
-        list.innerHTML = '<p class="text-mute">Loading…</p>';
-        const url = currentFilter === 'ALL' ? '/api/admin/parents' : `/api/admin/parents?status=${currentFilter}`;
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) { list.innerHTML = '<p style="color:var(--err);">Failed to load.</p>'; return; }
-        const data = await res.json();
-        const parents = data.parents || [];
-        if (!parents.length) { list.innerHTML = '<p class="text-mute">No parent accounts in this view.</p>'; return; }
-        list.innerHTML = parents.map(p => `
-          <div class="parent-card" data-id="${esc(p.id)}">
-            <div class="row1">
-              <div>
-                <h3>${esc(p.full_name)}</h3>
-                <div class="meta">${esc(p.phone)} · requested ${fmt(p.created_at)}</div>
-              </div>
-              <div>${pill(p.status)}</div>
+      list.innerHTML = '<p style="color:var(--ink-3);">Loading…</p>';
+      const url = currentFilter === 'ALL' ? '/api/admin/parents' : `/api/admin/parents?status=${currentFilter}`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) { list.innerHTML = '<p style="color:var(--rose-light);">Failed to load.</p>'; return; }
+      const data = await res.json();
+      const parents = data.parents || [];
+      if (!parents.length) { list.innerHTML = '<div class="empty-state"><h3>No parent accounts</h3><p>Nothing in this view.</p></div>'; return; }
+      list.innerHTML = parents.map(p => `
+        <div class="parent-card" data-id="${esc(p.id)}">
+          <div class="row1">
+            <div>
+              <h3>${esc(p.full_name)}</h3>
+              <div class="meta">${esc(p.phone)} · requested ${fmt(p.created_at)}</div>
             </div>
-            ${(p.children && p.children.length) ? `<div class="children-info">Stated child: <strong>${esc(p.children[0].student_name)}</strong> · ${esc(p.children[0].class_name)}${p.children[0].section ? ' · ' + esc(p.children[0].section) : ''}${p.children[0].roll_number ? ' · Roll ' + esc(p.children[0].roll_number) : ''}</div>` : ''}
-            ${p.review_note ? `<div class="meta" style="margin-top:8px;">Review note: ${esc(p.review_note)}</div>` : ''}
-            <input type="text" class="note-input" placeholder="Optional review note (admin only)" />
-            <div class="actions">
-              ${p.status !== 'APPROVED' ? `<button class="btn-mini primary" data-action="approve">Approve</button>` : ''}
-              ${p.status !== 'REJECTED' ? `<button class="btn-mini" data-action="reject">Reject</button>` : ''}
-              ${p.status !== 'PENDING'  ? `<button class="btn-mini" data-action="reset">Reset to pending</button>` : ''}
-              <button class="btn-mini danger" data-action="delete" style="margin-left:auto;">Delete</button>
-            </div>
+            <div>${pill(p.status)}</div>
           </div>
-        `).join('');
+          ${(p.children && p.children.length) ? `<div class="children-info">Stated child: <strong style="color:var(--ink-1);">${esc(p.children[0].student_name)}</strong> · ${esc(p.children[0].class_name)}${p.children[0].section ? ' · ' + esc(p.children[0].section) : ''}${p.children[0].roll_number ? ' · Roll ' + esc(p.children[0].roll_number) : ''}</div>` : ''}
+          ${p.review_note ? `<div class="meta" style="margin-top:8px;">Review note: ${esc(p.review_note)}</div>` : ''}
+          <input type="text" class="note-input" placeholder="Optional review note (admin only)" />
+          <div class="actions">
+            ${p.status !== 'APPROVED' ? '<button class="btn btn-primary btn-sm" data-action="approve">Approve</button>' : ''}
+            ${p.status !== 'REJECTED' ? '<button class="btn btn-ghost btn-sm" data-action="reject">Reject</button>' : ''}
+            ${p.status !== 'PENDING'  ? '<button class="btn btn-ghost btn-sm" data-action="reset">Reset to pending</button>' : ''}
+            <button class="btn btn-ghost btn-sm btn-danger" data-action="delete" style="margin-left:auto;">Delete</button>
+          </div>
+        </div>
+      `).join('');
 
-        list.querySelectorAll('.parent-card').forEach(card => {
-          const id = card.dataset.id;
-          const noteInput = card.querySelector('.note-input');
-          card.querySelectorAll('[data-action]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const action = btn.dataset.action;
-              if (action === 'delete' && !confirm('Delete this parent account and all their linked data?')) return;
-              const note = noteInput ? noteInput.value.trim() : '';
-              const method = action === 'delete' ? 'DELETE' : 'POST';
-              const body = action === 'delete' ? null : JSON.stringify({ action, note });
-              const r = await fetch(`/api/admin/parents/${id}`, {
-                method, credentials: 'include',
-                headers: body ? { 'Content-Type': 'application/json' } : {},
-                body
-              });
-              if (!r.ok) {
-                const err = await r.json().catch(() => ({}));
-                alert(err.error || 'Action failed');
-                return;
-              }
-              load();
+      list.querySelectorAll('.parent-card').forEach(card => {
+        const id = card.dataset.id;
+        const noteInput = card.querySelector('.note-input');
+        card.querySelectorAll('[data-action]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const action = btn.dataset.action;
+            if (action === 'delete' && !confirm('Delete this parent account and all their linked data?')) return;
+            const note = noteInput ? noteInput.value.trim() : '';
+            const method = action === 'delete' ? 'DELETE' : 'POST';
+            const body = action === 'delete' ? null : JSON.stringify({ action, note });
+            const r = await fetch(`/api/admin/parents/${id}`, {
+              method, credentials: 'include',
+              headers: body ? { 'Content-Type': 'application/json' } : {},
+              body
             });
+            if (!r.ok) {
+              const err = await r.json().catch(() => ({}));
+              alert(err.error || 'Action failed');
+              return;
+            }
+            toast(action === 'approve' ? 'Parent approved' : action === 'reject' ? 'Parent rejected' : 'Done');
+            load();
           });
         });
-      }
+      });
+    }
 
+    window.onShellReady = function () {
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -193,21 +158,8 @@
           load();
         });
       });
-
-      // Auth check + sign out
-      fetch('/api/admin/auth', { credentials: 'include' })
-        .then(r => r.ok ? r.json() : null)
-        .then(d => {
-          if (!d || !d.user) { window.location.href = '/admin/login.html'; return; }
-          document.getElementById('admin-name').textContent = d.user.name || d.user.username;
-        });
-      document.getElementById('logout-btn').addEventListener('click', async () => {
-        try { await fetch('/api/admin/auth', { method: 'DELETE', credentials: 'include' }); } catch (e) {}
-        window.location.href = '/admin/login.html';
-      });
-
       load();
-    })();
+    };
   </script>
 </body>
 </html>
