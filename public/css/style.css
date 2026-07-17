@@ -413,6 +413,8 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
 .dock-item {
   flex: 1;
   display: flex; align-items: center; justify-content: center; gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
   padding: 10px 14px;
   border-radius: var(--r-pill);
   font-size: 12px; font-weight: 600;
@@ -426,6 +428,9 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
 .dock-item svg { width: 22px; height: 22px; flex-shrink: 0; transition: color 0.2s, transform 0.2s var(--ease-bounce); }
 .dock-item:hover { color: var(--ink-900); }
 .dock-item:hover svg { transform: translateY(-2px); }
+.dock-item:focus,
+.dock-item:focus-visible,
+.dock-item:active { outline: none; box-shadow: none; }
 .dock-item.active {
   color: var(--pink-600);
   background: transparent;
