@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>About Us | Virat Public School</title>
   <meta name="description" content="A small, caring school in Virat Nagar, Kotputli. LKG to Class 12, RBSE-affiliated since 2008." />
-  <meta name="theme-color" content="#6d3877" />
+  <meta name="theme-color" content="#ff3d80" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/images/icon-192.png" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=12" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=13" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -18,82 +22,111 @@
   <div id="vps-header"></div>
 
   <main id="main">
-    
-  <section class="page-header">
-    <div class="container-wide">
-      <span class="section-eyebrow">About us</span>
-      <h1>A small school, in a small town,<br>with very big care.</h1>
-      <p>We've been teaching the children of Virat Nagar and Kotputli since 2008.</p>
+    <!-- Hero -->
+    <section class="hero-stat">
+      <div class="eyebrow"><span class="pulse"></span> About us · Est. 2008</div>
+      <h1>A small school, in a small town, with <em style="font-style:normal; background:linear-gradient(135deg,#ff3d80,#3892e6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">very big care</em>.</h1>
+      <p>For nearly twenty years, families from Virat Nagar, Kotputli and the wider Behror region have trusted us with their children.</p>
+    </section>
+
+    <!-- Story card -->
+    <div class="section-head"><h2>Our story</h2></div>
+    <div class="app-list">
+      <div class="app-card">
+        <div class="head">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V9.5z"/></svg>
+          </div>
+          <h3>Where it began</h3>
+        </div>
+        <p>Two rooms, twenty-four students, two teachers. The families of Virat Nagar needed a serious English-medium school close to home — and a small group of educators decided to build one.</p>
+      </div>
+      <div class="app-card">
+        <div class="head">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 12h.01M9 15h.01M9 18h.01M14 9h.01M14 12h.01M14 15h.01M14 18h.01"/></svg>
+          </div>
+          <h3>Where we are</h3>
+        </div>
+        <p>Today we teach more than twelve hundred students from LKG to Class 12, on a real campus with smart classrooms, science labs, a library, a playground, and our own fleet of buses.</p>
+      </div>
+      <div class="app-card">
+        <div class="head">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3>What we're proud of</h3>
+        </div>
+        <p>Strong board results, year after year. But the thing we're most proud of is harder to measure: that our students leave us a little more kind, a little more confident, and a little more curious than when they arrived.</p>
+      </div>
     </div>
-  </section>
 
-    <section class="section">
-      <div class="container-wide">
-        <div style="display:grid;grid-template-columns:1fr;gap:48px;align-items:center;" class="about-grid">
-          <div class="prose" style="max-width:none;">
-            <p class="reveal">Virat Public School began in 2008, in a two-room building, with twenty-four children and two teachers. The families of Virat Nagar needed a serious English-medium school close to home, and a small group of educators decided to build one.</p>
-            <p class="reveal">Today we teach more than twelve hundred students from LKG to Class 12, on a real campus with smart classrooms, science labs, a library, a playground, and our own fleet of buses.</p>
-            <p class="reveal">The school is recognised by RBSE. We've had strong board results, year after year. But the thing we are most proud of is harder to measure: that our students leave us a little more kind, a little more confident, and a little more curious than when they arrived.</p>
+    <!-- What we believe -->
+    <div class="section-head"><h2>What we believe</h2></div>
+    <div class="app-list">
+      <div class="app-card compact">
+        <div class="head">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
           </div>
-          <div class="reveal-r" style="text-align:center;">
-            
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:200px;height:200px;display:block;margin:0 auto;">
-  <defs>
-    <linearGradient id="si-g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#c486cc"/><stop offset="100%" stop-color="#ff7898"/>
-    </linearGradient>
-  </defs>
-  <circle cx="50" cy="50" r="44" fill="url(#si-g)" opacity="0.15"/>
-  <circle cx="50" cy="50" r="32" fill="url(#si-g)" opacity="0.3"/>
-  <path d="M22 60 L50 38 L78 60 L78 80 L22 80 Z" fill="url(#si-g)"/>
-  <rect x="44" y="66" width="12" height="14" fill="white"/>
-  <circle cx="50" cy="73" r="1.5" fill="url(#si-g)"/>
-  <rect x="28" y="64" width="8" height="8" fill="white" opacity="0.7"/>
-  <rect x="64" y="64" width="8" height="8" fill="white" opacity="0.7"/>
-</svg>
-          </div>
-        </div>
-        <style>@media (min-width: 880px) { .about-grid { grid-template-columns: 1.4fr 1fr !important; } }</style>
-      </div>
-    </section>
-
-    <section class="section section-soft">
-      <div class="container-narrow text-center">
-        <span class="section-eyebrow reveal">What we believe</span>
-        <h2 class="section-title reveal">A few simple things,<br>held for a long time.</h2>
-        <div class="value-grid mt-7 stagger">
-          <div class="value-card reveal"><span class="vc-num">01</span><h3>Small is good</h3><p>Eighteen students in a class. Teachers who know each child by name, by habit, and by what they're struggling with.</p></div>
-          <div class="value-card reveal"><span class="vc-num">02</span><h3>Foundations matter</h3><p>Strong reading, clear writing, real arithmetic. Everything else is built on these.</p></div>
-          <div class="value-card reveal"><span class="vc-num">03</span><h3>Discipline, not fear</h3><p>Routines, expectations, and follow-through. The point of discipline is freedom.</p></div>
-          <div class="value-card reveal"><span class="vc-num">04</span><h3>Parents are partners</h3><p>We cannot do this work alone. We keep parents close, communicate often, and trust them.</p></div>
+          <div><h3>Small is good</h3><p>Eighteen students in a class. Teachers who know each child by name.</p></div>
         </div>
       </div>
-    </section>
-
-    <section class="section section-blush">
-      <div class="container-narrow text-center">
-        <span class="section-eyebrow reveal">A note from the principal</span>
-        <h2 class="section-title reveal">"Every child who walks in<br>is someone's whole world."</h2>
-        <p class="reveal" style="font-size:1.15rem;line-height:1.7;">Dear parents, every year we receive the same precious trust — the care of your child, for a few hours each day, for twelve or more years. We hold that trust carefully. We teach them, we watch them grow, and we send them back to you a little more ready for what comes next.</p>
-        <p class="reveal" style="font-family:'Fraunces',serif;font-style:italic;font-size:1.15rem;color:var(--plum-700);">— Dr. Meera Singh, Principal</p>
+      <div class="app-card compact">
+        <div class="head">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div><h3>Foundations matter</h3><p>Strong reading, clear writing, real arithmetic. Everything else is built on these.</p></div>
+        </div>
       </div>
-    </section>
-
-    <section class="section">
-      <div class="container-narrow text-center">
-        <span class="section-eyebrow reveal">Our affiliation</span>
-        <h2 class="section-title reveal">Recognised by RBSE.</h2>
-        <p class="section-sub reveal">Our affiliation number, school code, and other public details are on our disclosures page.</p>
-        <a href="disclosures.html" class="btn btn-primary reveal">View disclosures</a>
+      <div class="app-card compact">
+        <div class="head">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div><h3>Discipline, not fear</h3><p>Routines, expectations, follow-through. The point of discipline is freedom.</p></div>
+        </div>
       </div>
-    </section>
-    
+      <div class="app-card compact">
+        <div class="head">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div><h3>Parents are partners</h3><p>We keep parents close, communicate often, and trust them.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Principal note -->
+    <div class="section-head"><h2>From the principal</h2></div>
+    <div class="app-list">
+      <div class="app-card" style="background: linear-gradient(135deg, var(--pink-50), var(--sky-50));">
+        <p style="font-size: 1.05rem; line-height: 1.6; color: var(--ink-900); font-style: italic; margin: 0 0 12px;">"Every child who walks in is someone's whole world. We hold that trust carefully."</p>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="app-avatar" style="width:36px; height:36px; font-size:13px;">M</div>
+          <div>
+            <div style="font-weight:700; font-size: 14px;">Dr. Meera Singh</div>
+            <div style="font-size: 12px; color: var(--ink-500);">Principal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="padding: 8px 20px 0; max-width: 840px; margin: 0 auto;">
+      <a href="/disclosures.html" class="btn btn-secondary btn-lg" style="width: 100%;">View RBSE disclosures</a>
+    </div>
   </main>
 
-  <div id="vps-footer"></div>
+  <footer class="site-footer">
+    <div class="footer-bottom">
+      <span>© 2026 Virat Public School</span>
+      <span><a href="/contact.html">Contact us</a></span>
+    </div>
+  </footer>
 
-  <script src="js/partials.js?v=9"></script>
-  <script src="js/main.js?v=8"></script>
-  
+  <script src="js/partials.js?v=10"></script>
+  <script src="js/main.js?v=9"></script>
 </body>
 </html>

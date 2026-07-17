@@ -2,33 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Parent Portal · Login · Virat Public School</title>
-  <meta name="description" content="Log in to the Virat Public School parent portal to view your child's exam schedule and results." />
-  <meta name="theme-color" content="#6d3877" />
-  <link rel="icon" type="image/svg+xml" href="../images/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Parent sign in · Virat Public School</title>
+  <meta name="description" content="Sign in to view your child's exam schedule and results." />
+  <meta name="theme-color" content="#ff3d80" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css?v=12" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css?v=13" />
   <style>
-    .auth-wrap {
-      min-height: calc(100vh - 64px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 40px 24px;
-      background: var(--tint);
-    }
-    .auth-card {
-      width: 100%; max-width: 400px;
-      background: var(--paper);
-      border: 1px solid var(--line);
-      border-radius: var(--r-lg);
-      padding: 32px;
-    }
-    .auth-card h1 { font-size: 1.5rem; margin-bottom: 6px; }
-    .auth-card p.sub { color: var(--ink-3); font-size: 14px; margin-bottom: 24px; }
-    .auth-foot { font-size: 13px; color: var(--ink-3); text-align: center; margin-top: 20px; }
-    .auth-foot a { color: var(--accent); }
+    body.has-dock .auth-wrap { min-height: calc(100vh - 90px); }
   </style>
 </head>
 <body>
@@ -39,6 +26,7 @@
   <main id="main">
     <div class="auth-wrap">
       <div class="auth-card">
+        <div class="logo">V</div>
         <h1>Parent sign in</h1>
         <p class="sub">Enter the mobile number and password you used during registration.</p>
 
@@ -52,33 +40,27 @@
             <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters" />
           </div>
           <div id="loginError" class="form-error-banner" role="alert"></div>
-          <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">Sign in</button>
+          <button type="submit" class="btn btn-pink btn-lg" id="loginBtn">Sign in</button>
         </form>
 
-        <p class="auth-foot">
-          New here? <a href="register.html">Request an account</a> · <a href="../index.html">Back to site</a>
+        <p class="foot">
+          New here? <a href="register.html">Request an account</a><br>
+          <a href="../index.html" style="font-weight: 400;">← Back to site</a>
         </p>
       </div>
     </div>
   </main>
 
-  <div id="vps-footer"></div>
-
-  <script src="../js/partials.js?v=9"></script>
+  <script src="/js/partials.js?v=10"></script>
   <script>
     (function () {
-      'use strict';
       const form = document.getElementById('loginForm');
       const errEl = document.getElementById('loginError');
       const btn   = document.getElementById('loginBtn');
 
-      function showError(msg) {
-        errEl.textContent = msg;
-        errEl.classList.add('show');
-      }
+      function showError(msg) { errEl.textContent = msg; errEl.classList.add('show'); }
       function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; }
 
-      // If already logged in, redirect to dashboard
       fetch('/api/parent/auth', { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
         .then(d => { if (d && d.parent) window.location.href = 'dashboard.html'; });

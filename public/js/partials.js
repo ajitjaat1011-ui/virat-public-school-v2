@@ -1,199 +1,169 @@
 /* ============================================================
-   Virat Public School — Partial layout injector
-   Calm, premium design. No bloom animation. No flower petals.
+   Virat Public School — App shell injector
+   Status bar + welcome row + bottom dock + PWA install
    ============================================================ */
 (function () {
   'use strict';
 
-  const TOP_BAR_HTML = `
-    <div class="top-bar">
-      <div class="container-wide">
-        <span><a href="tel:+919000000000">+91 90000 00000</a></span>
-        <span class="top-tag">RBSE Affiliated · Est. 2008</span>
-      </div>
-    </div>`;
+  // === Bottom dock items (active page = current path) ===
+  const DOCK = [
+    { href: '/index.html',     label: 'Home',    icon: 'home' },
+    { href: '/notices.html',   label: 'Notices', icon: 'bell' },
+    { href: '/gallery.html',   label: 'Gallery', icon: 'image' },
+    { href: '/parent/login.html', label: 'Parents', icon: 'users' },
+    { href: '/contact.html',   label: 'Contact', icon: 'mail' },
+  ];
 
-  const HEADER_HTML = `
-    <header class="site-header">
-      <div class="container-wide">
-        <div class="header-inner">
-          <a href="index.html" class="brand" aria-label="Virat Public School, Virat Nagar Kotputli — home">
-            <span class="brand-logo">V</span>
-            <span class="brand-text">
-              <span class="brand-name">Virat Public School</span>
-              <span class="brand-sub">Virat Nagar · Kotputli</span>
-            </span>
-          </a>
-          <nav class="primary-nav" aria-label="Primary">
-            <a href="index.html" class="nav-link">Home</a>
-            <a href="about.html" class="nav-link">About</a>
-            <a href="admissions.html" class="nav-link">Admissions</a>
-            <a href="gallery.html" class="nav-link">Gallery</a>
-            <a href="notices.html" class="nav-link">Notices</a>
-            <a href="contact.html" class="nav-link">Contact</a>
-            <a href="parent/login.html" class="nav-link">Parents</a>
-            <a href="admissions.html#inquiry" class="nav-cta">Apply</a>
-          </nav>
-          <button class="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
-            <span></span><span></span><span></span>
-          </button>
-        </div>
-      </div>
-      <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="admissions.html">Admissions</a>
-        <a href="results.html">Results</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="notices.html">Notices</a>
-        <a href="events.html">Events</a>
-        <a href="contact.html">Contact</a>
-        <a href="parent/login.html">Parent Portal</a>
-        <a href="admissions.html#inquiry" style="color:var(--accent);font-weight:600;">Apply Now →</a>
-      </nav>
-    </header>`;
+  const ICONS = {
+    home:   '<path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V9.5z"/>',
+    bell:   '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+    image:  '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/>',
+    users:  '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    mail:   '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+  };
 
-  const FOOTER_HTML = `
-    <footer class="site-footer">
-      <div class="container-wide">
-        <div class="footer-grid">
-          <div>
-            <div class="brand" style="margin-bottom:12px;">
-              <span class="brand-logo">V</span>
-              <span class="brand-text">
-                <span class="brand-name">Virat Public School</span>
-                <span class="brand-sub">Virat Nagar · Kotputli</span>
-              </span>
-            </div>
-            <p>RBSE-affiliated. LKG to Class 12.<br><a href="tel:+919000000000">+91 90000 00000</a> · <a href="mailto:office@viratpublicschool.in">office@viratpublicschool.in</a></p>
-          </div>
-          <div>
-            <h4>Visit</h4>
-            <ul>
-              <li><a href="about.html">About</a></li>
-              <li><a href="infrastructure.html">Campus</a></li>
-              <li><a href="faculty.html">Faculty</a></li>
-              <li><a href="gallery.html">Gallery</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Families</h4>
-            <ul>
-              <li><a href="admissions.html">Admissions</a></li>
-              <li><a href="results.html">Results</a></li>
-              <li><a href="notices.html">Notices</a></li>
-              <li><a href="holidays.html">Holidays</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Info</h4>
-            <ul>
-              <li><a href="contact.html">Contact</a></li>
-              <li><a href="disclosures.html">Disclosures</a></li>
-              <li><a href="privacy.html">Privacy</a></li>
-              <li><a href="parent/login.html">Parent Portal</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <span>© 2026 Virat Public School</span>
-          <span><a href="admin/login.html">Admin</a></span>
-        </div>
-      </div>
-    </footer>`;
-
-  function getPath() {
-    const p = window.location.pathname;
-    if (p.endsWith('/')) return '';
-    const last = p.split('/').pop();
-    if (last.includes('.')) {
-      return p.substring(0, p.length - last.length);
-    }
-    return p + '/';
+  function icon(name) {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
   }
 
-  function fixLinks(html) {
-    const base = getPath();
-    if (!base || base === '/') return html;
-    return html.replace(/(href|src)="(?!https?:\/\/|#|mailto:|tel:|data:|\/)([^"]+)"/g,
-      (m, attr, path) => `${attr}="${base}${path}"`);
+  // === Render status bar (top of page) ===
+  function renderStatusBar() {
+    return `
+      <div class="status-bar">
+        <span class="time" id="status-time">9:41</span>
+        <div class="icons">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 22h2v-8H2v8zm5 0h2V10H7v12zm5 0h2V6h-2v16zm5 0h2V2h-2v20z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.24 4.24 0 0 0-6 0zm-4-4l2 2a7.07 7.07 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><line x1="6" y1="11" x2="6" y2="13"/><line x1="10" y1="11" x2="10" y2="13"/><line x1="14" y1="11" x2="14" y2="13"/></svg>
+        </div>
+      </div>`;
   }
 
-  function mount() {
-    const topBarSlot = document.getElementById('vps-topbar');
-    const headerSlot = document.getElementById('vps-header');
-    const footerSlot = document.getElementById('vps-footer');
+  // === Render top app bar (welcome row) ===
+  function renderAppBar() {
+    return `
+      <div class="app-topbar">
+        <div class="welcome">
+          <span class="hi">Welcome back,</span>
+          <span class="name">Virat <span class="em">Public School</span></span>
+        </div>
+        <div class="app-avatar" title="VPS">V</div>
+      </div>`;
+  }
 
-    if (topBarSlot) topBarSlot.outerHTML = fixLinks(TOP_BAR_HTML);
-    else if (!document.querySelector('.top-bar') && !document.body.dataset.noTopbar) {
-      document.body.insertAdjacentHTML('afterbegin', fixLinks(TOP_BAR_HTML));
-    }
+  // === Render bottom dock ===
+  function renderDock() {
+    const path = window.location.pathname.replace(/\/$/, '') || '/index.html';
+    return `
+      <div class="app-dock-wrap">
+        <nav class="app-dock" aria-label="Primary">
+          ${DOCK.map(item => {
+            const active = (path === item.href || (item.href === '/index.html' && (path === '/' || path === '/index'))) ? 'active' : '';
+            return `<a href="${item.href}" class="dock-item ${active}">${icon(item.icon)}<span class="label">${item.label}</span></a>`;
+          }).join('')}
+        </nav>
+      </div>`;
+  }
 
-    if (headerSlot) headerSlot.outerHTML = fixLinks(HEADER_HTML);
-    else if (!document.querySelector('.site-header') && !document.body.dataset.noHeader) {
-      const main = document.querySelector('main') || document.body.firstChild;
-      main.insertAdjacentHTML('beforebegin', fixLinks(HEADER_HTML));
-    }
+  // === Render install banner (PWA) ===
+  function renderInstallBanner() {
+    return `
+      <div class="install-banner" id="install-banner">
+        <div class="inner">
+          <div class="icon">V</div>
+          <div class="text">
+            <div class="title">Install VPS app</div>
+            <div class="desc">Add to your home screen for quick access</div>
+          </div>
+          <div class="actions">
+            <button class="dismiss" id="install-dismiss">Not now</button>
+            <button class="install" id="install-accept">Install</button>
+          </div>
+        </div>
+      </div>`;
+  }
 
-    if (footerSlot) footerSlot.outerHTML = fixLinks(FOOTER_HTML);
-    else if (!document.querySelector('.site-footer') && !document.body.dataset.noFooter) {
-      document.body.insertAdjacentHTML('beforeend', fixLinks(FOOTER_HTML));
-    }
+  // === Inject floating blobs (decorative) ===
+  function injectBlobs() {
+    if (document.querySelector('.float-blob')) return;
+    const html = '<div class="float-blob pink" aria-hidden="true"></div><div class="float-blob sky" aria-hidden="true"></div>';
+    document.body.insertAdjacentHTML('afterbegin', html);
+  }
 
-    // Mark current nav as active
-    const path = window.location.pathname.split('/').pop() || 'index.html';
-    document.querySelectorAll('.nav-link').forEach(a => {
-      const href = a.getAttribute('href') || '';
-      if (href === path) a.classList.add('active');
-    });
+  // === Status bar time update ===
+  function updateTime() {
+    const el = document.getElementById('status-time');
+    if (!el) return;
+    const d = new Date();
+    const h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    el.textContent = h + ':' + m;
+  }
 
-    // Mobile menu toggle
-    const bindMenu = () => {
-      const toggle = document.querySelector('.menu-toggle');
-      const mobile = document.getElementById('mobile-menu');
-      if (toggle && mobile && !toggle.dataset.bound) {
-        toggle.dataset.bound = '1';
-        toggle.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const open = mobile.classList.toggle('open');
-          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-          toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-        });
-        mobile.querySelectorAll('a').forEach(a => {
-          a.addEventListener('click', () => {
-            mobile.classList.remove('open');
-            toggle.setAttribute('aria-expanded', 'false');
-          });
-        });
-        document.addEventListener('click', (e) => {
-          if (!mobile.classList.contains('open')) return;
-          if (mobile.contains(e.target) || toggle.contains(e.target)) return;
-          mobile.classList.remove('open');
-          toggle.setAttribute('aria-expanded', 'false');
-        });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && mobile.classList.contains('open')) {
-            mobile.classList.remove('open');
-            toggle.setAttribute('aria-expanded', 'false');
-          }
-        });
+  // === Service worker registration ===
+  function registerSW() {
+    if (!('serviceWorker' in navigator)) return;
+    if (location.protocol === 'file:') return;
+    // Don't register on admin pages (sensitive)
+    if (location.pathname.startsWith('/admin/')) return;
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
+  // === Install prompt capture ===
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!localStorage.getItem('vps-install-dismissed')) {
+      const banner = document.getElementById('install-banner');
+      if (banner) {
+        setTimeout(() => banner.classList.add('show'), 3000);
       }
-    };
-    bindMenu();
-    setTimeout(bindMenu, 50);
-    setTimeout(bindMenu, 200);
-
-    // Header shadow on scroll
-    const header = document.querySelector('.site-header');
-    if (header) {
-      const onScroll = () => {
-        if (window.scrollY > 8) header.classList.add('scrolled');
-        else header.classList.remove('scrolled');
-      };
-      onScroll();
-      window.addEventListener('scroll', onScroll, { passive: true });
     }
+  });
+
+  function bindInstall() {
+    const banner = document.getElementById('install-banner');
+    if (!banner) return;
+    document.getElementById('install-accept').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      banner.classList.remove('show');
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch (e) {}
+      deferredPrompt = null;
+    });
+    document.getElementById('install-dismiss').addEventListener('click', () => {
+      banner.classList.remove('show');
+      localStorage.setItem('vps-install-dismissed', '1');
+    });
+  }
+
+  // === Mount ===
+  function mount() {
+    // Inject status bar at the very top of body
+    if (!document.querySelector('.status-bar')) {
+      document.body.insertAdjacentHTML('afterbegin', renderStatusBar());
+    }
+    // Inject app topbar (welcome row)
+    const topbarSlot = document.getElementById('vps-topbar');
+    if (topbarSlot) {
+      topbarSlot.outerHTML = renderAppBar();
+    } else if (!document.querySelector('.app-topbar') && !document.body.dataset.noTopbar) {
+      const main = document.querySelector('main') || document.body.firstChild;
+      main.insertAdjacentHTML('beforebegin', renderAppBar());
+    }
+    // Inject dock + install banner
+    if (!document.querySelector('.app-dock') && !document.body.dataset.noDock) {
+      document.body.insertAdjacentHTML('beforeend', renderDock() + renderInstallBanner());
+      document.body.classList.add('has-dock');
+    }
+
+    updateTime();
+    setInterval(updateTime, 30000);
+
+    bindInstall();
+    injectBlobs();
+    registerSW();
   }
 
   if (document.readyState === 'loading') {
@@ -202,4 +172,4 @@
     mount();
   }
 })();
-/* v9 — calm redesign */
+/* v10 — app shell */

@@ -1,10 +1,9 @@
 /* ============================================================
-   Virat Public School — Main script (calm, minimal)
+   Virat Public School — App main script
    ============================================================ */
 (function () {
   'use strict';
 
-  // === Helpers ===
   function esc(s) {
     if (s == null) return '';
     return String(s)
@@ -54,7 +53,7 @@
         .then(r => r.ok ? r.json() : null)
         .then(d => {
           const list = (d && (d.notices || d.results)) || [];
-          if (!list.length) { noticeEl.innerHTML = '<p style="color:var(--ink-3);">No notices yet.</p>'; return; }
+          if (!list.length) { noticeEl.innerHTML = '<p class="empty">No notices yet.</p>'; return; }
           noticeEl.innerHTML = list.map(n => {
             const date = n.publish_date || n.published_at || n.created_at;
             const dObj = date ? new Date(date) : null;
@@ -62,16 +61,18 @@
             const mon = dObj ? dObj.toLocaleString('en-IN', { month: 'short' }) : '';
             return `
               <a href="notice-detail.html?id=${encodeURIComponent(n.id)}" class="notice-item">
-                <div class="notice-date"><div class="day">${day}</div><div class="mon">${mon}</div></div>
-                <div class="notice-body">
-                  <span class="notice-tag">${esc(n.category || 'Notice')}</span>
+                <div class="date"><div class="day">${day}</div><div class="mon">${mon}</div></div>
+                <div class="body">
+                  <span class="tag">${esc(n.category || 'Notice')}</span>
                   <h3>${esc(n.title)}</h3>
-                  <div class="notice-meta">${fmt(date)}</div>
+                  <div class="meta">${fmt(date)}</div>
                 </div>
               </a>`;
           }).join('');
+          const cnt = document.getElementById('notices-count');
+          if (cnt) cnt.textContent = list.length;
         })
-        .catch(() => { noticeEl.innerHTML = '<p style="color:var(--ink-3);">Unable to load notices.</p>'; });
+        .catch(() => { noticeEl.innerHTML = '<p class="empty">Unable to load notices.</p>'; });
     }
 
     // === Latest gallery ===
@@ -81,12 +82,12 @@
         .then(r => r.ok ? r.json() : null)
         .then(d => {
           const list = (d && (d.albums || d.results)) || [];
-          if (!list.length) { galEl.innerHTML = '<p style="color:var(--ink-3);grid-column:1/-1;">No albums yet.</p>'; return; }
+          if (!list.length) { galEl.innerHTML = '<p class="empty">No albums yet.</p>'; return; }
           galEl.innerHTML = list.map(a => {
             const date = a.event_date ? new Date(a.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
             const cover = a.cover_url
               ? `<img class="album-thumb-img" src="${esc(a.cover_url)}" alt="${esc(a.title)}" loading="lazy" />`
-              : `<div style="display:grid;place-items:center;width:100%;height:100%;color:var(--ink-4);font-size:13px;">Album cover</div>`;
+              : '';
             return `
               <a href="album.html?slug=${encodeURIComponent(a.slug)}" class="album-card">
                 <div class="album-thumb">${cover}</div>
@@ -97,8 +98,8 @@
               </a>`;
           }).join('');
         })
-        .catch(() => { galEl.innerHTML = '<p style="color:var(--ink-3);grid-column:1/-1;">Unable to load albums.</p>'; });
+        .catch(() => { galEl.innerHTML = '<p class="empty">Unable to load albums.</p>'; });
     }
   });
 })();
-/* v8 — calm */
+/* v9 — app */

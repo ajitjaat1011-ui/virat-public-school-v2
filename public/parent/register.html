@@ -2,43 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Request Account · Parent Portal · Virat Public School</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Request account · Parent Portal</title>
   <meta name="description" content="Register for the Virat Public School parent portal. Your account will be reviewed by the school office before you can sign in." />
-  <meta name="theme-color" content="#6d3877" />
-  <link rel="icon" type="image/svg+xml" href="../images/favicon.svg" />
+  <meta name="theme-color" content="#ff3d80" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css?v=12" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css?v=13" />
   <style>
-    .auth-wrap {
-      min-height: calc(100vh - 64px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 40px 24px;
-      background: var(--tint);
-    }
-    .auth-card {
-      width: 100%; max-width: 460px;
-      background: var(--paper);
-      border: 1px solid var(--line);
-      border-radius: var(--r-lg);
-      padding: 32px;
-    }
-    .auth-card h1 { font-size: 1.5rem; margin-bottom: 6px; }
-    .auth-card p.sub { color: var(--ink-3); font-size: 14px; margin-bottom: 24px; }
-    .auth-foot { font-size: 13px; color: var(--ink-3); text-align: center; margin-top: 20px; }
-    .auth-foot a { color: var(--accent); }
-    .auth-section { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
-    .auth-section-title { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 12px; }
+    body.has-dock .auth-wrap { min-height: calc(100vh - 90px); }
     .auth-notice {
-      background: var(--accent-soft);
-      color: var(--accent-deep);
+      background: var(--pink-50);
+      color: var(--pink-700);
+      border: 1px solid var(--pink-200);
       border-radius: var(--r-md);
       padding: 12px 14px;
       font-size: 13px;
-      margin-bottom: 20px;
       line-height: 1.5;
+      margin-bottom: 18px;
+    }
+    .auth-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+    .auth-section-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--ink-700);
+      margin-bottom: 12px;
     }
   </style>
 </head>
@@ -50,15 +46,16 @@
   <main id="main">
     <div class="auth-wrap">
       <div class="auth-card">
-        <h1>Request a parent account</h1>
-        <p class="sub">Fill in your details below. The school office will review your request and approve your account.</p>
+        <div class="logo">V</div>
+        <h1>Request account</h1>
+        <p class="sub">Fill in your details. The school office will review and approve.</p>
 
         <div class="auth-notice">
           Your account will not be active immediately. Once approved, you can sign in with the mobile number and password you provide here.
         </div>
 
         <form id="regForm" class="form" novalidate>
-          <div class="auth-section-title" style="font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 12px;">Your details</div>
+          <div class="auth-section-title">Your details</div>
           <div class="form-group">
             <label class="form-label" for="full_name">Your full name</label>
             <input class="form-input" type="text" id="full_name" name="full_name" required minlength="2" maxlength="100" placeholder="e.g. Sunita Sharma" />
@@ -99,22 +96,20 @@
           </div>
 
           <div id="regError" class="form-error-banner" role="alert"></div>
-          <button type="submit" class="btn btn-primary btn-lg" id="regBtn">Submit request</button>
+          <button type="submit" class="btn btn-pink btn-lg" id="regBtn">Submit request</button>
         </form>
 
-        <p class="auth-foot">
-          Already have an account? <a href="login.html">Sign in</a> · <a href="../index.html">Back to site</a>
+        <p class="foot">
+          Already have an account? <a href="login.html">Sign in</a><br>
+          <a href="../index.html" style="font-weight: 400;">← Back to site</a>
         </p>
       </div>
     </div>
   </main>
 
-  <div id="vps-footer"></div>
-
-  <script src="../js/partials.js?v=9"></script>
+  <script src="/js/partials.js?v=10"></script>
   <script>
     (function () {
-      'use strict';
       const form = document.getElementById('regForm');
       const errEl = document.getElementById('regError');
       const btn   = document.getElementById('regBtn');
@@ -122,7 +117,6 @@
       function showError(msg) { errEl.textContent = msg; errEl.classList.add('show'); }
       function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; }
 
-      // If already logged in
       fetch('/api/parent/auth', { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
         .then(d => { if (d && d.parent) window.location.href = 'dashboard.html'; });
@@ -158,14 +152,13 @@
           });
           const data = await res.json();
           if (!res.ok) { showError(data.error || 'Submission failed.'); return; }
-          // Success: replace form with a thank-you
           form.outerHTML = `
-            <div class="form-success" style="text-align:left;">
+            <div class="form-success" style="background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:16px; border-radius:14px; text-align:left;">
               <strong>Thank you — your request is in.</strong><br><br>
               The school office will review your details and approve your account. You will be able to sign in with the mobile number and password you just provided.
               <br><br>
-              <a href="login.html" class="btn btn-secondary">Go to sign in</a>
-              <a href="../index.html" class="btn btn-ghost">Back to site</a>
+              <a href="login.html" class="btn btn-secondary btn-sm">Go to sign in</a>
+              <a href="../index.html" class="btn btn-ghost btn-sm">Back to site</a>
             </div>`;
         } catch (err) {
           showError('Network error. Please try again.');
