@@ -26,19 +26,6 @@
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
   }
 
-  // === Render status bar (top of page) ===
-  function renderStatusBar() {
-    return `
-      <div class="status-bar">
-        <span class="time" id="status-time">9:41</span>
-        <div class="icons">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 22h2v-8H2v8zm5 0h2V10H7v12zm5 0h2V6h-2v16zm5 0h2V2h-2v20z"/></svg>
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.24 4.24 0 0 0-6 0zm-4-4l2 2a7.07 7.07 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><line x1="6" y1="11" x2="6" y2="13"/><line x1="10" y1="11" x2="10" y2="13"/><line x1="14" y1="11" x2="14" y2="13"/></svg>
-        </div>
-      </div>`;
-  }
-
   // === Render top app bar (welcome row) ===
   function renderAppBar() {
     return `
@@ -90,16 +77,6 @@
     document.body.insertAdjacentHTML('afterbegin', html);
   }
 
-  // === Status bar time update ===
-  function updateTime() {
-    const el = document.getElementById('status-time');
-    if (!el) return;
-    const d = new Date();
-    const h = d.getHours();
-    const m = String(d.getMinutes()).padStart(2, '0');
-    el.textContent = h + ':' + m;
-  }
-
   // === Service worker registration ===
   function registerSW() {
     if (!('serviceWorker' in navigator)) return;
@@ -140,10 +117,6 @@
 
   // === Mount ===
   function mount() {
-    // Inject status bar at the very top of body
-    if (!document.querySelector('.status-bar')) {
-      document.body.insertAdjacentHTML('afterbegin', renderStatusBar());
-    }
     // Inject app topbar (welcome row)
     const topbarSlot = document.getElementById('vps-topbar');
     if (topbarSlot) {
@@ -158,10 +131,6 @@
       document.body.classList.add('has-dock');
     }
 
-    updateTime();
-    setInterval(updateTime, 30000);
-
-    bindInstall();
     injectBlobs();
     registerSW();
   }

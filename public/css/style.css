@@ -104,19 +104,6 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
 }
 .skip-link:focus { top: 0; }
 
-/* === Status bar (mobile-style, on all sizes) === */
-.status-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 24px 6px;
-  font-size: 13px; font-weight: 600;
-  color: var(--ink-900);
-  font-feature-settings: "tnum";
-  max-width: 880px; margin: 0 auto;
-}
-.status-bar .time { font-size: 15px; font-weight: 700; }
-.status-bar .icons { display: flex; gap: 6px; align-items: center; }
-.status-bar .icons svg { width: 16px; height: 16px; color: var(--ink-700); }
-
 /* === Top bar (welcome row) === */
 .app-topbar {
   display: flex; align-items: center; justify-content: space-between;
@@ -436,18 +423,20 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
   min-width: 0;
   position: relative;
 }
-.dock-item svg { width: 18px; height: 18px; flex-shrink: 0; }
-.dock-item:hover { color: var(--ink-900); background: rgba(0,0,0,0.04); }
+.dock-item svg { width: 22px; height: 22px; flex-shrink: 0; transition: color 0.2s, transform 0.2s var(--ease-bounce); }
+.dock-item:hover { color: var(--ink-900); }
+.dock-item:hover svg { transform: translateY(-2px); }
 .dock-item.active {
-  background: var(--ink-900);
-  color: white;
-  padding-left: 18px; padding-right: 18px;
+  color: var(--pink-600);
+  background: transparent;
 }
+.dock-item.active svg { color: var(--pink-600); }
 .dock-item .label { display: none; }
 @media (min-width: 480px) {
   .dock-item { padding: 10px 12px; }
-  .dock-item .label { display: inline; }
-  .dock-item.active { padding-left: 18px; padding-right: 18px; }
+  .dock-item .label { display: inline; font-weight: 600; }
+  .dock-item.active { background: transparent; }
+  .dock-item.active .label { color: var(--pink-600); }
 }
 
 /* Page has bottom padding to clear the dock */
@@ -806,7 +795,7 @@ body.has-dock .site-footer { padding-bottom: 32px; }
 }
 
 @media print {
-  .status-bar, .app-dock-wrap, .app-topbar, .site-footer, .install-banner { display: none !important; }
+  .app-dock-wrap, .app-topbar, .site-footer, .install-banner { display: none !important; }
   body { background: white; color: black; }
 }
 
