@@ -3,7 +3,7 @@
  */
 import { errorResponse, jsonResponse } from '../../lib/data.js';
 import { db } from '../../lib/db.js';
-import { setSessionCookie, clearSessionCookie, getCurrentUser, cuid } from '../../lib/auth.js';
+import { setSessionCookie, clearSessionCookie, getCurrentUser, cuid, rateLimit, checkOrigin } from '../../lib/auth.js';
 
 const SESSION_COOKIE = 'vps_session';
 
@@ -15,6 +15,13 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const originErr = checkOrigin(request);
+  if (originErr) return errorResponse(originErr, 403);
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  try {
+    const limit = await rateLimit(env, 'admin-login:' + ip, 10, 15 * 60);
+    if (limit.limited) return errorResponse('Too many login attempts. Please try again later.', 429);
+  } catch (_) {}
   let body;
   try { body = await request.json(); } catch { return errorResponse('Invalid JSON', 400); }
   if (!body.username || !body.password) return errorResponse('Username and password are required', 400);
@@ -48,7 +55,8 @@ export async function onRequestPost(context) {
     await db(env).prepare('UPDATE users SET failed_logins = 0, locked_until = NULL, last_login_at = ?1 WHERE id = ?2')
       .bind(new Date().toISOString(), user.id).run();
   } catch (e) {
-    return errorResponse('Session creation failed: ' + e.message, 500);
+    console.error('Session creation failed');
+    return errorResponse('Session creation failed', 500);
   }
 
   const headers = new Headers({ 'Content-Type': 'application/json' });

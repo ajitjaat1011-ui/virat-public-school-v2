@@ -84,6 +84,7 @@ export function setSessionCookie(headers, sessionId, expiresAt) {
     `${SESSION_COOKIE}=${encodeURIComponent(sessionId)}`,
     `Path=/`,
     `HttpOnly`,
+    `Secure`,
     `SameSite=Lax`,
     `Expires=${new Date(expiresAt).toUTCString()}`
   ];
@@ -91,7 +92,7 @@ export function setSessionCookie(headers, sessionId, expiresAt) {
 }
 
 export function clearSessionCookie(headers) {
-  headers.append('Set-Cookie', `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  headers.append('Set-Cookie', `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
 }
 
 // ---------- Session lookup ----------
@@ -260,6 +261,7 @@ export function setParentSessionCookie(headers, sessionId, expiresAt) {
     `${PARENT_COOKIE}=${encodeURIComponent(sessionId)}`,
     `Path=/`,
     `HttpOnly`,
+    `Secure`,
     `SameSite=Lax`,
     `Expires=${new Date(expiresAt).toUTCString()}`
   ];
@@ -267,7 +269,7 @@ export function setParentSessionCookie(headers, sessionId, expiresAt) {
 }
 
 export function clearParentSessionCookie(headers) {
-  headers.append('Set-Cookie', `${PARENT_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  headers.append('Set-Cookie', `${PARENT_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
 }
 
 export async function getCurrentParent(request, env) {

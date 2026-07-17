@@ -9,15 +9,16 @@
  * To change the database, update HARDCODED_FALLBACK and redeploy.
  */
 
-const HARDCODED_FALLBACK = {
-  url: 'libsql://virat-public-school-ajitjaat1011-ui.aws-ap-south-1.turso.io',
-  token: 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODQxNzI0ODEsImlkIjoiMDE5ZjY4ZjctNWMwMS03NDVhLTllZDItZTIzNzAyZmIwYzRhIiwia2lkIjoienVDWHBCUlUtOU1paW1aOW45NlhYRUJyRzdUU0U3Y1JJWG4zbE5rQUxzWSIsInJpZCI6IjBhMjBkYmFmLTc5YTktNDliOC1hZDg2LWMzYzNiOGEyYzgxZCJ9.luNfzLTKvqXKQlLyOM4suZbdCihXhKlxwTwoVCvLELFQyjlUu5E_Q5PiLTAn6hEscx2_IC7Y1MuqT185DDD_BA'
-};
+const FALLBACK_URL = 'libsql://virat-public-school-ajitjaat1011-ui.aws-ap-south-1.turso.io';
+
+// The database token must be supplied as a Cloudflare Pages secret.
+// Never commit a Turso token to source control.
+
 
 function getConfig(env) {
-  const url = (env && env.TURSO_URL) || HARDCODED_FALLBACK.url;
-  const token = (env && env.TURSO_TOKEN) || HARDCODED_FALLBACK.token;
-  if (!url || !token) throw new Error('Turso not configured: set TURSO_URL and TURSO_TOKEN env vars or update HARDCODED_FALLBACK in functions/lib/turso.js');
+  const url = (env && env.TURSO_URL) || FALLBACK_URL;
+  const token = env && env.TURSO_TOKEN;
+  if (!url || !token) throw new Error('Turso not configured: set TURSO_URL and the TURSO_TOKEN Pages secret');
   return { url, token };
 }
 
@@ -27,6 +28,7 @@ export async function tursoQuery(env, sql, params = []) {
   const res = await fetch(httpUrl + '/v2/pipeline', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined,
     body: JSON.stringify({
       requests: [
         { type: 'execute', stmt: { sql, args: params.map(toTursoValue) } },
