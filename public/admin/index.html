@@ -67,6 +67,11 @@
         <div class="value">—</div>
         <div class="link">Manage →</div>
       </a>
+      <a href="/admin/students.html" class="stat-tile" id="card-students">
+        <div class="label">Active students</div>
+        <div class="value">—</div>
+        <div class="link">Open master list →</div>
+      </a>
     </div>
 
     <div class="dash-grid">
@@ -105,6 +110,7 @@
           document.querySelector('#card-exams .value').textContent     = c.exams;
           document.querySelector('#card-notices .value').textContent  = c.notices;
           document.querySelector('#card-albums .value').textContent   = c.albums;
+          document.querySelector('#card-students .value').textContent = c.students ?? 0;
           if (c.newInquiries > 0) document.getElementById('card-inquiries').classList.add('alert');
           if (c.parentRequests > 0) document.getElementById('card-parents').classList.add('alert');
 
