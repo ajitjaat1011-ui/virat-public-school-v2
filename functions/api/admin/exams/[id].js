@@ -60,6 +60,30 @@ export async function onRequestPost(context) {
   try {
     await db(env).prepare(`UPDATE exams SET ${fields.join(', ')} WHERE id = ?${idx}`).bind(...params2).run();
     await audit(env, user.id, 'exam.update', 'Exam', id, request.headers.get('CF-Connecting-IP') || '');
+
+    // === Auto-create a public notice when toggling is_published from 0 → 1 ===
+    if (body.is_published === 1 || body.is_published === true) {
+      try {
+        const updated = await db(env).prepare('SELECT title, class_name, subject, exam_date, start_time, end_time, syllabus FROM exams WHERE id = ?1').bind(id).first();
+        if (updated) {
+          const examDateFmt = new Date(updated.exam_date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+          const timeLine = updated.start_time ? `${updated.start_time}${updated.end_time ? ' – ' + updated.end_time : ''}` : '';
+          const bodyHtml = `<p><strong>${(updated.title || '').replace(/</g, '&lt;')}</strong> is scheduled for <strong>${examDateFmt}</strong>${timeLine ? ' at <strong>' + timeLine + '</strong>' : ''}${updated.class_name ? ' for <strong>' + updated.class_name + '</strong>' : ''}.</p>${updated.syllabus ? '<p>' + updated.syllabus.replace(/</g, '&lt;') + '</p>' : ''}<p>Please be in your seats 10 minutes before the start time. Bring your school ID and stationery.</p>`;
+          const excerpt = `Exam on ${examDateFmt}${timeLine ? ', ' + timeLine : ''} — ${updated.class_name || ''}`;
+          const slugBase = (updated.title || 'exam').toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '').trim()
+            .replace(/\s+/g, '-').slice(0, 70);
+          const slugFinal = `${slugBase}-${updated.exam_date}-` + cuid().slice(0, 6);
+          const noticeId = 'ntc_' + cuid();
+          await db(env).prepare(
+            `INSERT INTO notices (id, title, slug, body, excerpt, category, is_published, publish_date, author_id)
+             VALUES (?1, ?2, ?3, ?4, ?5, 'EXAM', 1, datetime('now'), ?6)`
+          ).bind(noticeId, updated.title, slugFinal, bodyHtml, excerpt, user.id).run();
+        }
+      } catch (e) {
+        console.error('Auto-notice on publish failed:', e.message);
+      }
+    }
   } catch (e) {
     return errorResponse('Update failed: ' + e.message, 500);
   }

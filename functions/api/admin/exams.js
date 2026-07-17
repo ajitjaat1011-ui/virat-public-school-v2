@@ -72,6 +72,33 @@ export async function onRequestPost(context) {
     ).bind(id, title, class_name, subject, exam_date, start_time, end_time,
            max_marks, syllabus, notes, is_published, user.id).run();
     await audit(env, user.id, 'exam.create', 'Exam', id, request.headers.get('CF-Connecting-IP') || '');
+
+    // === Auto-create a public notice when the exam is published ===
+    // Parents see this on the home page and notices page.
+    if (is_published === 1) {
+      try {
+        const slugBase = (title || 'exam').toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '').trim()
+          .replace(/\s+/g, '-').slice(0, 70);
+        const slug = `${slugBase}-${exam_date}`;
+        const examDateFmt = new Date(exam_date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+        const timeLine = start_time
+          ? `${start_time}${end_time ? ' – ' + end_time : ''}`
+          : '';
+        const bodyHtml = `<p><strong>${title.replace(/</g, '&lt;')}</strong> is scheduled for <strong>${examDateFmt}</strong>${timeLine ? ' at <strong>' + timeLine + '</strong>' : ''}${class_name ? ' for <strong>' + class_name + '</strong>' : ''}.</p>${syllabus ? '<p>' + syllabus.replace(/</g, '&lt;') + '</p>' : ''}<p>Please be in your seats 10 minutes before the start time. Bring your school ID and stationery.</p>`;
+        const excerpt = `Exam on ${examDateFmt}${timeLine ? ', ' + timeLine : ''} — ${class_name}`;
+        // Use a unique slug — append a short cuid tail to avoid collisions
+        const slugFinal = slug + '-' + cuid().slice(0, 6);
+        const noticeId = 'ntc_' + cuid();
+        await db(env).prepare(
+          `INSERT INTO notices (id, title, slug, body, excerpt, category, is_published, publish_date, author_id)
+           VALUES (?1, ?2, ?3, ?4, ?5, 'EXAM', 1, datetime('now'), ?6)`
+        ).bind(noticeId, title, slugFinal, bodyHtml, excerpt, user.id).run();
+      } catch (e) {
+        // Don't fail the exam creation if notice creation has a hiccup
+        console.error('Auto-notice creation failed:', e.message);
+      }
+    }
   } catch (e) {
     return errorResponse('Could not create exam: ' + e.message, 500);
   }
