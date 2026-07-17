@@ -248,3 +248,48 @@ export function slugify(s) {
     .replace(/^-|-$/g, '')
     .slice(0, 80);
 }
+
+// =========================================================================
+// Parent portal — separate session table, separate cookie
+// =========================================================================
+const PARENT_COOKIE = 'vps_parent';
+const PARENT_TTL_DAYS = 14;
+
+export function setParentSessionCookie(headers, sessionId, expiresAt) {
+  const parts = [
+    `${PARENT_COOKIE}=${encodeURIComponent(sessionId)}`,
+    `Path=/`,
+    `HttpOnly`,
+    `SameSite=Lax`,
+    `Expires=${new Date(expiresAt).toUTCString()}`
+  ];
+  headers.append('Set-Cookie', parts.join('; '));
+}
+
+export function clearParentSessionCookie(headers) {
+  headers.append('Set-Cookie', `${PARENT_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+}
+
+export async function getCurrentParent(request, env) {
+  const cookies = parseCookies(request);
+  const sid = cookies[PARENT_COOKIE];
+  if (!sid) return null;
+  const row = await db(env).prepare(
+    'SELECT ps.id as sid, ps.expires_at, p.id, p.full_name, p.phone, p.status, p.failed_logins, p.locked_until FROM parent_sessions ps JOIN parents p ON p.id = ps.parent_id WHERE ps.id = ?1'
+  ).bind(sid).first();
+  if (!row) return null;
+  if (new Date(row.expires_at) < new Date()) return null;
+  if (row.status !== 'APPROVED') return null;
+  return {
+    id: row.id,
+    full_name: row.full_name,
+    phone: row.phone,
+    status: row.status
+  };
+}
+
+export async function requireParent(request, env) {
+  const parent = await getCurrentParent(request, env);
+  if (!parent) return { parent: null, error: 'Authentication required' };
+  return { parent, error: null };
+}

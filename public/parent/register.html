@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Request Account · Parent Portal · Virat Public School</title>
+  <meta name="description" content="Register for the Virat Public School parent portal. Your account will be reviewed by the school office before you can sign in." />
+  <meta name="theme-color" content="#6d3877" />
+  <link rel="icon" type="image/svg+xml" href="../images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css?v=12" />
+  <style>
+    .auth-wrap {
+      min-height: calc(100vh - 64px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 24px;
+      background: var(--tint);
+    }
+    .auth-card {
+      width: 100%; max-width: 460px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 32px;
+    }
+    .auth-card h1 { font-size: 1.5rem; margin-bottom: 6px; }
+    .auth-card p.sub { color: var(--ink-3); font-size: 14px; margin-bottom: 24px; }
+    .auth-foot { font-size: 13px; color: var(--ink-3); text-align: center; margin-top: 20px; }
+    .auth-foot a { color: var(--accent); }
+    .auth-section { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .auth-section-title { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 12px; }
+    .auth-notice {
+      background: var(--accent-soft);
+      color: var(--accent-deep);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <div id="vps-topbar"></div>
+  <div id="vps-header"></div>
+
+  <main id="main">
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <h1>Request a parent account</h1>
+        <p class="sub">Fill in your details below. The school office will review your request and approve your account.</p>
+
+        <div class="auth-notice">
+          Your account will not be active immediately. Once approved, you can sign in with the mobile number and password you provide here.
+        </div>
+
+        <form id="regForm" class="form" novalidate>
+          <div class="auth-section-title" style="font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 12px;">Your details</div>
+          <div class="form-group">
+            <label class="form-label" for="full_name">Your full name</label>
+            <input class="form-input" type="text" id="full_name" name="full_name" required minlength="2" maxlength="100" placeholder="e.g. Sunita Sharma" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="phone">Mobile number (as given to school)</label>
+            <input class="form-input" type="tel" id="phone" name="phone" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required autocomplete="tel" placeholder="10-digit mobile" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input class="form-input" type="password" id="password" name="password" required autocomplete="new-password" minlength="6" maxlength="100" placeholder="At least 6 characters" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password2">Confirm password</label>
+            <input class="form-input" type="password" id="password2" name="password2" required autocomplete="new-password" minlength="6" maxlength="100" placeholder="Type it again" />
+          </div>
+
+          <div class="auth-section auth-section-title">Your child (optional — helps us link your account)</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="student_name">Child's name</label>
+              <input class="form-input" type="text" id="student_name" name="student_name" placeholder="e.g. Aarav" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="class_name">Class</label>
+              <input class="form-input" type="text" id="class_name" name="class_name" placeholder="e.g. Class 5" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="section">Section</label>
+              <input class="form-input" type="text" id="section" name="section" maxlength="5" placeholder="e.g. A" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="roll_number">Roll number</label>
+              <input class="form-input" type="text" id="roll_number" name="roll_number" maxlength="20" placeholder="optional" />
+            </div>
+          </div>
+
+          <div id="regError" class="form-error-banner" role="alert"></div>
+          <button type="submit" class="btn btn-primary btn-lg" id="regBtn">Submit request</button>
+        </form>
+
+        <p class="auth-foot">
+          Already have an account? <a href="login.html">Sign in</a> · <a href="../index.html">Back to site</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <div id="vps-footer"></div>
+
+  <script src="../js/partials.js?v=9"></script>
+  <script>
+    (function () {
+      'use strict';
+      const form = document.getElementById('regForm');
+      const errEl = document.getElementById('regError');
+      const btn   = document.getElementById('regBtn');
+
+      function showError(msg) { errEl.textContent = msg; errEl.classList.add('show'); }
+      function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; }
+
+      // If already logged in
+      fetch('/api/parent/auth', { credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d && d.parent) window.location.href = 'dashboard.html'; });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+        const full_name = document.getElementById('full_name').value.trim();
+        const phone     = document.getElementById('phone').value.trim().replace(/[^\d]/g, '');
+        const password  = document.getElementById('password').value;
+        const password2 = document.getElementById('password2').value;
+        const student_name = document.getElementById('student_name').value.trim();
+        const class_name   = document.getElementById('class_name').value.trim();
+        const section      = document.getElementById('section').value.trim();
+        const roll_number  = document.getElementById('roll_number').value.trim();
+
+        if (full_name.length < 2) { showError('Please enter your full name.'); return; }
+        if (!/^\d{10}$/.test(phone)) { showError('Please enter a 10-digit mobile number.'); return; }
+        if (password.length < 6) { showError('Password must be at least 6 characters.'); return; }
+        if (password !== password2) { showError('Passwords do not match.'); return; }
+
+        btn.disabled = true; btn.textContent = 'Submitting…';
+        try {
+          const res = await fetch('/api/parent/auth', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'register',
+              full_name, phone, password,
+              student_name, class_name, section, roll_number
+            })
+          });
+          const data = await res.json();
+          if (!res.ok) { showError(data.error || 'Submission failed.'); return; }
+          // Success: replace form with a thank-you
+          form.outerHTML = `
+            <div class="form-success" style="text-align:left;">
+              <strong>Thank you — your request is in.</strong><br><br>
+              The school office will review your details and approve your account. You will be able to sign in with the mobile number and password you just provided.
+              <br><br>
+              <a href="login.html" class="btn btn-secondary">Go to sign in</a>
+              <a href="../index.html" class="btn btn-ghost">Back to site</a>
+            </div>`;
+        } catch (err) {
+          showError('Network error. Please try again.');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Submit request';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

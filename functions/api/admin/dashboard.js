@@ -11,7 +11,8 @@ export async function onRequestGet(context) {
   if (!user) return errorResponse('Not authenticated', 401);
 
   const counts = {
-    newInquiries: 0, oldInquiries: 0, unreadMessages: 0, notices: 0, albums: 0
+    newInquiries: 0, oldInquiries: 0, unreadMessages: 0, notices: 0, albums: 0,
+    parentRequests: 0, exams: 0
   };
   const recentInquiries = [];
   const recentAudit = [];
@@ -27,6 +28,10 @@ export async function onRequestGet(context) {
     counts.notices = notices?.c || 0;
     const albums = await db(env).prepare('SELECT COUNT(*) as c FROM gallery_albums WHERE deleted_at IS NULL AND is_published = 1').first();
     counts.albums = albums?.c || 0;
+    const parents = await db(env).prepare("SELECT COUNT(*) as c FROM parents WHERE status = 'PENDING'").first();
+    counts.parentRequests = parents?.c || 0;
+    const exams = await db(env).prepare('SELECT COUNT(*) as c FROM exams WHERE deleted_at IS NULL').first();
+    counts.exams = exams?.c || 0;
     const ri = await db(env).prepare('SELECT id, parent_name, student_name, class_seeking, created_at FROM admission_inquiries WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 5').all();
     recentInquiries.push(...(ri.results || []));
     const ra = await db(env).prepare("SELECT a.id, a.action, a.entity, a.created_at, u.username FROM audit_log a LEFT JOIN users u ON u.id = a.user_id ORDER BY a.created_at DESC LIMIT 10").all();

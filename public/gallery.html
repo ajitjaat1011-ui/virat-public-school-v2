@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -39,8 +39,8 @@
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=8"></script>
-  <script src="js/main.js?v=7"></script>
+  <script src="js/partials.js?v=9"></script>
+  <script src="js/main.js?v=8"></script>
   <script>
     (async () => {
       const el = document.getElementById('gallery-list');
@@ -52,8 +52,12 @@
         if (!list.length) { el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">No albums yet.</p>'; return; }
         el.innerHTML = list.map((a, i) => {
           const date = a.event_date ? new Date(a.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+          // Use real photo if album has cover_url
+          const thumb = a.cover_url
+            ? `<img class="album-thumb-img" src="${esc(a.cover_url)}" alt="${esc(a.title)}" loading="lazy" />`
+            : (window.albumSVG ? window.albumSVG(['plum','sky','rose','mix'][i % 4]) : '');
           return `<a href="album.html?slug=${encodeURIComponent(a.slug)}" class="album-card reveal">
-            <div class="album-thumb">${window.albumSVG ? window.albumSVG(['plum','sky','rose','mix'][i % 4]) : ''}</div>
+            <div class="album-thumb">${thumb}</div>
             <div class="album-body">
               <h3>${esc(a.title)}</h3>
               <p>${esc(date)}</p>

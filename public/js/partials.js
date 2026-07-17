@@ -1,6 +1,6 @@
 /* ============================================================
    Virat Public School — Partial layout injector
-   Keeps all 22 pages consistent with the new soft design
+   Calm, premium design. No bloom animation. No flower petals.
    ============================================================ */
 (function () {
   'use strict';
@@ -8,7 +8,7 @@
   const TOP_BAR_HTML = `
     <div class="top-bar">
       <div class="container-wide">
-        <a href="tel:+919000000000">+91 90000 00000</a>
+        <span><a href="tel:+919000000000">+91 90000 00000</a></span>
         <span class="top-tag">RBSE Affiliated · Est. 2008</span>
       </div>
     </div>`;
@@ -18,9 +18,9 @@
       <div class="container-wide">
         <div class="header-inner">
           <a href="index.html" class="brand" aria-label="Virat Public School, Virat Nagar Kotputli — home">
-            <span class="brand-logo"><span class="logo-shine"></span>V</span>
+            <span class="brand-logo">V</span>
             <span class="brand-text">
-              <span class="brand-name"><span class="bloom-letter">V</span><span class="bloom-letter">i</span><span class="bloom-letter">r</span><span class="bloom-letter">a</span><span class="bloom-letter">t</span><span>&nbsp;</span><span class="bloom-letter">P</span><span class="bloom-letter">u</span><span class="bloom-letter">b</span><span class="bloom-letter">l</span><span class="bloom-letter">i</span><span class="bloom-letter">c</span><span>&nbsp;</span><span class="bloom-letter">S</span><span class="bloom-letter">c</span><span class="bloom-letter">h</span><span class="bloom-letter">o</span><span class="bloom-letter">o</span><span class="bloom-letter">l</span></span>
+              <span class="brand-name">Virat Public School</span>
               <span class="brand-sub">Virat Nagar · Kotputli</span>
             </span>
           </a>
@@ -31,6 +31,7 @@
             <a href="gallery.html" class="nav-link">Gallery</a>
             <a href="notices.html" class="nav-link">Notices</a>
             <a href="contact.html" class="nav-link">Contact</a>
+            <a href="parent/login.html" class="nav-link">Parents</a>
             <a href="admissions.html#inquiry" class="nav-cta">Apply</a>
           </nav>
           <button class="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
@@ -47,7 +48,8 @@
         <a href="notices.html">Notices</a>
         <a href="events.html">Events</a>
         <a href="contact.html">Contact</a>
-        <a href="admissions.html#inquiry" style="color:var(--rose-600);font-weight:600;">Apply Now →</a>
+        <a href="parent/login.html">Parent Portal</a>
+        <a href="admissions.html#inquiry" style="color:var(--accent);font-weight:600;">Apply Now →</a>
       </nav>
     </header>`;
 
@@ -57,7 +59,7 @@
         <div class="footer-grid">
           <div>
             <div class="brand" style="margin-bottom:12px;">
-              <span class="brand-logo"><span class="logo-shine"></span>V</span>
+              <span class="brand-logo">V</span>
               <span class="brand-text">
                 <span class="brand-name">Virat Public School</span>
                 <span class="brand-sub">Virat Nagar · Kotputli</span>
@@ -89,12 +91,13 @@
               <li><a href="contact.html">Contact</a></li>
               <li><a href="disclosures.html">Disclosures</a></li>
               <li><a href="privacy.html">Privacy</a></li>
-              <li><a href="accessibility.html">Accessibility</a></li>
+              <li><a href="parent/login.html">Parent Portal</a></li>
             </ul>
           </div>
         </div>
         <div class="footer-bottom">
           <span>© 2026 Virat Public School</span>
+          <span><a href="admin/login.html">Admin</a></span>
         </div>
       </div>
     </footer>`;
@@ -137,10 +140,11 @@
       document.body.insertAdjacentHTML('beforeend', fixLinks(FOOTER_HTML));
     }
 
-    // === Flower bloom: stagger per-letter delays on the brand name ===
-    const brandLetters = document.querySelectorAll('.brand-name .bloom-letter');
-    brandLetters.forEach((el, i) => {
-      el.style.animationDelay = (0.8 + i * 0.035) + 's';
+    // Mark current nav as active
+    const path = window.location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.nav-link').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      if (href === path) a.classList.add('active');
     });
 
     // Mobile menu toggle
@@ -156,22 +160,18 @@
           toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
           toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
         });
-        // Close menu when a link is clicked — do NOT preventDefault
         mobile.querySelectorAll('a').forEach(a => {
-          a.addEventListener('click', (e) => {
-            // Let the browser handle the navigation
+          a.addEventListener('click', () => {
             mobile.classList.remove('open');
             toggle.setAttribute('aria-expanded', 'false');
           });
         });
-        // Close on outside click
         document.addEventListener('click', (e) => {
           if (!mobile.classList.contains('open')) return;
           if (mobile.contains(e.target) || toggle.contains(e.target)) return;
           mobile.classList.remove('open');
           toggle.setAttribute('aria-expanded', 'false');
         });
-        // Close on escape
         document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape' && mobile.classList.contains('open')) {
             mobile.classList.remove('open');
@@ -181,9 +181,19 @@
       }
     };
     bindMenu();
-    // Re-bind after a tick in case main.js re-rendered
     setTimeout(bindMenu, 50);
     setTimeout(bindMenu, 200);
+
+    // Header shadow on scroll
+    const header = document.querySelector('.site-header');
+    if (header) {
+      const onScroll = () => {
+        if (window.scrollY > 8) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      };
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -192,3 +202,4 @@
     mount();
   }
 })();
+/* v9 — calm redesign */

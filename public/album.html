@@ -4,13 +4,70 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Album | Virat Public School</title>
-  
   <meta name="theme-color" content="#6d3877" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
+  <style>
+    /* Album-detail page styles */
+    .album-hero {
+      max-width: 1100px;
+      margin: 0 auto 40px;
+      aspect-ratio: 16/7;
+      border-radius: 28px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(106, 56, 119, 0.18);
+    }
+    .album-hero img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .album-hero .hero-caption {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 32px;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+      color: white;
+    }
+    .album-hero .hero-caption h2 {
+      color: white; font-size: 1.6rem; margin-bottom: 4px;
+    }
+    .album-hero .hero-caption p { color: rgba(255,255,255,0.9); margin: 0; font-size: 14px; }
+    .photo-card {
+      background: var(--paper);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(106, 56, 119, 0.08);
+      transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+    }
+    .photo-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(106, 56, 119, 0.18); }
+    .photo-card .photo-img {
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--plum-50);
+    }
+    .photo-card .photo-img img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s var(--ease-out);
+    }
+    .photo-card:hover .photo-img img { transform: scale(1.05); }
+    .photo-card .photo-caption {
+      padding: 16px 20px;
+      font-size: 14px;
+      color: var(--ink-700);
+    }
+    .photo-card .photo-num {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--plum-600);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -18,56 +75,87 @@
   <div id="vps-header"></div>
 
   <main id="main">
-    
     <section class="page-header">
       <div class="container-narrow">
         <a href="gallery.html" style="color:var(--plum-600);font-size:14px;">← All albums</a>
         <h1 id="album-title" class="mt-4" style="margin-top:16px;">Loading…</h1>
         <p id="album-date" style="color:var(--ink-500);"></p>
+        <p id="album-desc" class="reveal" style="color:var(--ink-700);max-width:640px;margin:16px auto 0;"></p>
       </div>
     </section>
-    <section class="section">
+
+    <section class="section" style="padding-top:0;">
       <div class="container-wide">
+        <div id="album-hero" class="album-hero reveal" style="display:none;">
+          <img id="album-hero-img" alt="" />
+          <div class="hero-caption">
+            <h2 id="album-hero-title"></h2>
+            <p id="album-hero-date"></p>
+          </div>
+        </div>
+
         <div id="album-photos" class="album-grid stagger">
           <p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">Loading…</p>
         </div>
       </div>
     </section>
-    
   </main>
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=8"></script>
-  <script src="js/main.js?v=7"></script>
+  <script src="js/partials.js?v=9"></script>
+  <script src="js/main.js?v=8"></script>
   <script>
-    (async () => {
-      const slug = new URLSearchParams(location.search).get('slug');
-      try {
-        const r = await fetch('/api/gallery/' + encodeURIComponent(slug || ''));
-        if (!r.ok) throw new Error('fetch failed');
-        const a = await r.json();
-        document.getElementById('album-title').textContent = a.title;
-        const date = a.event_date ? new Date(a.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-        document.getElementById('album-date').textContent = date;
-        document.title = a.title + ' | Gallery';
-        const photos = a.photos || [];
-        const el = document.getElementById('album-photos');
-        if (!photos.length) {
-          el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">No photos in this album yet.</p>';
-        } else {
-          el.innerHTML = photos.map((p, i) => `<div class="album-card reveal"><div class="album-thumb">${window.albumSVG ? window.albumSVG(['plum','sky','rose','mix'][i % 4]) : ''}</div>${p.caption ? '<div class="album-body"><p>' + esc(p.caption) + '</p></div>' : ''}</div>`).join('');
-        }
-        if ('IntersectionObserver' in window) {
-          const io = new IntersectionObserver(entries => { if (entries[0].isIntersecting) { el.classList.add('in'); io.disconnect(); } }, { threshold: 0.05 });
-          io.observe(el);
-        } else { el.classList.add('in'); }
-      } catch (e) {
-        document.getElementById('album-title').textContent = 'Album not found';
-        document.getElementById('album-photos').innerHTML = '<p class="text-center" style="grid-column:1/-1;">This album may have been removed.</p>';
+  (async () => {
+    const slug = new URLSearchParams(location.search).get('slug');
+    try {
+      const r = await fetch('/api/gallery/' + encodeURIComponent(slug || ''));
+      if (!r.ok) throw new Error('fetch failed');
+      const a = await r.json();
+      document.getElementById('album-title').textContent = a.title;
+      const date = a.event_date ? new Date(a.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+      document.getElementById('album-date').textContent = date;
+      document.getElementById('album-desc').textContent = a.description || '';
+      document.title = a.title + ' | Gallery';
+
+      // Show the big hero image if the album has a cover
+      if (a.cover_url) {
+        const hero = document.getElementById('album-hero');
+        const heroImg = document.getElementById('album-hero-img');
+        heroImg.src = a.cover_url;
+        heroImg.alt = a.title;
+        document.getElementById('album-hero-title').textContent = a.title;
+        document.getElementById('album-hero-date').textContent = date;
+        hero.style.display = 'block';
       }
-      function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
-    })();
-    </script>
+
+      const photos = a.photos || [];
+      const el = document.getElementById('album-photos');
+      if (!photos.length) {
+        el.innerHTML = '<p class="text-center" style="grid-column:1/-1;color:var(--ink-500);">No photos in this album yet.</p>';
+      } else {
+        el.innerHTML = photos.map((p, i) => {
+          const src = p.url || p.thumbnail_url;
+          const img = src
+            ? `<div class="photo-img"><img src="${esc(src)}" alt="${esc(p.caption || a.title)}" loading="lazy" /></div>`
+            : `<div class="photo-img">${window.albumSVG ? window.albumSVG(['plum','sky','rose','mix'][i % 4]) : ''}</div>`;
+          return `
+            <div class="photo-card reveal">
+              ${img}
+              ${p.caption ? '<div class="photo-caption"><div class="photo-num">Photo ' + (i + 1) + ' of ' + photos.length + '</div>' + esc(p.caption) + '</div>' : ''}
+            </div>`;
+        }).join('');
+      }
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => { if (entries[0].isIntersecting) { el.classList.add('in'); io.disconnect(); } }, { threshold: 0.05 });
+        io.observe(el);
+      } else { el.classList.add('in'); }
+    } catch (e) {
+      document.getElementById('album-title').textContent = 'Album not found';
+      document.getElementById('album-photos').innerHTML = '<p class="text-center" style="grid-column:1/-1;">This album may have been removed.</p>';
+    }
+    function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+  })();
+  </script>
 </body>
 </html>

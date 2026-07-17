@@ -12,8 +12,8 @@
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -22,194 +22,141 @@
 
   <main id="main">
 
-    <!-- HERO with full graphical treatment -->
+    <!-- HERO -->
     <section class="hero">
-      <div class="hero-bg" aria-hidden="true"></div>
-      <div class="hero-shapes" aria-hidden="true">
-        <div class="hero-shape shape-blob-1"></div>
-        <div class="hero-shape shape-blob-2"></div>
-        <div class="hero-shape shape-blob-3"></div>
-        <div class="hero-shape shape-ring"></div>
-        <div class="hero-shape shape-ring-2"></div>
-      </div>
       <div class="container-wide">
         <div class="hero-inner">
-          <span class="eyebrow"><span class="pulse-dot"></span> Admissions Open · 2026-27</span>
-          <h1>
-            <span class="word word-pop word-italic">A small school</span>
-            <span class="word word-pop">with</span><br>
-            <span class="word word-pop word-grad">big, gentle</span>
-            <span class="word word-pop">ambitions.</span>
-          </h1>
+          <span class="eyebrow"><span class="pulse-dot"></span> Admissions open · 2026-27</span>
+          <h1>A small school with <em>big, gentle</em> ambitions.</h1>
           <p class="lead">In Virat Nagar, Kotputli, we teach children from LKG to Class 12 — slowly, kindly, and with care for who they are becoming.</p>
           <div class="hero-cta">
-            <a href="admissions.html" class="btn btn-accent btn-lg btn-magnetic">Apply for admission <span class="arrow">→</span></a>
-            <a href="about.html" class="btn btn-ghost btn-lg btn-magnetic">Visit our campus</a>
+            <a href="admissions.html" class="btn btn-primary btn-lg">Apply for admission <span class="arrow">→</span></a>
+            <a href="about.html" class="btn btn-secondary btn-lg">Visit our campus</a>
           </div>
-          <div class="hero-tags">
-            <span class="hero-tag"><span class="tag-dot"></span> RBSE Affiliated</span>
-            <span class="hero-tag"><span class="tag-dot"></span> LKG to Class 12</span>
-            <span class="hero-tag"><span class="tag-dot"></span> 18 students per class</span>
+          <div class="hero-meta">
+            <span class="hero-meta-item">RBSE Affiliated</span>
+            <span class="hero-meta-item">·</span>
+            <span class="hero-meta-item">LKG to Class 12</span>
+            <span class="hero-meta-item">·</span>
+            <span class="hero-meta-item">18 students per class</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Quick access with SVG icons -->
+    <!-- Quick access -->
     <section class="section-tight">
       <div class="container-wide">
-        <div class="quick-grid stagger">
-          <a href="admissions.html" class="quick-card reveal">
+        <div class="quick-grid">
+          <a href="admissions.html" class="quick-card">
             <div class="qc-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
             <h3>Admissions</h3><p>Apply online for 2026-27</p>
           </a>
-          <a href="results.html" class="quick-card reveal">
+          <a href="results.html" class="quick-card">
             <div class="qc-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             </div>
             <h3>Results</h3><p>Check by roll number</p>
           </a>
-          <a href="notices.html" class="quick-card reveal">
+          <a href="notices.html" class="quick-card">
             <div class="qc-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/></svg>
             </div>
             <h3>Notices</h3><p>Latest announcements</p>
           </a>
-          <a href="gallery.html" class="quick-card reveal">
+          <a href="gallery.html" class="quick-card">
             <div class="qc-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </div>
             <h3>Gallery</h3><p>Photos from school life</p>
+          </a>
+          <a href="parent/login.html" class="quick-card">
+            <div class="qc-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h3>Parent portal</h3><p>Exams & results for your child</p>
           </a>
         </div>
       </div>
     </section>
 
-    <!-- About with editorial layout -->
-    <section class="section section-soft">
+    <!-- About -->
+    <section class="section">
       <div class="container-wide">
         <div style="display:grid;grid-template-columns:1fr;gap:48px;align-items:center;" class="about-grid">
           <div>
-            <span class="section-eyebrow reveal">About us</span>
-            <h2 class="section-title reveal">A place where every child<br>is known by name.</h2>
-            <p class="section-sub reveal" style="margin-bottom:24px;">For nearly twenty years, families from Virat Nagar, Kotputli and the wider Behror region have trusted us with their children. We are small enough to know each student, and serious enough to prepare them well for the years ahead.</p>
-            <a href="about.html" class="btn btn-primary reveal">Read our story <span class="arrow">→</span></a>
+            <span class="section-eyebrow">About us</span>
+            <h2 class="section-title">A place where every child is known by name.</h2>
+            <p class="section-sub">For nearly twenty years, families from Virat Nagar, Kotputli and the wider Behror region have trusted us with their children. We are small enough to know each student, and serious enough to prepare them well for the years ahead.</p>
+            <a href="about.html" class="btn btn-secondary">Read our story <span class="arrow">→</span></a>
           </div>
-          <div class="reveal-r" style="position:relative;">
-            <div class="graphic-wrap">
-              <svg viewBox="0 0 500 400" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#c486cc"/><stop offset="100%" stop-color="#ff7898"/>
-                  </linearGradient>
-                  <linearGradient id="g2" x1="0" y1="1" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#8ac8fc"/><stop offset="100%" stop-color="#a862b4"/>
-                  </linearGradient>
-                  <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <circle cx="2" cy="2" r="1" fill="#d8b1dd" opacity="0.5"/>
-                  </pattern>
-                </defs>
-                <!-- big circle -->
-                <circle cx="250" cy="200" r="160" fill="url(#g1)" opacity="0.15"/>
-                <circle cx="250" cy="200" r="120" fill="url(#g1)" opacity="0.3"/>
-                <circle cx="250" cy="200" r="80" fill="url(#g2)" opacity="0.4"/>
-                <!-- school icon center -->
-                <g transform="translate(250,200)">
-                  <circle r="40" fill="white"/>
-                  <path d="M-20 -8 L0 -22 L20 -8 L20 16 L-20 16 Z" fill="url(#g1)"/>
-                  <rect x="-6" y="0" width="12" height="16" fill="white"/>
-                  <circle cx="0" cy="6" r="2" fill="url(#g1)"/>
-                </g>
-                <!-- orbit -->
-                <circle cx="250" cy="200" r="160" fill="none" stroke="#d8b1dd" stroke-width="1" stroke-dasharray="4 8" opacity="0.6"/>
-                <!-- small floating shapes -->
-                <circle cx="90" cy="100" r="14" fill="url(#g1)" opacity="0.7"/>
-                <circle cx="410" cy="80" r="10" fill="url(#g2)" opacity="0.7"/>
-                <circle cx="100" cy="320" r="8" fill="#ff7898" opacity="0.6"/>
-                <circle cx="420" cy="320" r="12" fill="url(#g1)" opacity="0.7"/>
-                <!-- star -->
-                <path d="M380 180 L386 196 L402 196 L389 206 L394 222 L380 212 L366 222 L371 206 L358 196 L374 196 Z" fill="#ffc8d6"/>
-                <!-- small school building in bottom-left -->
-                <g transform="translate(70,260)" opacity="0.6">
-                  <rect x="0" y="10" width="60" height="40" fill="url(#g1)" rx="2"/>
-                  <path d="M-6 10 L30 -10 L66 10 Z" fill="url(#g2)"/>
-                  <rect x="10" y="20" width="8" height="12" fill="white" opacity="0.6"/>
-                  <rect x="42" y="20" width="8" height="12" fill="white" opacity="0.6"/>
-                  <rect x="26" y="30" width="8" height="20" fill="white" opacity="0.7"/>
-                </g>
-                <!-- dots background -->
-                <rect width="500" height="400" fill="url(#dots)" opacity="0.3"/>
-              </svg>
+          <div>
+            <div style="aspect-ratio: 4/3; border-radius: 14px; background: var(--tint); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-4); font-size: 13px;">
+              School photo coming soon
             </div>
           </div>
         </div>
-        <style>
-          @media (min-width: 880px) {
-            .about-grid { grid-template-columns: 1fr 1fr !important; }
-          }
-        </style>
       </div>
     </section>
 
     <!-- Notices -->
-    <section class="section">
+    <section class="section section-soft">
       <div class="container-wide">
-        <div class="section-center">
-          <span class="section-eyebrow reveal">What's new</span>
-          <h2 class="section-title reveal">Latest notices</h2>
+        <div class="section-head">
+          <div>
+            <span class="section-eyebrow">What's new</span>
+            <h2 class="section-title" style="margin-bottom:0;">Latest notices</h2>
+          </div>
+          <a href="notices.html" class="btn btn-ghost">View all <span class="arrow">→</span></a>
         </div>
-        <div id="latest-notices" class="notice-list mt-7" style="max-width:760px;margin-left:auto;margin-right:auto;">
-          <p class="text-center" style="color:var(--ink-500);">Loading…</p>
-        </div>
-        <div class="text-center mt-7 reveal">
-          <a href="notices.html" class="btn btn-ghost btn-magnetic">View all notices <span class="arrow">→</span></a>
+        <div id="latest-notices" class="notice-list">
+          <p style="color:var(--ink-3);">Loading…</p>
         </div>
       </div>
     </section>
 
-    <!-- Gallery with big SVG thumbnails -->
+    <!-- Gallery -->
+    <section class="section">
+      <div class="container-wide">
+        <div class="section-head">
+          <div>
+            <span class="section-eyebrow">Life at VPS</span>
+            <h2 class="section-title" style="margin-bottom:0;">Recent moments</h2>
+          </div>
+          <a href="gallery.html" class="btn btn-ghost">See all albums <span class="arrow">→</span></a>
+        </div>
+        <div id="latest-gallery" class="album-grid">
+          <p style="color:var(--ink-3);grid-column:1/-1;">Loading…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Values -->
     <section class="section section-soft">
       <div class="container-wide">
         <div class="section-center">
-          <span class="section-eyebrow reveal">Life at VPS</span>
-          <h2 class="section-title reveal">Recent moments</h2>
-          <p class="section-sub reveal">Small glimpses from our classrooms, grounds, and celebrations.</p>
+          <span class="section-eyebrow">Our difference</span>
+          <h2 class="section-title">What we hold ourselves to</h2>
         </div>
-        <div id="latest-gallery" class="album-grid mt-7">
-          <p class="text-center" style="color:var(--ink-500);grid-column:1/-1;">Loading…</p>
-        </div>
-        <div class="text-center mt-7 reveal">
-          <a href="gallery.html" class="btn btn-ghost btn-magnetic">See all albums <span class="arrow">→</span></a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Values with editorial treatment -->
-    <section class="section">
-      <div class="container-wide">
-        <div class="section-center">
-          <span class="section-eyebrow reveal">Our difference</span>
-          <h2 class="section-title reveal">What we hold ourselves to</h2>
-        </div>
-        <div class="value-grid mt-7 stagger">
-          <div class="value-card reveal">
+        <div class="value-grid">
+          <div class="value-card">
             <span class="vc-num">01</span>
             <h3>Small classes</h3>
             <p>Eighteen students to a teacher. Every child gets heard, every day.</p>
           </div>
-          <div class="value-card reveal">
+          <div class="value-card">
             <span class="vc-num">02</span>
             <h3>Teachers who stay</h3>
             <p>Our faculty have been with us for years. Continuity is a kind of love.</p>
           </div>
-          <div class="value-card reveal">
+          <div class="value-card">
             <span class="vc-num">03</span>
             <h3>A real campus</h3>
             <p>Smart classrooms, science labs, a library, and a wide-open playground.</p>
           </div>
-          <div class="value-card reveal">
+          <div class="value-card">
             <span class="vc-num">04</span>
             <h3>Whole children</h3>
             <p>Academics, sport, art, and the slow work of becoming a good person.</p>
@@ -218,41 +165,40 @@
       </div>
     </section>
 
-    <!-- Stats with count-up + plum section -->
-    <section class="section section-plum">
+    <!-- Stats -->
+    <section class="section section-dark">
       <div class="container-wide">
-        <div class="section-center mb-7" style="position:relative;z-index:1;">
-          <span class="section-eyebrow" style="color:rgba(255,255,255,0.85);">By the numbers</span>
+        <div class="section-center" style="margin-bottom:48px;">
+          <span class="section-eyebrow" style="color:var(--accent-mid);">By the numbers</span>
           <h2 class="section-title" style="color:white;">Two decades of quiet, steady work.</h2>
         </div>
         <div class="stat-row">
-          <div class="stat reveal"><div class="stat-num" data-count="1200" data-suffix="+">0</div><div class="stat-label">students</div></div>
-          <div class="stat reveal"><div class="stat-num" data-count="65" data-suffix="+">0</div><div class="stat-label">teachers</div></div>
-          <div class="stat reveal"><div class="stat-num" data-count="98" data-suffix="%">0</div><div class="stat-label">board pass rate</div></div>
-          <div class="stat reveal"><div class="stat-num" data-count="18">0</div><div class="stat-label">years and counting</div></div>
+          <div class="stat"><div class="stat-num" data-count="1200" data-suffix="+">0</div><div class="stat-label">students</div></div>
+          <div class="stat"><div class="stat-num" data-count="65" data-suffix="+">0</div><div class="stat-label">teachers</div></div>
+          <div class="stat"><div class="stat-num" data-count="98" data-suffix="%">0</div><div class="stat-label">board pass rate</div></div>
+          <div class="stat"><div class="stat-num" data-count="18">0</div><div class="stat-label">years and counting</div></div>
         </div>
       </div>
     </section>
 
     <!-- Testimonial -->
-    <section class="section section-plum">
+    <section class="section section-dark" style="padding-top:0;">
       <div class="container-wide">
         <div class="testimonial">
-          <div class="testimonial-mark">"</div>
-          <p class="quote reveal">"Our daughter is happy to walk in every morning. The teachers know her by name, and that means everything to us."</p>
-          <p class="author reveal"><span class="author-name">Sunita Sharma</span> · Parent, Class 5</p>
+          <p class="quote">"Our daughter is happy to walk in every morning. The teachers know her by name, and that means everything to us."</p>
+          <p class="author"><span class="author-name">Sunita Sharma</span> · Parent, Class 5</p>
         </div>
       </div>
     </section>
 
-    <!-- CTA pill with floating shapes -->
+    <!-- CTA -->
     <section class="section">
       <div class="container-wide">
-        <div class="cta-pill reveal">
+        <div class="cta-pill">
           <span class="section-eyebrow">2026-27 admissions</span>
           <h2 class="section-title">A few seats remain.</h2>
           <p>Send us a short note about your child. Our office replies within a day.</p>
-          <a href="admissions.html" class="btn btn-accent btn-lg btn-magnetic">Apply now <span class="arrow">→</span></a>
+          <a href="admissions.html" class="btn btn-primary btn-lg">Apply now <span class="arrow">→</span></a>
         </div>
       </div>
     </section>
@@ -261,7 +207,7 @@
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=8"></script>
-  <script src="js/main.js?v=7"></script>
+  <script src="js/partials.js?v=9"></script>
+  <script src="js/main.js?v=8"></script>
 </body>
 </html>

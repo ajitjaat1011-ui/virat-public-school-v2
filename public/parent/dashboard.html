@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parent Dashboard · Virat Public School</title>
+  <meta name="description" content="View your child's upcoming exams and published results." />
+  <meta name="theme-color" content="#6d3877" />
+  <link rel="icon" type="image/svg+xml" href="../images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css?v=12" />
+  <style>
+    .parent-head {
+      padding: 32px 0 8px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      flex-wrap: wrap; gap: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .parent-head h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .parent-head .sub { color: var(--ink-3); font-size: 14px; }
+    .exam-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 720px) { .exam-grid { grid-template-columns: repeat(2, 1fr); } }
+    .exam-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .exam-date {
+      flex-shrink: 0;
+      width: 56px; text-align: center;
+      font-family: 'Fraunces', serif;
+      border-right: 1px solid var(--line);
+      padding-right: 12px;
+    }
+    .exam-date .day { font-size: 1.5rem; font-weight: 500; line-height: 1; color: var(--ink); }
+    .exam-date .mon { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); margin-top: 4px; display: block; }
+    .exam-body { flex: 1; min-width: 0; }
+    .exam-body .row1 { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-bottom: 4px; }
+    .exam-body h3 { font-size: 1rem; font-family: 'Fraunces', serif; font-weight: 500; }
+    .exam-body .meta { font-size: 12px; color: var(--ink-3); }
+    .exam-body .syllabus { font-size: 13px; color: var(--ink-2); margin-top: 6px; line-height: 1.5; }
+    .result-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 20px;
+    }
+    .result-card .row1 { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+    .result-card h3 { font-size: 1rem; font-family: 'Fraunces', serif; font-weight: 500; margin-bottom: 2px; }
+    .result-card .meta { font-size: 12px; color: var(--ink-3); margin-bottom: 12px; }
+    .result-card .marks {
+      display: flex; align-items: baseline; gap: 8px;
+      margin-top: 4px;
+    }
+    .result-card .marks .val {
+      font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 500;
+      color: var(--ink);
+    }
+    .result-card .marks .max { color: var(--ink-3); font-size: 13px; }
+    .result-card .marks .grade { margin-left: auto; }
+    .result-card .remarks { font-size: 13px; color: var(--ink-2); margin-top: 8px; line-height: 1.5; }
+    .empty-state {
+      background: var(--tint);
+      border: 1px dashed var(--line);
+      border-radius: var(--r-lg);
+      padding: 32px;
+      text-align: center;
+      color: var(--ink-3);
+      font-size: 14px;
+    }
+    .signout {
+      font-size: 13px; color: var(--ink-3);
+    }
+    .signout a { color: var(--ink-2); }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <div id="vps-topbar"></div>
+  <div id="vps-header"></div>
+
+  <main id="main">
+    <div class="container-wide">
+      <div class="parent-head">
+        <div>
+          <h1 id="hello">Welcome</h1>
+          <div class="sub" id="helloSub">Loading…</div>
+        </div>
+        <div class="signout"><a href="#" id="signoutLink">Sign out</a></div>
+      </div>
+
+      <!-- Children -->
+      <section class="section-tight">
+        <h2 style="font-size: 1.05rem; margin-bottom: 12px;">Your child(ren)</h2>
+        <div id="children" class="flex"></div>
+      </section>
+
+      <!-- Upcoming exams -->
+      <section class="section-tight">
+        <h2 style="font-size: 1.05rem; margin-bottom: 12px;">Upcoming & recent exams</h2>
+        <div id="exams"></div>
+      </section>
+
+      <!-- Results -->
+      <section class="section-tight">
+        <h2 style="font-size: 1.05rem; margin-bottom: 12px;">Published results</h2>
+        <div id="results"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="vps-footer"></div>
+
+  <script src="../js/partials.js?v=9"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+      function fmtDate(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (isNaN(d)) return '';
+        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
+      const elHello = document.getElementById('hello');
+      const elHelloSub = document.getElementById('helloSub');
+      const elChildren = document.getElementById('children');
+      const elExams = document.getElementById('exams');
+      const elResults = document.getElementById('results');
+
+      function tag(text) {
+        return `<span class="tag">${esc(text)}</span>`;
+      }
+      function renderEmpty(el, msg) {
+        el.innerHTML = `<div class="empty-state">${esc(msg)}</div>`;
+      }
+
+      async function load() {
+        let res, data;
+        try {
+          res = await fetch('/api/parent/dashboard', { credentials: 'include' });
+          data = await res.json();
+        } catch (e) {
+          window.location.href = 'login.html';
+          return;
+        }
+        if (!res.ok) { window.location.href = 'login.html'; return; }
+
+        const { parent, children, exams, results } = data;
+        elHello.textContent = `Hello, ${parent.full_name}.`;
+        elHelloSub.textContent = `Signed in as ${parent.phone}.`;
+
+        // Children
+        if (!children.length) {
+          elChildren.innerHTML = `<p style="color:var(--ink-3); font-size: 14px;">No child has been linked to your account yet. The school office will add this when they approve your request.</p>`;
+        } else {
+          elChildren.innerHTML = children.map(c => {
+            return `<div class="card" style="padding: 16px 20px;">
+              <h3 style="margin-bottom:2px;">${esc(c.student_name)}</h3>
+              <p style="font-size:13px;">${esc(c.class_name || '')}${c.section ? ' · ' + esc(c.section) : ''}${c.roll_number ? ' · Roll ' + esc(c.roll_number) : ''}</p>
+            </div>`;
+          }).join('');
+        }
+
+        // Exams
+        if (!exams.length) {
+          renderEmpty(elExams, 'No upcoming exams scheduled. Check back later.');
+        } else {
+          const today = new Date().toISOString().slice(0, 10);
+          elExams.innerHTML = `<div class="exam-grid">` + exams.map(e => {
+            const d = new Date(e.exam_date);
+            const isPast = e.exam_date < today;
+            const day = d.toLocaleDateString('en-IN', { day: '2-digit' });
+            const mon = d.toLocaleDateString('en-IN', { month: 'short' });
+            const time = (e.start_time || e.end_time)
+              ? `${e.start_time || '?'}${e.end_time ? ' – ' + e.end_time : ''}`
+              : '';
+            return `
+              <div class="exam-card">
+                <div class="exam-date">
+                  <div class="day">${esc(day)}</div>
+                  <div class="mon">${esc(mon)}</div>
+                </div>
+                <div class="exam-body">
+                  <div class="row1">
+                    <h3>${esc(e.title)}</h3>
+                    ${isPast ? tag('Past') : tag('Upcoming')}
+                  </div>
+                  <div class="meta">
+                    ${esc(e.subject)} · ${esc(e.class_name)}${time ? ' · ' + esc(time) : ''}${e.max_marks ? ' · ' + esc(e.max_marks) + ' marks' : ''}
+                  </div>
+                  ${e.syllabus ? `<div class="syllabus">${esc(e.syllabus)}</div>` : ''}
+                </div>
+              </div>`;
+          }).join('') + `</div>`;
+        }
+
+        // Results
+        if (!results.length) {
+          renderEmpty(elResults, 'No published results yet.');
+        } else {
+          elResults.innerHTML = `<div class="exam-grid">` + results.map(r => {
+            const pct = r.max_marks ? Math.round((r.marks_obtained / r.max_marks) * 100) : null;
+            return `
+              <div class="result-card">
+                <div class="row1">
+                  <h3>${esc(r.title || r.subject)}</h3>
+                  <span class="tag tag-accent">${esc(r.subject)}</span>
+                </div>
+                <div class="meta">${esc(r.student_name)} · ${esc(r.class_name)}${r.section ? ' · ' + esc(r.section) : ''} · ${fmtDate(r.exam_date)}</div>
+                <div class="marks">
+                  <span class="val">${r.marks_obtained}</span>
+                  <span class="max">/ ${r.max_marks}${pct != null ? ' · ' + pct + '%' : ''}</span>
+                  ${r.grade ? `<span class="grade tag">${esc(r.grade)}</span>` : ''}
+                </div>
+                ${r.remarks ? `<div class="remarks">${esc(r.remarks)}</div>` : ''}
+              </div>`;
+          }).join('') + `</div>`;
+        }
+      }
+
+      document.getElementById('signoutLink').addEventListener('click', async (e) => {
+        e.preventDefault();
+        try { await fetch('/api/parent/auth', { method: 'DELETE', credentials: 'include' }); } catch (err) {}
+        window.location.href = 'login.html';
+      });
+
+      load();
+    })();
+  </script>
+</body>
+</html>

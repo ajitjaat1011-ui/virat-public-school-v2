@@ -25,6 +25,8 @@
           <a href="/admin/messages.html">Messages</a>
           <a href="/admin/gallery.html">Gallery</a>
           <a href="/admin/results.html">Results</a>
+          <a href="/admin/exams.html">Exams</a>
+          <a href="/admin/parents.html">Parents</a>
           <a href="/admin/audit.html">Audit</a>
         </nav>
         <div class="admin-user">
@@ -46,10 +48,20 @@
           <div class="value">—</div>
           <span class="link">View →</span>
         </a>
+        <a href="/admin/parents.html" class="stat-card" id="card-parents">
+          <div class="label">Parent requests</div>
+          <div class="value">—</div>
+          <span class="link">Review →</span>
+        </a>
         <a href="/admin/messages.html" class="stat-card" id="card-messages">
           <div class="label">Unread messages</div>
           <div class="value">—</div>
           <span class="link">View →</span>
+        </a>
+        <a href="/admin/exams.html" class="stat-card" id="card-exams">
+          <div class="label">Scheduled exams</div>
+          <div class="value">—</div>
+          <span class="link">Manage →</span>
         </a>
         <a href="/admin/notices.html" class="stat-card">
           <div class="label">Published notices</div>
@@ -129,10 +141,13 @@
       if (!data) throw new Error('no data');
       const c = data.counts;
       document.querySelector('#card-inquiries .value').textContent = c.newInquiries;
+      document.querySelector('#card-parents .value').textContent = c.parentRequests;
+      document.querySelector('#card-exams .value').textContent = c.exams;
       document.querySelector('#card-messages .value').textContent = c.unreadMessages;
       document.getElementById('stat-notices').textContent = c.notices;
       document.getElementById('stat-albums').textContent = c.albums;
       if (c.newInquiries > 0) document.getElementById('card-inquiries').classList.add('alert');
+      if (c.parentRequests > 0) document.getElementById('card-parents').classList.add('alert');
 
       const inq = data.recentInquiries || [];
       const inqEl = document.getElementById('recent-inquiries');
