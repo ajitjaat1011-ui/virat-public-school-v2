@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=6" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -29,7 +29,7 @@
     </section>
     <section class="section">
       <div class="container-narrow">
-        <article id="notice-body" class="prose" style="background:white;padding:32px;border-radius:28px;box-shadow:0 8px 30px rgba(106,56,119,0.07);">
+        <article id="notice-body" class="prose" style="background:white;padding:40px;border-radius:28px;box-shadow:0 12px 48px rgba(106,56,119,0.08);">
           <p style="color:var(--ink-500);">Loading…</p>
         </article>
       </div>
@@ -39,8 +39,8 @@
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=5"></script>
-  <script src="js/main.js?v=5"></script>
+  <script src="js/partials.js?v=6"></script>
+  <script src="js/main.js?v=6"></script>
   <script>
     (async () => {
       const id = new URLSearchParams(location.search).get('id');
@@ -51,8 +51,8 @@
         const n = await r.json();
         document.getElementById('notice-category').textContent = n.category || 'Notice';
         document.getElementById('notice-title').textContent = n.title;
-        const date = (n.publish_date || n.published_at || n.created_at) ? new Date(n.publish_date || n.published_at || n.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-        document.getElementById('notice-date').textContent = date;
+        const date = n.publish_date || n.published_at || n.created_at;
+        document.getElementById('notice-date').textContent = date ? new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
         document.getElementById('notice-body').innerHTML = n.body || n.excerpt || '';
         document.title = n.title + ' | Virat Public School';
       } catch (e) {
