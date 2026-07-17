@@ -159,8 +159,8 @@
   <div class="modal-backdrop" id="resultsModal">
     <div class="modal" style="max-width: 760px;">
       <h2 id="resultsTitle">Upload results</h2>
-      <p class="modal-sub">Pick class & section. Add marks for each student. Existing entries with matching name/roll will be updated.</p>
-
+      <p class="modal-sub">Students from the master list are loaded automatically. Add marks for each student.</p>
+      <datalist id="master-student-options"></datalist>
       <div class="results-bulk">
         <strong>Quick paste:</strong> Tab-separated rows. Columns: <code>Name | Roll | Marks | Grade</code>
         <textarea id="bulk-input" placeholder="Aarav Sharma&#9;12&#9;85&#9;A&#10;Priya Verma&#9;15&#9;92&#9;A+&#10;..."></textarea>
@@ -376,7 +376,7 @@
       r = r || {};
       const P = window.PICKERS;
       return `<div class="result-row">
-        <input class="r-name" placeholder="Student name" value="${esc(r.student_name||'')}" />
+        <input class="r-name" list="master-student-options" placeholder="Student name" value="${esc(r.student_name||'')}" />
         <input class="r-roll" placeholder="Roll" value="${esc(r.roll_number||'')}" />
         <select class="r-section">${P.sections.map(s => `<option value="${s}"${r.section===s?' selected':''}>${s}</option>`).join('')}</select>
         <input class="r-marks" type="number" step="0.01" placeholder="Marks" value="${esc(r.marks_obtained!=null?r.marks_obtained:'')}" />
@@ -427,9 +427,16 @@
       const data = await res.json();
       const exam = data.exam;
       const existing = data.results || [];
+      let master = [];
+      try {
+        const mr = await fetch('/api/admin/students?class_name=' + encodeURIComponent(exam.class_name), { credentials: 'include' });
+        if (mr.ok) master = (await mr.json()).students || [];
+      } catch (_) {}
+      document.getElementById('master-student-options').innerHTML = master.map(s => `<option value="${esc(s.full_name)}">${esc(s.class_name)} · Roll ${esc(s.roll_number || '')}</option>`).join('');
       resultsTitle.textContent = `Results — ${exam.title}`;
       resultsList.innerHTML = `<div class="result-row"><div class="head">Student</div><div class="head">Roll</div><div class="head">Sec</div><div class="head">Marks</div><div class="head">Grade</div><div></div></div>`;
       if (existing.length) existing.forEach(r => addResultRow(r));
+      else if (master.length) master.forEach(s => addResultRow({ student_name: s.full_name, roll_number: s.roll_number || '', section: s.section || 'A' }));
       else addResultRow();
       const msg = document.getElementById('resultsMsg');
       msg.style.display = 'none';
