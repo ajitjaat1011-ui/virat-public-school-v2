@@ -46,35 +46,6 @@
       if (io) io.observe(el); else requestAnimationFrame(step);
     });
 
-    // === Latest notices ===
-    const noticeEl = document.getElementById('latest-notices');
-    if (noticeEl) {
-      fetch('/api/notices?limit=5')
-        .then(r => r.ok ? r.json() : null)
-        .then(d => {
-          const list = (d && (d.notices || d.results)) || [];
-          if (!list.length) { noticeEl.innerHTML = '<p class="empty">No notices yet.</p>'; return; }
-          noticeEl.innerHTML = list.map(n => {
-            const date = n.publish_date || n.published_at || n.created_at;
-            const dObj = date ? new Date(date) : null;
-            const day = dObj ? dObj.getDate() : '';
-            const mon = dObj ? dObj.toLocaleString('en-IN', { month: 'short' }) : '';
-            return `
-              <a href="notice-detail.html?id=${encodeURIComponent(n.id)}" class="notice-item">
-                <div class="date"><div class="day">${day}</div><div class="mon">${mon}</div></div>
-                <div class="body">
-                  <span class="tag">${esc(n.category || 'Notice')}</span>
-                  <h3>${esc(n.title)}</h3>
-                  <div class="meta">${fmt(date)}</div>
-                </div>
-              </a>`;
-          }).join('');
-          const cnt = document.getElementById('notices-count');
-          if (cnt) cnt.textContent = list.length;
-        })
-        .catch(() => { noticeEl.innerHTML = '<p class="empty">Unable to load notices.</p>'; });
-    }
-
     // === Latest gallery ===
     const galEl = document.getElementById('latest-gallery');
     if (galEl) {

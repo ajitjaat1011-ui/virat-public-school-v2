@@ -19,13 +19,13 @@
       border-radius: var(--r-md);
       margin-bottom: 8px;
       flex-wrap: wrap;
+      transition: opacity 0.15s;
     }
+    .list-item.removing { opacity: 0.3; pointer-events: none; }
     .list-item .body { flex: 1 1 220px; min-width: 0; }
-    .list-item .actions {
-      display: flex; gap: 6px;
-      flex-wrap: wrap;
-      align-self: flex-end;
-    }
+    .list-item .actions { display: flex; gap: 6px; flex-wrap: wrap; align-self: flex-end; }
+    .list-item .actions .btn { pointer-events: auto; }
+    .list-item .actions .btn:disabled { opacity: 0.5; }
     @media (max-width: 640px) {
       .list-item .actions { width: 100%; justify-content: stretch; }
       .list-item .actions .btn { flex: 1; justify-content: center; }
@@ -49,9 +49,7 @@
       font: inherit; font-size: 13px;
       color: var(--ink-900);
     }
-    .result-row input:focus, .result-row select:focus {
-      outline: none; border-color: var(--pink-400);
-    }
+    .result-row input:focus, .result-row select:focus { outline: none; border-color: var(--pink-400); }
     .result-row .remove {
       background: transparent; border: none; cursor: pointer;
       color: var(--ink-500); font-size: 18px; line-height: 1; padding: 0;
@@ -82,9 +80,7 @@
       margin-top: 8px;
       resize: vertical;
     }
-    @media (max-width: 880px) {
-      .result-row { grid-template-columns: 1fr 1fr; }
-    }
+    @media (max-width: 880px) { .result-row { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
 <body class="admin-body">
@@ -100,7 +96,6 @@
     <div id="list"><p style="color:var(--ink-500);">Loading…</p></div>
   </div>
 
-  <!-- New exam modal -->
   <div class="modal-backdrop" id="newModal">
     <div class="modal" style="max-width: 600px;">
       <h2>Schedule a new exam</h2>
@@ -155,20 +150,18 @@
         <div id="newError" class="form-error" style="display:none;"></div>
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="cancelNew">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save exam</button>
+          <button type="submit" class="btn btn-primary" id="saveNew">Save exam</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Results modal -->
   <div class="modal-backdrop" id="resultsModal">
     <div class="modal" style="max-width: 760px;">
       <h2 id="resultsTitle">Upload results</h2>
       <p class="modal-sub">Pick class & section. Add marks for each student. Existing entries with matching name/roll will be updated.</p>
 
-      <!-- Bulk paste option for speed -->
-      <div class="results-bulk" id="bulk-section">
+      <div class="results-bulk">
         <strong>Quick paste:</strong> Tab-separated rows. Columns: <code>Name | Roll | Marks | Grade</code>
         <textarea id="bulk-input" placeholder="Aarav Sharma&#9;12&#9;85&#9;A&#10;Priya Verma&#9;15&#9;92&#9;A+&#10;..."></textarea>
         <button class="btn btn-secondary btn-sm" id="bulk-apply" style="margin-top:8px;">Parse and add rows</button>
@@ -193,7 +186,8 @@
     const fmt = iso => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
     const fmt12 = window.fmt12;
 
-    let list, newModal, resultsModal, resultsList, resultsTitle, currentExamId;
+    let listEl, newModal, resultsModal, resultsList, resultsTitle, currentExamId;
+    let cachedExams = []; // keep client-side cache for optimistic updates
 
     function populatePickers() {
       const P = window.PICKERS;
@@ -204,7 +198,6 @@
     }
 
     function setupTimeInputs() {
-      // Replace the placeholders with 12-hour time inputs
       const startContainer = document.getElementById('new-start-time');
       const endContainer = document.getElementById('new-end-time');
       const startInput = window.time12Input('10:00', 'start_time');
@@ -213,8 +206,6 @@
       endContainer.innerHTML = '';
       startContainer.appendChild(startInput);
       endContainer.appendChild(endInput);
-
-      // Sync the hidden fields
       const startHidden = document.getElementById('new-start-time-val');
       const endHidden = document.getElementById('new-end-time-val');
       function sync() {
@@ -226,17 +217,12 @@
       sync();
     }
 
-    async function load() {
-      list.innerHTML = '<p style="color:var(--ink-500);">Loading…</p>';
-      const res = await fetch('/api/admin/exams', { credentials: 'include' });
-      if (!res.ok) { list.innerHTML = '<p style="color:var(--pink-600);">Failed to load.</p>'; return; }
-      const data = await res.json();
-      const exams = data.exams || [];
-      if (!exams.length) {
-        list.innerHTML = '<div class="empty-state"><h3>No exams yet</h3><p>Click "+ New exam" to schedule one.</p></div>';
+    function renderList() {
+      if (!cachedExams.length) {
+        listEl.innerHTML = '<div class="empty-state"><h3>No exams yet</h3><p>Click "+ New exam" to schedule one.</p></div>';
         return;
       }
-      list.innerHTML = exams.map(e => `
+      listEl.innerHTML = cachedExams.map(e => `
         <div class="list-item" data-id="${esc(e.id)}">
           <div class="body">
             <div class="title">${esc(e.title)}</div>
@@ -255,33 +241,77 @@
           </div>
         </div>
       `).join('');
+    }
 
-      list.querySelectorAll('.list-item').forEach(row => {
+    async function load() {
+      try {
+        const res = await fetch('/api/admin/exams', { credentials: 'include' });
+        if (!res.ok) { listEl.innerHTML = '<p style="color:var(--pink-600);">Failed to load.</p>'; return; }
+        const data = await res.json();
+        cachedExams = data.exams || [];
+        renderList();
+      } catch (e) {
+        listEl.innerHTML = '<p style="color:var(--pink-600);">Network error.</p>';
+      }
+    }
+
+    // === Single delegated click handler — works for all current and future rows ===
+    function wireActions() {
+      listEl.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        const row = btn.closest('.list-item');
+        if (!row) return;
         const id = row.dataset.id;
-        row.querySelectorAll('[data-act]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const act = btn.dataset.act;
-            if (act === 'delete' && !confirm('Delete this exam and all its results?')) return;
-            if (act === 'results') { openResults(id); return; }
-            if (act === 'toggle') {
-              const r = await fetch('/api/admin/exams/' + id, { credentials: 'include' });
-              const d = await r.json();
-              await fetch('/api/admin/exams/' + id, {
-                method: 'POST', credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_published: !d.exam.is_published })
-              });
-              toast(d.exam.is_published ? 'Unpublished' : 'Published');
-              load();
+        const act = btn.dataset.act;
+        btn.disabled = true;
+
+        try {
+          if (act === 'results') {
+            openResults(id);
+            return;
+          }
+          if (act === 'toggle') {
+            // Optimistic update
+            const exam = cachedExams.find(x => x.id === id);
+            const wasPublished = exam?.is_published;
+            if (exam) exam.is_published = wasPublished ? 0 : 1;
+            renderList();
+            // Server update
+            const r = await fetch('/api/admin/exams/' + id, {
+              method: 'POST', credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ is_published: !wasPublished })
+            });
+            if (!r.ok) throw new Error('Failed to toggle');
+            toast(wasPublished ? 'Unpublished' : 'Published');
+            load();
+            return;
+          }
+          if (act === 'delete') {
+            if (!confirm('Delete this exam and all its results?')) {
+              btn.disabled = false;
               return;
             }
-            if (act === 'delete') {
-              await fetch('/api/admin/exams/' + id, { method: 'DELETE', credentials: 'include' });
-              toast('Exam deleted');
-              load();
-            }
-          });
-        });
+            // Optimistic removal — fade out
+            row.classList.add('removing');
+            setTimeout(() => {
+              cachedExams = cachedExams.filter(x => x.id !== id);
+              renderList();
+            }, 150);
+            // Server delete
+            const r = await fetch('/api/admin/exams/' + id, { method: 'DELETE', credentials: 'include' });
+            if (!r.ok) throw new Error('Failed to delete');
+            toast('Exam deleted');
+            return;
+          }
+        } catch (err) {
+          toast(err.message || 'Action failed', 'error');
+          // Revert on error
+          load();
+        } finally {
+          btn.disabled = false;
+        }
       });
     }
 
@@ -313,16 +343,26 @@
         if (!data.title) data.title = `${data.subject} — ${data.class_name}`;
         data.is_published = true;
         if (data.max_marks) data.max_marks = Number(data.max_marks);
-        const res = await fetch('/api/admin/exams', {
-          method: 'POST', credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const out = await res.json();
-        if (!res.ok) { errEl.textContent = out.error || 'Failed'; errEl.style.display = 'block'; return; }
-        newModal.classList.remove('open');
-        toast('Exam scheduled');
-        load();
+
+        const saveBtn = document.getElementById('saveNew');
+        saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+        try {
+          const res = await fetch('/api/admin/exams', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const out = await res.json();
+          if (!res.ok) { errEl.textContent = out.error || 'Failed'; errEl.style.display = 'block'; return; }
+          newModal.classList.remove('open');
+          toast('Exam scheduled');
+          // Optimistic: prepend the new exam immediately, then sync
+          cachedExams.unshift({ ...data, id: out.id, result_count: 0 });
+          renderList();
+          load();
+        } finally {
+          saveBtn.disabled = false; saveBtn.textContent = 'Save exam';
+        }
       });
 
       document.getElementById('addResultRow').addEventListener('click', () => addResultRow());
@@ -352,7 +392,6 @@
       resultsList.appendChild(el);
     }
 
-    // Parse tab/newline-separated bulk text into rows
     function bulkApply() {
       const text = document.getElementById('bulk-input').value;
       if (!text.trim()) { alert('Paste some rows first.'); return; }
@@ -360,7 +399,6 @@
       let added = 0;
       for (const line of lines) {
         const parts = line.split(/\t|\s{2,}|\s+\|\s+/).map(p => p.trim()).filter(Boolean);
-        // Fallback: split on multiple spaces if no tabs
         const cols = parts.length >= 4 ? parts : line.split(/\s+/).filter(Boolean);
         if (cols.length < 3) continue;
         const [name, roll, marks, grade] = cols;
@@ -434,15 +472,15 @@
       load();
     }
 
-    // === Shell ready: bind everything ===
     window.onShellReady = function () {
-      list        = document.getElementById('list');
-      newModal    = document.getElementById('newModal');
-      resultsModal = document.getElementById('resultsModal');
-      resultsList  = document.getElementById('resultsList');
-      resultsTitle = document.getElementById('resultsTitle');
+      listEl        = document.getElementById('list');
+      newModal      = document.getElementById('newModal');
+      resultsModal  = document.getElementById('resultsModal');
+      resultsList   = document.getElementById('resultsList');
+      resultsTitle  = document.getElementById('resultsTitle');
       populatePickers();
       bindUI();
+      wireActions();
       load();
     };
   </script>
