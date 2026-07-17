@@ -172,7 +172,8 @@
       <div id="resultsMsg" style="display:none; margin-top: 12px;"></div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="cancelResults">Close</button>
-        <button type="button" class="btn btn-primary" id="saveResults">Save results</button>
+        <button type="button" class="btn btn-secondary" id="saveDraft">Save draft</button>
+        <button type="button" class="btn btn-primary" id="saveResults">Publish results</button>
       </div>
     </div>
   </div>
@@ -272,6 +273,9 @@
             return;
           }
           if (act === 'toggle') {
+            const examToToggle = cachedExams.find(x => x.id === id);
+            const nextState = !(examToToggle?.is_published);
+            if (nextState && !confirm('Publish this exam? Parents will be able to see it.')) { btn.disabled = false; return; }
             // Optimistic update
             const exam = cachedExams.find(x => x.id === id);
             const wasPublished = exam?.is_published;
@@ -369,6 +373,7 @@
       document.getElementById('cancelResults').addEventListener('click', () => resultsModal.classList.remove('open'));
       resultsModal.addEventListener('click', e => { if (e.target === resultsModal) resultsModal.classList.remove('open'); });
       document.getElementById('saveResults').addEventListener('click', saveResults);
+      document.getElementById('saveDraft').addEventListener('click', saveDraft);
       document.getElementById('bulk-apply').addEventListener('click', bulkApply);
     }
 
@@ -435,7 +440,9 @@
       document.getElementById('master-student-options').innerHTML = master.map(s => `<option value="${esc(s.full_name)}">${esc(s.class_name)} · Roll ${esc(s.roll_number || '')}</option>`).join('');
       resultsTitle.textContent = `Results — ${exam.title}`;
       resultsList.innerHTML = `<div class="result-row"><div class="head">Student</div><div class="head">Roll</div><div class="head">Sec</div><div class="head">Marks</div><div class="head">Grade</div><div></div></div>`;
+      const draft = !existing.length ? JSON.parse(localStorage.getItem('vps-result-draft-' + id) || 'null') : null;
       if (existing.length) existing.forEach(r => addResultRow(r));
+      else if (draft && draft.length) draft.forEach(r => addResultRow(r));
       else if (master.length) master.forEach(s => addResultRow({ student_name: s.full_name, roll_number: s.roll_number || '', section: s.section || 'A' }));
       else addResultRow();
       const msg = document.getElementById('resultsMsg');
@@ -444,23 +451,37 @@
       resultsModal.classList.add('open');
     }
 
-    async function saveResults() {
-      const rows = resultsList.querySelectorAll('.result-row');
+    function collectResultRows() {
       const out = [];
-      rows.forEach(r => {
+      const seen = new Set();
+      const duplicates = [];
+      resultsList.querySelectorAll('.result-row').forEach(r => {
         if (r.querySelector('.head')) return;
         const name = r.querySelector('.r-name').value.trim();
+        const roll = r.querySelector('.r-roll').value.trim();
         const marks = parseFloat(r.querySelector('.r-marks').value);
-        if (!name || isNaN(marks)) return;
-        out.push({
-          student_name: name,
-          roll_number: r.querySelector('.r-roll').value.trim(),
-          section: r.querySelector('.r-section').value,
-          marks_obtained: marks,
-          grade: r.querySelector('.r-grade').value
-        });
+        if (!name && !roll && isNaN(marks)) return;
+        const key = (roll || name).toLowerCase();
+        if (key && seen.has(key)) duplicates.push(roll || name);
+        if (key) seen.add(key);
+        out.push({ student_name: name, roll_number: roll, section: r.querySelector('.r-section').value, marks_obtained: marks, grade: r.querySelector('.r-grade').value });
       });
-      if (!out.length) { alert('Add at least one student with marks.'); return; }
+      return { out, duplicates };
+    }
+
+    function saveDraft() {
+      const { out, duplicates } = collectResultRows();
+      if (duplicates.length) { toast('Duplicate student/roll: ' + duplicates.join(', '), 'error'); return; }
+      if (!out.length) { toast('Add at least one student before saving a draft.', 'error'); return; }
+      localStorage.setItem('vps-result-draft-' + currentExamId, JSON.stringify(out));
+      toast('Draft saved on this device');
+    }
+
+    async function saveResults() {
+      const { out, duplicates } = collectResultRows();
+      if (duplicates.length) { toast('Duplicate student/roll: ' + duplicates.join(', '), 'error'); return; }
+      if (out.some(r => !r.student_name || isNaN(r.marks_obtained))) { toast('Complete each student name and marks before publishing.', 'error'); return; }
+      if (!out.length) { toast('Add at least one student with marks.', 'error'); return; }
       const res = await fetch('/api/admin/exam-results', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -475,7 +496,8 @@
       }
       msg.textContent = `Saved. ${data.inserted} added, ${data.updated} updated.`;
       msg.style.cssText = 'background:rgba(16,185,129,0.15);color:#047857;padding:10px 14px;border-radius:12px;display:block;margin-top:12px;';
-      toast('Results saved');
+      localStorage.removeItem('vps-result-draft-' + currentExamId);
+      toast('Results published');
       load();
     }
 
