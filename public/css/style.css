@@ -74,14 +74,14 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
   z-index: 100;
 }
 
-/* === Reveal animations === */
-.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out); }
+/* === Reveal animations (Priority 7: 150-300ms standard, longer for entrance) === */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
 .reveal.in { opacity: 1; transform: translateY(0); }
-.reveal-l { opacity: 0; transform: translateX(-40px); transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out); }
+.reveal-l { opacity: 0; transform: translateX(-24px); transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
 .reveal-l.in { opacity: 1; transform: translateX(0); }
-.reveal-r { opacity: 0; transform: translateX(40px); transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out); }
+.reveal-r { opacity: 0; transform: translateX(24px); transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
 .reveal-r.in { opacity: 1; transform: translateX(0); }
-.reveal-scale { opacity: 0; transform: scale(0.9); transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out); }
+.reveal-scale { opacity: 0; transform: scale(0.94); transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
 .reveal-scale.in { opacity: 1; transform: scale(1); }
 .reveal[data-delay="1"] { transition-delay: 0.1s; }
 .reveal[data-delay="2"] { transition-delay: 0.2s; }
@@ -89,16 +89,16 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
 .reveal[data-delay="4"] { transition-delay: 0.4s; }
 .reveal[data-delay="5"] { transition-delay: 0.5s; }
 
-.stagger > * { opacity: 0; transform: translateY(24px); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); }
+.stagger > * { opacity: 0; transform: translateY(16px); transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out); }
 .stagger.in > * { opacity: 1; transform: translateY(0); }
 .stagger.in > *:nth-child(1) { transition-delay: 0.0s; }
-.stagger.in > *:nth-child(2) { transition-delay: 0.08s; }
-.stagger.in > *:nth-child(3) { transition-delay: 0.16s; }
-.stagger.in > *:nth-child(4) { transition-delay: 0.24s; }
-.stagger.in > *:nth-child(5) { transition-delay: 0.32s; }
-.stagger.in > *:nth-child(6) { transition-delay: 0.40s; }
-.stagger.in > *:nth-child(7) { transition-delay: 0.48s; }
-.stagger.in > *:nth-child(8) { transition-delay: 0.56s; }
+.stagger.in > *:nth-child(2) { transition-delay: 0.06s; }
+.stagger.in > *:nth-child(3) { transition-delay: 0.12s; }
+.stagger.in > *:nth-child(4) { transition-delay: 0.18s; }
+.stagger.in > *:nth-child(5) { transition-delay: 0.24s; }
+.stagger.in > *:nth-child(6) { transition-delay: 0.30s; }
+.stagger.in > *:nth-child(7) { transition-delay: 0.36s; }
+.stagger.in > *:nth-child(8) { transition-delay: 0.42s; }
 
 /* === Top bar === */
 .top-bar {
@@ -307,7 +307,7 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
   color: transparent;
 }
 @keyframes word-pop {
-  0%   { opacity: 0; transform: translateY(50px) rotate(6deg); }
+  0%   { opacity: 0; transform: translateY(28px) rotate(4deg); }
   100% { opacity: 1; transform: translateY(0) rotate(0); }
 }
 @keyframes grad-flow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
@@ -950,6 +950,113 @@ p  { margin: 0 0 1em; color: var(--ink-700); }
 .flex { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .stack > * + * { margin-top: 12px; }
 .stack-lg > * + * { margin-top: 24px; }
+
+/* ============================================================
+   ACCESSIBILITY & PERFORMANCE — Applied from ui-ux-pro-max rules
+   ============================================================ */
+
+/* === Priority 1: Focus visible for keyboard users === */
+:focus-visible {
+  outline: 3px solid var(--plum-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+a:focus-visible, button:focus-visible {
+  outline: 3px solid var(--rose-500);
+  outline-offset: 3px;
+}
+
+/* === Priority 7: Respect reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal, .reveal-l, .reveal-r, .reveal-scale, .stagger > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero-shapes .hero-shape,
+  .hero-bg::before, .hero-bg::after,
+  .orb, .pulse-dot, .tag-dot {
+    animation: none !important;
+  }
+}
+
+/* === Priority 2: Touch targets ≥ 44×44px (mobile) === */
+@media (max-width: 720px) {
+  .nav-link, .footer a, .mobile-menu a {
+    min-height: 44px;
+    display: inline-flex; align-items: center;
+  }
+  .hero-tag, .top-tag {
+    min-height: 36px;
+    padding: 8px 16px;
+  }
+  .form-input, .form-textarea, .form-select {
+    min-height: 48px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+  .form-textarea { min-height: 120px; }
+  .menu-toggle { min-width: 44px; min-height: 44px; }
+  .notice-item, .album-card, .quick-card, .value-card, .faculty-card, .inquiry-card, .list-card {
+    /* Tap target padding for the whole card */
+  }
+  button, .btn, a.btn { min-height: 44px; }
+}
+
+/* === Priority 3: Lazy-loading support === */
+img[loading="lazy"] { background: var(--cream); }
+
+/* === Priority 1: Screen reader only === */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.sr-only-focusable:focus, .sr-only-focusable:active {
+  position: static; width: auto; height: auto;
+  clip: auto; margin: 0; overflow: visible; white-space: normal;
+}
+
+/* === Priority 6: Better selection === */
+::selection {
+  background: var(--plum-200);
+  color: var(--plum-800);
+}
+
+/* === Print styles === */
+@media print {
+  .top-bar, .site-header, .site-footer, .hero-shapes, .scroll-progress,
+  .menu-toggle, .mobile-menu, .nav-cta { display: none !important; }
+  body { background: white; color: black; }
+  a { color: black; text-decoration: underline; }
+  .section-plum, .cta-pill, .site-footer { background: white !important; color: black !important; }
+  .section-plum h2, .section-plum h3, .section-plum p, .section-plum .stat-num, .section-plum .stat-label,
+  .cta-pill h2, .cta-pill p { color: black !important; -webkit-text-fill-color: black !important; }
+}
+
+/* === Better touch scrolling on iOS === */
+.notice-list, .album-grid, .faculty-grid, .value-grid, .inquiry-list, .list-cards, .footer-grid, .primary-nav {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* === High contrast mode support === */
+@media (prefers-contrast: more) {
+  :root {
+    --ink-500: #5a4f64;
+    --ink-700: #3a2f44;
+  }
+  .btn-primary, .btn-accent, .nav-cta { border: 2px solid currentColor; }
+}
+
+/* === Light/dark mode preparation (for future) === */
+@media (prefers-color-scheme: dark) {
+  /* Disabled for now — school brand is intentionally light/warm */
+  /* When you add dark mode, uncomment the dark theme variables here */
+}
 
 /* === Big graphic SVG illustrations === */
 .graphic-wrap { position: relative; max-width: 720px; margin: 0 auto; }

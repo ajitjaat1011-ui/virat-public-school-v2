@@ -22,11 +22,15 @@
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Detect reduced motion preference (matches CSS @media (prefers-reduced-motion: reduce))
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // === Scroll progress ===
   const progress = document.createElement('div');
   progress.className = 'scroll-progress';
   document.body.appendChild(progress);
   const updateProgress = () => {
+    if (prefersReduced) { progress.style.transform = 'scaleX(0)'; return; }
     const h = document.documentElement;
     const max = h.scrollHeight - h.clientHeight;
     const pct = max > 0 ? (h.scrollTop / max) : 0;
@@ -43,9 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
     onScroll();
   }
 
-  // === Reveal on scroll ===
+  // === Reveal on scroll (skip if reduced motion) ===
   const revealEls = document.querySelectorAll('.reveal, .reveal-l, .reveal-r, .reveal-scale, .stagger');
-  if ('IntersectionObserver' in window) {
+  if (prefersReduced) {
+    revealEls.forEach((el) => el.classList.add('in'));
+  } else if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
@@ -56,20 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach((el) => el.classList.add('in'));
   }
 
-  // === Magnetic buttons ===
-  document.querySelectorAll('.btn-magnetic, .btn-accent, .btn-primary, .nav-cta').forEach((btn) => {
-    btn.addEventListener('mousemove', (e) => {
-      const r = btn.getBoundingClientRect();
-      const x = e.clientX - r.left - r.width / 2;
-      const y = e.clientY - r.top - r.height / 2;
-      btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px) translateY(-2px)`;
+  // === Magnetic buttons (skip if reduced motion) ===
+  if (!prefersReduced) {
+    document.querySelectorAll('.btn-magnetic, .btn-accent, .btn-primary, .nav-cta').forEach((btn) => {
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px) translateY(-2px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     });
-    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
-  });
+  }
 
   // === Per-word hero delay ===
   document.querySelectorAll('.hero h1 .word').forEach((w, i) => {
-    w.style.animationDelay = (0.1 + i * 0.06) + 's';
+    w.style.animationDelay = (0.1 + i * 0.05) + 's';
   });
 
   // === Latest notices (with date pill) ===
@@ -133,13 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(() => { galEl.innerHTML = '<p class="text-center" style="color:var(--ink-500);grid-column:1/-1;">No albums yet.</p>'; });
   }
 
-  // === Stats count-up ===
+  // === Stats count-up (skip animation if reduced motion) ===
   document.querySelectorAll('.stat-num[data-count]').forEach((el) => {
     const target = parseFloat(el.dataset.count);
     const decimals = (el.dataset.count.includes('.') || el.dataset.count.includes('%')) && el.dataset.count.includes('.') ? 1 : 0;
     const suffix = el.dataset.suffix || '';
+    if (prefersReduced) { el.textContent = (decimals ? target.toFixed(decimals) : Math.floor(target)) + suffix; return; }
     let current = 0;
-    const duration = 1600;
+    const duration = 1200;
     const startTime = performance.now();
     const step = (now) => {
       const t = Math.min(1, (now - startTime) / duration);
