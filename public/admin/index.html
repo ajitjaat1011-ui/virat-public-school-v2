@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=2" />
+  <link rel="stylesheet" href="/css/admin.css?v=4" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
@@ -16,24 +16,19 @@
       <div class="admin-header-inner">
         <a href="/admin/" class="admin-brand">
           <span class="logo">V</span>
-          <div>
-            <div class="name">VPS Admin</div>
-            <div class="sub">Virat Public School</div>
-          </div>
+          <div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div>
         </a>
         <nav class="admin-nav" aria-label="Admin">
           <a href="/admin/" class="active">Dashboard</a>
           <a href="/admin/notices.html">Notices</a>
-          <a href="/admin/gallery.html">Gallery</a>
-          <a href="/admin/results.html">Results</a>
           <a href="/admin/inquiries.html">Inquiries</a>
           <a href="/admin/messages.html">Messages</a>
+          <a href="/admin/gallery.html">Gallery</a>
+          <a href="/admin/results.html">Results</a>
           <a href="/admin/audit.html">Audit</a>
-          
         </nav>
         <div class="admin-user">
           <span id="admin-name">…</span>
-          <span class="role" id="admin-role">…</span>
           <button class="logout" id="logout-btn">Sign out</button>
         </div>
       </div>
@@ -42,19 +37,19 @@
 
   <main class="admin-main">
     <div class="container-wide">
-      <h1 class="page-title">Dashboard</h1>
-      <p class="page-sub">A quick overview of what needs attention.</p>
+      <h1 class="page-title">Welcome back, <span id="hello-name">…</span></h1>
+      <p class="page-sub">Here's what needs your attention today.</p>
 
       <a class="stat-grid" id="stats" style="text-decoration:none;">
         <a href="/admin/inquiries.html" class="stat-card" id="card-inquiries">
           <div class="label">New inquiries</div>
           <div class="value">—</div>
-          <span class="link">View all →</span>
+          <span class="link">View →</span>
         </a>
         <a href="/admin/messages.html" class="stat-card" id="card-messages">
           <div class="label">Unread messages</div>
           <div class="value">—</div>
-          <span class="link">View all →</span>
+          <span class="link">View →</span>
         </a>
         <a href="/admin/notices.html" class="stat-card">
           <div class="label">Published notices</div>
@@ -68,36 +63,28 @@
         </a>
       </a>
 
-      <div class="layout-2">
+      <div style="display:grid;grid-template-columns:1fr;gap:24px;margin-top:8px;" class="dash-grid">
         <div class="form-card">
-          <h2 style="margin-bottom:16px;">Recent inquiries</h2>
+          <h2 style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+            <span>Recent inquiries</span>
+            <a href="/admin/inquiries.html" class="btn btn-ghost btn-sm">View all →</a>
+          </h2>
           <div id="recent-inquiries">
-            <p class="text-mute">Loading…</p>
-          </div>
-          <div style="margin-top:16px;text-align:right;">
-            <a href="/admin/inquiries.html" class="btn btn-ghost btn-sm">View all inquiries →</a>
-          </div>
-        </div>
-
-        <div class="form-card">
-          <h2 style="margin-bottom:16px;">Recent activity</h2>
-          <div id="recent-audit">
-            <p class="text-mute">Loading…</p>
+            <p class="text-mute" style="font-size:14px;">Loading…</p>
           </div>
         </div>
       </div>
 
       <div class="form-card" style="margin-top:24px;">
-        <h2 style="margin-bottom:16px;">Account</h2>
-        <p class="text-mute" style="font-size:14px;margin-bottom:16px;">Change your admin password.</p>
+        <h2 style="margin-bottom:12px;">Account</h2>
+        <p class="text-mute" style="font-size:14px;margin-bottom:16px;">Update your login password.</p>
         <button class="btn btn-ghost" onclick="document.getElementById('pw-modal').classList.add('open')">Change password</button>
       </div>
     </div>
   </main>
 
-  <!-- Change password modal -->
   <div class="modal-backdrop" id="pw-modal">
-    <div class="modal">
+    <div class="modal" style="max-width:440px;">
       <h2>Change password</h2>
       <p class="modal-sub">Choose something memorable. At least 8 characters.</p>
       <form id="pw-form">
@@ -126,19 +113,17 @@
 
   <script>
   (async function () {
-    const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
 
-    // Get current user
     let me;
     try {
       me = await fetch('/api/admin/auth').then((r) => r.ok ? r.json() : null);
     } catch (e) { me = null; }
     if (!me || !me.user) { location.href = '/admin/login.html'; return; }
-    document.getElementById('admin-name').textContent = me.user.name;
-    document.getElementById('admin-role').textContent = me.user.role;
+    document.getElementById('admin-name').textContent = me.user.name.split(' ')[0];
+    document.getElementById('hello-name').textContent = me.user.name.split(' ')[0];
 
-    // Load dashboard data
     try {
       const data = await fetch('/api/admin/dashboard').then((r) => r.ok ? r.json() : null);
       if (!data) throw new Error('no data');
@@ -150,42 +135,28 @@
       if (c.newInquiries > 0) document.getElementById('card-inquiries').classList.add('alert');
 
       const inq = data.recentInquiries || [];
-      document.getElementById('recent-inquiries').innerHTML = inq.length ? `
-        <table class="admin-table">
-          <thead><tr><th>Parent</th><th>Student</th><th>Class</th><th>When</th></tr></thead>
-          <tbody>${inq.map((i) => `
-            <tr>
-              <td><strong>${esc(i.parent_name)}</strong></td>
-              <td>${esc(i.student_name)}</td>
-              <td>${esc(i.class_seeking)}</td>
-              <td>${fmt(i.created_at)}</td>
-            </tr>`).join('')}</tbody>
-        </table>` : '<p class="text-mute">No inquiries yet.</p>';
-
-      const aud = data.recentAudit || [];
-      document.getElementById('recent-audit').innerHTML = aud.length ? `
-        <table class="admin-table">
-          <thead><tr><th>When</th><th>Action</th></tr></thead>
-          <tbody>${aud.slice(0, 6).map((a) => `
-            <tr>
-              <td style="white-space:nowrap;">${fmt(a.created_at)}</td>
-              <td><code>${esc(a.action)}</code> · ${esc(a.entity || '—')}</td>
-            </tr>`).join('')}</tbody>
-        </table>` : '<p class="text-mute">No activity yet.</p>';
+      const inqEl = document.getElementById('recent-inquiries');
+      if (inq.length) {
+        inqEl.innerHTML = '<div class="list-cards">' + inq.map((i) => `
+          <div class="list-card">
+            <div class="row">
+              <span class="title">${esc(i.parent_name)} · <span style="color:var(--plum-600);">${esc(i.student_name)}</span></span>
+              <span class="meta">${esc(i.class_seeking)} · ${fmt(i.created_at)}</span>
+            </div>
+          </div>`).join('') + '</div>';
+      } else {
+        inqEl.innerHTML = '<p class="text-mute" style="font-size:14px;">No inquiries yet.</p>';
+      }
     } catch (e) {
-      document.getElementById('recent-inquiries').innerHTML = '<p class="text-mute">Could not load.</p>';
+      document.getElementById('recent-inquiries').innerHTML = '<p class="text-mute" style="font-size:14px;">Could not load.</p>';
     }
 
-    // Logout
-    document.getElementById('logout-btn').addEventListener('change-password', () => {});
     document.getElementById('logout-btn').addEventListener('click', async () => {
       await fetch('/api/admin/auth', { method: 'DELETE' });
       location.href = '/admin/login.html';
     });
 
-    // Password change
-    const pwForm = document.getElementById('pw-form');
-    pwForm.addEventListener('submit', async (e) => {
+    document.getElementById('pw-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const errEl = document.getElementById('pw-err');
       errEl.hidden = true;
@@ -205,9 +176,8 @@
           errEl.hidden = false;
           return;
         }
-        // Success
         document.getElementById('pw-modal').classList.remove('open');
-        pwForm.reset();
+        document.getElementById('pw-form').reset();
         toast('Password updated');
       } catch (err) {
         errEl.textContent = 'Network error.';
@@ -220,7 +190,7 @@
       t.className = 'toast ' + type;
       t.textContent = msg;
       document.getElementById('toast-area').appendChild(t);
-      setTimeout(() => t.remove(), 4000);
+      setTimeout(() => t.remove(), 3500);
     }
   })();
   </script>

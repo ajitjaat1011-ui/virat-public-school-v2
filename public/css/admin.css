@@ -46,14 +46,15 @@ p { color: var(--ink-700); margin: 0 0 1em; }
 .admin-header {
   background: var(--plum-700);
   color: white;
-  padding: 14px 0;
+  padding: 16px 0;
   position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 .admin-header-inner {
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; flex-wrap: wrap;
 }
-.admin-brand { display: flex; align-items: center; gap: 10px; color: white; }
+.admin-brand { display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; }
 .admin-brand .logo {
   width: 36px; height: 36px; border-radius: 10px;
   background: linear-gradient(135deg, var(--plum-400, #c486cc), var(--rose-400, #ff7898));
@@ -69,6 +70,8 @@ p { color: var(--ink-700); margin: 0 0 1em; }
   border-radius: var(--r-pill);
   font-size: 14px; font-weight: 500;
   color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
 }
 .admin-nav a:hover { background: rgba(255,255,255,0.1); color: white; }
 .admin-nav a.active { background: var(--rose-500); color: white; }
@@ -84,13 +87,14 @@ p { color: var(--ink-700); margin: 0 0 1em; }
   font-size: 13px;
   cursor: pointer;
   font-family: inherit;
+  transition: background 0.2s;
 }
 .admin-user .logout:hover { background: rgba(255,255,255,0.2); }
 
 /* === Main === */
-.admin-main { padding: 40px 0 80px; }
-.page-title { margin-bottom: 4px; }
-.page-sub   { color: var(--ink-500); margin-bottom: 28px; font-size: 14px; }
+.admin-main { padding: 32px 0 64px; max-width: 1100px; margin: 0 auto; }
+.page-title { margin-bottom: 4px; font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 500; color: var(--ink-900); }
+.page-sub   { color: var(--ink-500); margin-bottom: 24px; font-size: 14px; }
 
 /* === Stat cards === */
 .stat-grid {
@@ -120,15 +124,24 @@ p { color: var(--ink-700); margin: 0 0 1em; }
   border-radius: 50%; margin-top: 8px;
 }
 
-/* === Tables === */
-.table-wrap { background: var(--paper); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+/* === Tables (used only where strictly needed) === */
+.table-wrap { background: var(--paper); border-radius: var(--r-md); box-shadow: 0 2px 10px rgba(106, 56, 119, 0.05); overflow: hidden; }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .admin-table th, .admin-table td { padding: 14px 18px; text-align: left; border-bottom: 1px solid var(--ink-100); }
 .admin-table th { background: var(--plum-50); color: var(--plum-700); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
 .admin-table tr:last-child td { border-bottom: none; }
 .admin-table tr:hover td { background: var(--rose-50); }
-.admin-table .actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.admin-table .actions button, .admin-table .actions a {
+
+/* List card (preferred over table on small screens) */
+.list-cards { display: flex; flex-direction: column; gap: 10px; max-width: 920px; }
+.list-card { background: var(--paper); border-radius: 14px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(106, 56, 119, 0.04); transition: transform 0.2s, box-shadow 0.2s; }
+.list-card:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(106, 56, 119, 0.08); }
+.list-card .row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.list-card .row .title { font-weight: 600; font-size: 1rem; }
+.list-card .row .meta { font-size: 12px; color: var(--ink-500); }
+.list-card .desc { font-size: 14px; color: var(--ink-700); margin: 4px 0 12px; }
+.list-card .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.list-card .actions button, .list-card .actions a {
   font-size: 12px; padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid var(--ink-100);
@@ -138,10 +151,10 @@ p { color: var(--ink-700); margin: 0 0 1em; }
   text-decoration: none;
   display: inline-block;
 }
-.admin-table .actions button:hover, .admin-table .actions a:hover { background: var(--rose-50); border-color: var(--rose-200); }
-.admin-table .actions .danger { color: var(--err); }
-.admin-table .actions .danger:hover { background: #ffe5ec; border-color: var(--err); }
-.admin-table .actions .ok { color: var(--ok); }
+.list-card .actions button:hover, .list-card .actions a:hover { background: var(--rose-50); border-color: var(--rose-200); }
+.list-card .actions .danger { color: var(--err); }
+.list-card .actions .danger:hover { background: #ffe5ec; border-color: var(--err); }
+.list-card .actions .ok { color: var(--ok); }
 
 .badge {
   display: inline-block; font-size: 11px; padding: 4px 10px; border-radius: var(--r-pill);

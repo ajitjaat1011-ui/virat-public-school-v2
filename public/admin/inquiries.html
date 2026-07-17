@@ -8,7 +8,54 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=2" />
+  <link rel="stylesheet" href="/css/admin.css?v=4" />
+  <style>
+    /* Inquiries specific — clean card list, not a wide table */
+    .inquiry-list { display: flex; flex-direction: column; gap: 12px; max-width: 920px; }
+    .inquiry-card {
+      background: var(--paper); border-radius: 18px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 10px rgba(106, 56, 119, 0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .inquiry-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(106, 56, 119, 0.08); }
+    .inquiry-card.is-new { border-left: 3px solid var(--rose-500); }
+    .inquiry-card.is-new::before {
+      content: 'NEW'; position: absolute; top: 20px; right: 24px;
+      background: var(--rose-100); color: var(--rose-600);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      padding: 3px 8px; border-radius: 999px;
+    }
+    .inquiry-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .inquiry-name { font-size: 1.1rem; font-weight: 600; color: var(--ink-900); font-family: 'Inter', sans-serif; }
+    .inquiry-class { font-size: 13px; color: var(--plum-600); font-weight: 600; padding: 2px 10px; background: var(--plum-50); border-radius: 999px; }
+    .inquiry-meta { font-size: 13px; color: var(--ink-500); margin-bottom: 12px; }
+    .inquiry-meta a { color: var(--plum-600); }
+    .inquiry-msg { color: var(--ink-700); font-size: 14px; line-height: 1.55; margin: 0 0 16px; padding: 12px 14px; background: var(--cream); border-radius: 12px; }
+    .inquiry-msg.empty { color: var(--ink-500); font-style: italic; }
+    .inquiry-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .inquiry-actions .spacer { flex: 1; }
+    .inquiry-actions .btn { padding: 8px 14px; font-size: 13px; }
+    .inquiry-actions .when { font-size: 12px; color: var(--ink-500); }
+    .inquiry-card[data-status="CONTACTED"] { opacity: 0.7; }
+    .inquiry-card[data-status="ADMITTED"] { background: linear-gradient(135deg, #f0fff5, var(--paper)); }
+    .inquiry-card[data-status="REJECTED"] { opacity: 0.5; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; max-width: 920px; }
+    .filter-bar input, .filter-bar select { min-height: 40px; padding: 8px 14px; border: 1.5px solid var(--ink-100); border-radius: 12px; background: var(--paper); font-family: inherit; font-size: 14px; }
+    .filter-bar input { flex: 1; min-width: 200px; }
+    .filter-bar select { min-width: 160px; }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; max-width: 920px; flex-wrap: wrap; gap: 12px; }
+    .toolbar .count { font-size: 14px; color: var(--ink-500); }
+    .toolbar .count strong { color: var(--plum-700); font-weight: 600; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 60px 24px; color: var(--ink-500); }
+    .empty h3 { color: var(--ink-700); font-family: 'Inter', sans-serif; margin-bottom: 8px; }
+  </style>
 </head>
 <body class="admin-body">
   <header class="admin-header">
@@ -38,43 +85,53 @@
   <main class="admin-main">
     <div class="container-wide">
       <h1 class="page-title">Admission Inquiries</h1>
-      <p class="page-sub">All submitted admission inquiries. Mark as contacted or admitted as you follow up.</p>
+      <p class="page-sub">All submitted admission inquiries. Click a card to see full details, or update status inline.</p>
+
+      <div class="toolbar">
+        <div class="count" id="count">Loading…</div>
+      </div>
 
       <div class="filter-bar">
-        <input type="text" id="search" placeholder="Search by name or phone…" style="max-width:280px;" />
-        <select id="filter-status" style="max-width:200px;">
+        <input type="text" id="search" placeholder="Search by name, phone, or class…" />
+        <select id="filter-status">
           <option value="">All statuses</option>
-          <option value="NEW">New</option>
+          <option value="NEW">New only</option>
           <option value="CONTACTED">Contacted</option>
           <option value="ADMITTED">Admitted</option>
           <option value="REJECTED">Rejected</option>
         </select>
       </div>
 
-      <div class="table-wrap">
-        <div id="list"><div class="empty-state"><p>Loading…</p></div></div>
-      </div>
+      <div id="list" class="inquiry-list"></div>
     </div>
   </main>
 
-  <div class="modal-backdrop" id="view-modal">
-    <div class="modal" id="view-content"></div>
+  <!-- Detail modal -->
+  <div class="modal-backdrop" id="detail-modal">
+    <div class="modal" style="max-width: 600px;">
+      <h2>Inquiry details</h2>
+      <p class="modal-sub" id="detail-when"></p>
+      <div id="detail-content"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="detail-close">Close</button>
+      </div>
+    </div>
   </div>
+
   <div id="toast-area"></div>
 
   <script>
   (async function () {
-    const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
     const toast = (msg, type='success') => {
       const t = document.createElement('div');
       t.className = 'toast ' + type;
       t.textContent = msg;
       document.getElementById('toast-area').appendChild(t);
-      setTimeout(() => t.remove(), 4000);
+      setTimeout(() => t.remove(), 3500);
     };
 
-    // Auth check
     const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
     if (!me || !me.user) { location.href = '/admin/login.html'; return; }
     document.getElementById('admin-name').textContent = me.user.name;
@@ -88,77 +145,118 @@
         inquiries = data.inquiries || [];
         render();
       } catch (e) {
-        document.getElementById('list').innerHTML = '<div class="empty-state"><h3>Could not load</h3><p>Please refresh and try again.</p></div>';
+        document.getElementById('list').innerHTML = '<div class="empty"><h3>Could not load</h3><p>Please refresh.</p></div>';
       }
     }
 
     function render() {
-      const q = document.getElementById('search').value.toLowerCase();
+      const q = (document.getElementById('search').value || '').toLowerCase();
       const st = document.getElementById('filter-status').value;
       const filtered = inquiries.filter((i) => {
-        if (q && !((i.parent_name||'').toLowerCase().includes(q) || (i.student_name||'').toLowerCase().includes(q) || (i.parent_phone||'').includes(q))) return false;
-        if (st && i.status !== st) return false;
+        if (q) {
+          const hay = ((i.parent_name||'') + ' ' + (i.student_name||'') + ' ' + (i.parent_phone||'') + ' ' + (i.class_seeking||'')).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (st === 'NEW') {
+          if (i.status !== 'NEW') return false;
+        } else if (st) {
+          if (i.status !== st) return false;
+        }
         return true;
       });
+
+      const newCount = inquiries.filter(i => i.status === 'NEW').length;
+      document.getElementById('count').innerHTML = `<strong>${filtered.length}</strong> of ${inquiries.length} shown · <strong>${newCount}</strong> new`;
+
       const el = document.getElementById('list');
       if (!filtered.length) {
-        el.innerHTML = '<div class="empty-state"><h3>No inquiries</h3><p>New submissions will appear here.</p></div>';
+        el.innerHTML = '<div class="empty"><h3>No inquiries match</h3><p>Try a different filter or search term.</p></div>';
         return;
       }
-      el.innerHTML = `
-        <table class="admin-table">
-          <thead><tr><th>Received</th><th>Parent</th><th>Student</th><th>Class</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody>${filtered.map((i) => `
-            <tr ${i.status === 'NEW' ? 'style="background:#fffbeb;"' : ''}>
-              <td style="white-space:nowrap;font-size:13px;">${fmt(i.created_at)}</td>
-              <td><strong>${esc(i.parent_name)}</strong>${i.parent_email ? '<br><span style="color:var(--ink-500);font-size:12px;">' + esc(i.parent_email) + '</span>' : ''}</td>
-              <td>${esc(i.student_name)}</td>
-              <td>${esc(i.class_seeking)}</td>
-              <td><a href="tel:${esc(i.parent_phone)}">${esc(i.parent_phone)}</a><br><a href="https://wa.me/91${esc(i.parent_phone)}" target="_blank" rel="noopener" style="color:#2f9e6b;font-size:12px;">WhatsApp</a></td>
-              <td><span class="badge ${esc(i.status)}">${esc(i.status)}</span></td>
-              <td>
-                <div class="actions">
-                  <button data-action="view" data-id="${i.id}">View</button>
-                  ${i.status !== 'CONTACTED' ? `<button data-action="contacted" data-id="${i.id}">Contacted</button>` : ''}
-                  ${i.status !== 'ADMITTED' ? `<button data-action="admitted" data-id="${i.id}" class="ok">Admit</button>` : ''}
-                  <button data-action="delete" data-id="${i.id}" class="danger">Delete</button>
-                </div>
-              </td>
-            </tr>`).join('')}</tbody>
-        </table>`;
+      el.innerHTML = filtered.map((i) => {
+        const when = fmt(i.created_at);
+        const msg = i.message ? esc(i.message) : '';
+        return `
+          <div class="inquiry-card ${i.status === 'NEW' ? 'is-new' : ''}" data-status="${esc(i.status)}" data-id="${esc(i.id)}">
+            <div class="inquiry-head">
+              <span class="inquiry-name">${esc(i.parent_name)}</span>
+              <span class="inquiry-class">${esc(i.class_seeking || '—')}</span>
+            </div>
+            <div class="inquiry-meta">
+              For <strong>${esc(i.student_name)}</strong>
+              ${i.parent_email ? ' · <a href="mailto:' + esc(i.parent_email) + '">' + esc(i.parent_email) + '</a>' : ''}
+              ${i.parent_phone ? ' · <a href="tel:' + esc(i.parent_phone) + '">' + esc(i.parent_phone) + '</a> · <a href="https://wa.me/91' + esc(i.parent_phone) + '" target="_blank" rel="noopener" style="color:#2f9e6b;">WhatsApp</a>' : ''}
+            </div>
+            ${msg ? '<p class="inquiry-msg">' + msg + '</p>' : '<p class="inquiry-msg empty">No message.</p>'}
+            <div class="inquiry-actions">
+              <button class="btn btn-ghost btn-sm" data-action="view" data-id="${esc(i.id)}">View details</button>
+              ${i.status !== 'CONTACTED' ? `<button class="btn btn-ghost btn-sm" data-action="contacted" data-id="${esc(i.id)}">Mark contacted</button>` : '<span class="badge CONTACTED">Contacted</span>'}
+              ${i.status !== 'ADMITTED'  ? `<button class="btn btn-primary btn-sm" data-action="admitted"  data-id="${esc(i.id)}">Admit</button>` : '<span class="badge ADMITTED">Admitted ✓</span>'}
+              <button class="btn btn-ghost btn-sm" data-action="reject" data-id="${esc(i.id)}" style="color:var(--rose-600);">Reject</button>
+              <span class="spacer"></span>
+              <span class="when">${when}</span>
+            </div>
+          </div>`;
+      }).join('');
+
       el.querySelectorAll('[data-action]').forEach((b) => {
-        b.addEventListener('click', async () => {
+        b.addEventListener('click', () => {
           const id = b.dataset.id;
-          if (b.dataset.action === 'view') viewInquiry(inquiries.find((i) => i.id === id));
+          const inq = inquiries.find(x => x.id === id);
+          if (!inq) return;
+          if (b.dataset.action === 'view') openDetail(inq);
           else if (b.dataset.action === 'contacted') updateStatus(id, 'CONTACTED');
-          else if (b.dataset.action === 'admitted') updateStatus(id, 'ADMITTED');
-          else if (b.dataset.action === 'delete') deleteInquiry(id);
+          else if (b.dataset.action === 'admitted')  updateStatus(id, 'ADMITTED');
+          else if (b.dataset.action === 'reject')    updateStatus(id, 'REJECTED');
         });
       });
     }
 
-    function viewInquiry(i) {
-      if (!i) return;
-      document.getElementById('view-content').innerHTML = `
-        <h2>Inquiry details</h2>
-        <p class="text-mute" style="font-size:13px;">Received ${fmt(i.created_at)}</p>
-        <div style="margin-top:20px;">
-          <p><strong>Parent:</strong> ${esc(i.parent_name)}</p>
-          <p><strong>Phone:</strong> <a href="tel:${esc(i.parent_phone)}">${esc(i.parent_phone)}</a> · <a href="https://wa.me/91${esc(i.parent_phone)}" target="_blank" rel="noopener" style="color:#2f9e6b;">WhatsApp</a></p>
-          <p><strong>Email:</strong> ${esc(i.parent_email || '—')}</p>
-          <hr style="border:none;border-top:1px solid #ebe6ef;margin:16px 0;">
-          <p><strong>Student:</strong> ${esc(i.student_name)}</p>
-          <p><strong>Class sought:</strong> ${esc(i.class_seeking)}</p>
-          <p><strong>Date of birth:</strong> ${esc(i.dob || '—')}</p>
-          <p><strong>Address:</strong> ${esc(i.address || '—')}</p>
-          <p><strong>Message:</strong><br>${esc(i.message || '—')}</p>
-          <hr style="border:none;border-top:1px solid #ebe6ef;margin:16px 0;">
-          <p><strong>Status:</strong> <span class="badge ${esc(i.status)}">${esc(i.status)}</span></p>
+    function openDetail(i) {
+      document.getElementById('detail-when').textContent = 'Received ' + fmt(i.created_at);
+      document.getElementById('detail-content').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;">
+          <div>
+            <div class="form-label" style="margin-bottom:4px;">Parent</div>
+            <div style="font-size:16px;font-weight:500;">${esc(i.parent_name)}</div>
+            <div style="margin-top:6px;">
+              <a href="tel:${esc(i.parent_phone)}" style="margin-right:12px;">${esc(i.parent_phone) || '—'}</a>
+              ${i.parent_phone ? '<a href="https://wa.me/91' + esc(i.parent_phone) + '" target="_blank" rel="noopener" style="color:#2f9e6b;">WhatsApp</a>' : ''}
+            </div>
+            ${i.parent_email ? '<div style="margin-top:4px;"><a href="mailto:' + esc(i.parent_email) + '">' + esc(i.parent_email) + '</a></div>' : ''}
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:4px;">Student</div>
+            <div style="font-size:16px;font-weight:500;">${esc(i.student_name)}</div>
+            <div style="margin-top:4px;color:var(--ink-500);font-size:14px;">${i.dob ? 'DOB: ' + esc(i.dob) : 'DOB not given'}</div>
+            <div style="margin-top:4px;">
+              <span class="inquiry-class" style="display:inline-block;">${esc(i.class_seeking || '—')}</span>
+            </div>
+          </div>
+          ${i.address ? '<div><div class="form-label" style="margin-bottom:4px;">Address</div><div style="font-size:14px;color:var(--ink-700);">' + esc(i.address) + '</div></div>' : ''}
+          ${i.message ? '<div><div class="form-label" style="margin-bottom:4px;">Message</div><div class="inquiry-msg" style="margin:0;">' + esc(i.message) + '</div></div>' : ''}
+          <div>
+            <div class="form-label" style="margin-bottom:4px;">Status</div>
+            <div>
+              <select class="form-select" id="detail-status" style="max-width:200px;">
+                <option value="NEW" ${i.status==='NEW'?'selected':''}>New</option>
+                <option value="CONTACTED" ${i.status==='CONTACTED'?'selected':''}>Contacted</option>
+                <option value="ADMITTED" ${i.status==='ADMITTED'?'selected':''}>Admitted</option>
+                <option value="REJECTED" ${i.status==='REJECTED'?'selected':''}>Rejected</option>
+              </select>
+              <button class="btn btn-primary btn-sm" id="detail-save" style="margin-left:8px;">Save</button>
+            </div>
+          </div>
         </div>
-        <div class="modal-actions">
-          <button class="btn btn-ghost" onclick="document.getElementById('view-modal').classList.remove('open')">Close</button>
-        </div>`;
-      document.getElementById('view-modal').classList.add('open');
+      `;
+      document.getElementById('detail-modal').classList.add('open');
+      document.getElementById('detail-save').addEventListener('click', async () => {
+        const newStatus = document.getElementById('detail-status').value;
+        if (newStatus !== i.status) {
+          await updateStatus(i.id, newStatus);
+          document.getElementById('detail-modal').classList.remove('open');
+        }
+      });
     }
 
     async function updateStatus(id, status) {
@@ -173,19 +271,11 @@
       } catch (e) { toast(e.message, 'error'); }
     }
 
-    async function deleteInquiry(id) {
-      if (!confirm('Delete this inquiry?')) return;
-      try {
-        const r = await fetch('/api/admin/inquiries/' + id, { method: 'DELETE' });
-        if (!r.ok) throw new Error('Failed');
-        toast('Inquiry deleted');
-        load();
-      } catch (e) { toast(e.message, 'error'); }
-    }
-
-    ['search', 'filter-status'].forEach((id) => document.getElementById(id).addEventListener('input', render));
-    document.getElementById('view-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'view-modal') e.target.classList.remove('open');
+    document.getElementById('search').addEventListener('input', render);
+    document.getElementById('filter-status').addEventListener('change', render);
+    document.getElementById('detail-close').addEventListener('click', () => document.getElementById('detail-modal').classList.remove('open'));
+    document.getElementById('detail-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'detail-modal') e.target.classList.remove('open');
     });
     document.getElementById('logout-btn').addEventListener('click', async () => {
       await fetch('/api/admin/auth', { method: 'DELETE' });

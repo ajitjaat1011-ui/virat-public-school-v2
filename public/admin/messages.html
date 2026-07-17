@@ -8,23 +8,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=2" />
+  <link rel="stylesheet" href="/css/admin.css?v=4" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
     <div class="container-wide">
       <div class="admin-header-inner">
-        <a href="/admin/" class="admin-brand">
-          <span class="logo">V</span>
-          <div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div>
-        </a>
-        <nav class="admin-nav" aria-label="Admin">
+        <a href="/admin/" class="admin-brand"><span class="logo">V</span><div><div class="name">VPS Admin</div><div class="sub">Virat Public School</div></div></a>
+        <nav class="admin-nav">
           <a href="/admin/">Dashboard</a>
           <a href="/admin/notices.html">Notices</a>
-          <a href="/admin/gallery.html">Gallery</a>
-          <a href="/admin/results.html">Results</a>
           <a href="/admin/inquiries.html">Inquiries</a>
           <a href="/admin/messages.html" class="active">Messages</a>
+          <a href="/admin/gallery.html">Gallery</a>
+          <a href="/admin/results.html">Results</a>
           <a href="/admin/audit.html">Audit</a>
         </nav>
         <div class="admin-user">
@@ -37,11 +34,10 @@
 
   <main class="admin-main">
     <div class="container-wide">
-      <h1 class="page-title">Contact Messages</h1>
+      <h1 class="page-title">Contact messages</h1>
       <p class="page-sub">Messages submitted via the public contact form.</p>
-
-      <div class="table-wrap">
-        <div id="list"><div class="empty-state"><p>Loading…</p></div></div>
+      <div id="list" class="list-cards">
+        <div class="empty"><p style="color:var(--ink-500);">Loading…</p></div>
       </div>
     </div>
   </main>
@@ -53,19 +49,12 @@
 
   <script>
   (async function () {
-    const esc = (s) => String(s||'').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const esc = (s) => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
-    const toast = (msg, type='success') => {
-      const t = document.createElement('div');
-      t.className = 'toast ' + type;
-      t.textContent = msg;
-      document.getElementById('toast-area').appendChild(t);
-      setTimeout(() => t.remove(), 4000);
-    };
 
     const me = await fetch('/api/admin/auth').then(r => r.ok ? r.json() : null);
     if (!me || !me.user) { location.href = '/admin/login.html'; return; }
-    document.getElementById('admin-name').textContent = me.user.name;
+    document.getElementById('admin-name').textContent = me.user.name.split(' ')[0];
 
     let messages = [];
     async function load() {
@@ -76,32 +65,27 @@
         messages = d.messages || [];
         render();
       } catch (e) {
-        document.getElementById('list').innerHTML = '<div class="empty-state"><h3>Could not load</h3></div>';
+        document.getElementById('list').innerHTML = '<div class="empty"><p>Could not load.</p></div>';
       }
     }
 
     function render() {
       const el = document.getElementById('list');
       if (!messages.length) {
-        el.innerHTML = '<div class="empty-state"><h3>No messages yet</h3><p>Submissions from the contact form will appear here.</p></div>';
+        el.innerHTML = '<div class="empty"><h3>No messages</h3><p>Submissions from the contact form will appear here.</p></div>';
         return;
       }
-      el.innerHTML = `
-        <table class="admin-table">
-          <thead><tr><th>Received</th><th>From</th><th>Subject</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody>${messages.map((m) => `
-            <tr ${!m.is_read ? 'style="background:#fffbeb;"' : ''}>
-              <td style="white-space:nowrap;font-size:13px;">${fmt(m.created_at)}</td>
-              <td><strong>${esc(m.name)}</strong><br><span style="color:var(--ink-500);font-size:12px;">${esc(m.email)}</span></td>
-              <td>${esc(m.subject)}</td>
-              <td><span class="badge ${m.is_read ? 'read' : 'unread'}">${m.is_read ? 'Read' : 'Unread'}</span></td>
-              <td>
-                <div class="actions">
-                  <button data-action="view" data-id="${m.id}">Open</button>
-                </div>
-              </td>
-            </tr>`).join('')}</tbody>
-        </table>`;
+      el.innerHTML = messages.map((m) => `
+        <div class="list-card" style="${!m.is_read ? 'border-left:3px solid var(--rose-500);' : ''}">
+          <div class="row">
+            <span class="title">${esc(m.name)} <span style="font-weight:400;color:var(--ink-500);">· ${esc(m.email)}</span></span>
+            <span class="meta">${fmt(m.created_at)} · <span class="badge ${m.is_read ? 'read' : 'unread'}">${m.is_read ? 'Read' : 'New'}</span></span>
+          </div>
+          <div class="desc"><strong>${esc(m.subject)}</strong></div>
+          <div class="actions">
+            <button data-action="view" data-id="${esc(m.id)}">Open message</button>
+          </div>
+        </div>`).join('');
       el.querySelectorAll('[data-action="view"]').forEach((b) => {
         b.addEventListener('click', () => openMessage(messages.find(x => x.id === b.dataset.id)));
       });
@@ -111,11 +95,17 @@
       if (!m) return;
       document.getElementById('view-content').innerHTML = `
         <h2>${esc(m.subject)}</h2>
-        <p class="text-mute" style="font-size:13px;">Received ${fmt(m.created_at)}</p>
-        <div style="margin-top:20px;">
-          <p><strong>From:</strong> ${esc(m.name)} (<a href="mailto:${esc(m.email)}">${esc(m.email)}</a>)${m.phone ? ' · <a href="tel:' + esc(m.phone) + '">' + esc(m.phone) + '</a>' : ''}</p>
-          <hr style="border:none;border-top:1px solid #ebe6ef;margin:16px 0;">
-          <p style="white-space:pre-wrap;">${esc(m.message)}</p>
+        <p class="modal-sub">Received ${fmt(m.created_at)}</p>
+        <div style="margin-top:16px;display:grid;grid-template-columns:1fr;gap:16px;">
+          <div>
+            <div class="form-label" style="margin-bottom:4px;">From</div>
+            <div style="font-size:15px;font-weight:500;">${esc(m.name)}</div>
+            <div style="margin-top:4px;"><a href="mailto:${esc(m.email)}">${esc(m.email)}</a>${m.phone ? ' · <a href="tel:' + esc(m.phone) + '">' + esc(m.phone) + '</a>' : ''}</div>
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:4px;">Message</div>
+            <div class="inquiry-msg" style="margin:0;white-space:pre-wrap;">${esc(m.message)}</div>
+          </div>
         </div>
         <div class="modal-actions">
           <button class="btn btn-ghost" onclick="document.getElementById('view-modal').classList.remove('open')">Close</button>
@@ -125,10 +115,7 @@
     }
 
     async function markRead(id) {
-      try {
-        await fetch('/api/admin/messages/' + id, { method: 'POST' });
-        load();
-      } catch (e) {}
+      try { await fetch('/api/admin/messages/' + id, { method: 'POST' }); load(); } catch (e) {}
     }
 
     document.getElementById('view-modal').addEventListener('click', (e) => {
