@@ -81,3 +81,21 @@ function jsonError(msg, status) {
     headers: { 'Content-Type': 'application/json' }
   });
 }
+
+export async function onRequestGet() {
+  return new Response(JSON.stringify({
+    info: 'POST application/json to submit an admission inquiry. See the inquiry form on /admissions.html'
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'content-type',
+      'Access-Control-Max-Age': '86400'
+    }
+  });
+}

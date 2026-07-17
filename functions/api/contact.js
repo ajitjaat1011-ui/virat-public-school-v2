@@ -35,3 +35,21 @@ export async function onRequestPost(context) {
   }
   return Response.json({ ok: true });
 }
+
+export async function onRequestGet() {
+  return new Response(JSON.stringify({
+    info: 'POST application/json to send a contact message. See the form on /contact.html'
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'content-type',
+      'Access-Control-Max-Age': '86400'
+    }
+  });
+}

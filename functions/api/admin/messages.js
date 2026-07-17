@@ -1,29 +1,22 @@
 /**
- * Admin: Contact Messages
+ * Admin: Contact Messages list
+ *  - GET — list all non-deleted messages
+ *  (POST/DELETE for a single message lives in ./messages/[id].js)
  */
 import { errorResponse, jsonResponse } from '../../lib/data.js';
 import { db } from '../../lib/db.js';
-import { requireUser, checkOrigin, audit } from '../../lib/auth.js';
+import { requireUser } from '../../lib/auth.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
   const { user, error } = await requireUser(request, env);
   if (error) return errorResponse(error, 401);
-  const { results } = await db(env).prepare('SELECT * FROM contact_messages WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 200').all();
-  return jsonResponse({ messages: results });
-}
-
-export async function onRequestPost(context) {
-  const { env, request } = context;
-  const { user, error } = await requireUser(request, env);
-  if (error) return errorResponse(error, 401);
-  const originErr = checkOrigin(request);
-  if (originErr) return errorResponse(originErr, 403);
-  const url = new URL(request.url);
-  const id = url.pathname.split('/').pop();
-  const existing = await db(env).prepare('SELECT id FROM contact_messages WHERE id = ?1').bind(id).first();
-  if (!existing) return errorResponse('Message not found', 404);
-  await db(env).prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?1').bind(id).run();
-  await audit(env, user.id, 'message.read', 'ContactMessage', id, null, null);
-  return jsonResponse({ ok: true });
+  try {
+    const { results } = await db(env).prepare(
+      'SELECT * FROM contact_messages WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 200'
+    ).all();
+    return jsonResponse({ messages: results });
+  } catch (e) {
+    return errorResponse('Database error: ' + e.message, 500);
+  }
 }
