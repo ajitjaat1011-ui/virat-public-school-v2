@@ -45,7 +45,7 @@ export async function onRequestPost(context) {
   let body;
   try { body = await request.json(); } catch { return errorResponse('Invalid JSON', 400); }
 
-  const title    = String(body.title || '').trim();
+  let title    = String(body.title || '').trim();
   const class_name = String(body.class_name || '').trim();
   const subject  = String(body.subject || '').trim();
   const exam_date = String(body.exam_date || '').trim();
@@ -59,6 +59,7 @@ export async function onRequestPost(context) {
   if (!class_name) return errorResponse('Class is required', 400);
   if (!subject)   return errorResponse('Subject is required', 400);
   if (!exam_date) return errorResponse('Exam date is required', 400);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(exam_date)) return errorResponse('Exam date must be YYYY-MM-DD format', 400);
   if (!title)     title = `${subject} — ${class_name}`;
 
   const id = 'exm_' + cuid();
