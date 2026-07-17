@@ -91,7 +91,8 @@ body.admin-body::after {
 /* === App layout === */
 .app {
   position: relative;
-  z-index: 1;
+  /* Do not create a stacking context: the mobile sidebar must sit above the scrim. */
+  z-index: auto;
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: 100vh;
@@ -211,9 +212,8 @@ body.menu-open { overflow: hidden; }
 /* === Sidebar scrim (mobile) — LIGHT overlay so content is visible === */
 .sidebar-scrim {
   position: fixed; inset: 0;
-  background: rgba(26, 22, 32, 0.3);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  /* Dim the page without blurring the navigation drawer. */
+  background: rgba(26, 22, 32, 0.24);
   z-index: 49; display: none;
 }
 .sidebar-scrim.open { display: block; }
