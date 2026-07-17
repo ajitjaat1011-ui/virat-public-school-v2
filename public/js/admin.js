@@ -241,7 +241,7 @@
 
         <div class="main">
           <header class="topbar">
-            <button class="menu-btn" id="menu-btn" aria-label="Open menu">
+            <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <h1>
@@ -265,16 +265,31 @@
     const menuBtn = document.getElementById('menu-btn');
     const sidebar = document.getElementById('sidebar');
     const scrim = document.getElementById('sidebar-scrim');
-    if (menuBtn) {
+    if (menuBtn && sidebar && scrim) {
+      const setMenuOpen = (open) => {
+        sidebar.classList.toggle('open', open);
+        scrim.classList.toggle('open', open);
+        menuBtn.setAttribute('aria-expanded', String(open));
+        menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        document.body.classList.toggle('menu-open', open);
+      };
+
       menuBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        sidebar.classList.toggle('open');
-        scrim.classList.toggle('open');
+        setMenuOpen(!sidebar.classList.contains('open'));
       });
-      scrim.addEventListener('click', () => {
-        sidebar.classList.remove('open');
-        scrim.classList.remove('open');
+      scrim.addEventListener('click', () => setMenuOpen(false));
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+          setMenuOpen(false);
+          menuBtn.focus();
+        }
+      });
+      // Close the drawer after selecting a destination on phones. The
+      // navigation still follows the anchor normally.
+      sidebar.querySelectorAll('.nav-item').forEach((item) => {
+        item.addEventListener('click', () => setMenuOpen(false));
       });
     }
 

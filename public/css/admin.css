@@ -205,6 +205,9 @@ body.admin-body::after {
 .sidebar-user .signout:hover { background: var(--pink-50); color: var(--pink-600); }
 .sidebar-user .signout svg { width: 16px; height: 16px; }
 
+/* Keep the page from moving behind the open mobile drawer. */
+body.menu-open { overflow: hidden; }
+
 /* === Sidebar scrim (mobile) — LIGHT overlay so content is visible === */
 .sidebar-scrim {
   position: fixed; inset: 0;
@@ -621,7 +624,10 @@ body.admin-body::after {
   .app { grid-template-columns: 1fr; }
   .sidebar {
     position: fixed; top: 0; left: 0;
-    width: 280px;
+    width: min(280px, 86vw);
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     transform: translateX(-100%);
     transition: transform 0.25s var(--ease-out);
     z-index: 50;
