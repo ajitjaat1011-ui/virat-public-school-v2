@@ -9,6 +9,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="/css/admin.css?v=10" />
+  <style>
+    .quick-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px; }
+    .quick-action { display:flex; align-items:center; gap:10px; padding:14px 16px; background:rgba(255,255,255,.82); border:1px solid var(--line); border-radius:16px; color:var(--ink-900); text-decoration:none; transition:transform .2s var(--ease-out), border-color .2s, box-shadow .2s; }
+    .quick-action:hover { transform:translateY(-2px); border-color:var(--pink-200); box-shadow:var(--glass-shadow); color:var(--pink-700); }
+    .quick-action .qa-icon { width:34px; height:34px; display:grid; place-items:center; border-radius:11px; background:linear-gradient(135deg,var(--pink-100),var(--sky-100)); color:var(--pink-600); font-size:19px; flex-shrink:0; }
+    .quick-action strong { display:block; font-size:13px; }
+    .quick-action span { display:block; color:var(--ink-500); font-size:11px; margin-top:2px; }
+    @media (max-width:720px) { .quick-actions { grid-template-columns:repeat(2,1fr); } .quick-action { padding:12px; } }
+  </style>
 </head>
 <body class="admin-body">
   <div id="app-root"></div>
@@ -19,6 +28,13 @@
         <p>Here's what needs your attention today.</p>
       </div>
     </div>
+
+    <nav class="quick-actions" aria-label="Quick actions">
+      <a class="quick-action" href="/admin/students.html"><span class="qa-icon">＋</span><span><strong>Add student</strong><span>Master list</span></span></a>
+      <a class="quick-action" href="/admin/exams.html"><span class="qa-icon">▣</span><span><strong>Schedule exam</strong><span>Exams & results</span></span></a>
+      <a class="quick-action" href="/admin/notices.html"><span class="qa-icon">✦</span><span><strong>Post notice</strong><span>School updates</span></span></a>
+      <a class="quick-action" href="/admin/parents.html"><span class="qa-icon">♧</span><span><strong>Review parents</strong><span>Pending requests</span></span></a>
+    </nav>
 
     <div class="stat-grid" id="stat-grid">
       <a href="/admin/inquiries.html" class="stat-tile" id="card-inquiries">
