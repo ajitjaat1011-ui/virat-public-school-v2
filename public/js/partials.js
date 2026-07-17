@@ -17,10 +17,10 @@
     <header class="site-header">
       <div class="container-wide">
         <div class="header-inner">
-          <a href="index.html" class="brand">
-            <span class="brand-logo">V</span>
+          <a href="index.html" class="brand" aria-label="Virat Public School, Virat Nagar Kotputli — home">
+            <span class="brand-logo"><span class="logo-shine"></span>V</span>
             <span class="brand-text">
-              <span class="brand-name">Virat Public School</span>
+              <span class="brand-name"><span class="bloom-letter">V</span><span class="bloom-letter">i</span><span class="bloom-letter">r</span><span class="bloom-letter">a</span><span class="bloom-letter">t</span><span>&nbsp;</span><span class="bloom-letter">P</span><span class="bloom-letter">u</span><span class="bloom-letter">b</span><span class="bloom-letter">l</span><span class="bloom-letter">i</span><span class="bloom-letter">c</span><span>&nbsp;</span><span class="bloom-letter">S</span><span class="bloom-letter">c</span><span class="bloom-letter">h</span><span class="bloom-letter">o</span><span class="bloom-letter">o</span><span class="bloom-letter">l</span></span>
               <span class="brand-sub">Virat Nagar · Kotputli</span>
             </span>
           </a>
@@ -57,7 +57,7 @@
         <div class="footer-grid">
           <div>
             <div class="brand" style="margin-bottom:12px;">
-              <span class="brand-logo">V</span>
+              <span class="brand-logo"><span class="logo-shine"></span>V</span>
               <span class="brand-text">
                 <span class="brand-name">Virat Public School</span>
                 <span class="brand-sub">Virat Nagar · Kotputli</span>
@@ -136,6 +136,12 @@
     else if (!document.querySelector('.site-footer') && !document.body.dataset.noFooter) {
       document.body.insertAdjacentHTML('beforeend', fixLinks(FOOTER_HTML));
     }
+
+    // === Flower bloom: stagger per-letter delays on the brand name ===
+    const brandLetters = document.querySelectorAll('.brand-name .bloom-letter');
+    brandLetters.forEach((el, i) => {
+      el.style.animationDelay = (0.8 + i * 0.035) + 's';
+    });
 
     // Mobile menu toggle
     const bindMenu = () => {
