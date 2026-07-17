@@ -1,6 +1,7 @@
+/* Updated active logic for parent dashboard */
 /* ============================================================
    Virat Public School — App shell injector
-   Status bar + welcome row + bottom dock + PWA install
+   Welcome row + bottom dock + PWA install
    ============================================================ */
 (function () {
   'use strict';
@@ -45,7 +46,15 @@
       <div class="app-dock-wrap">
         <nav class="app-dock" aria-label="Primary">
           ${DOCK.map(item => {
-            const active = (path === item.href || (item.href === '/index.html' && (path === '/' || path === '/index'))) ? 'active' : '';
+            // Match exact path OR a "section" match (e.g. /parent/login.html matches /parent/ prefix for the Parents dock item)
+            let active = '';
+            if (item.href === '/parent/login.html') {
+              if (path.startsWith('/parent/')) active = 'active';
+            } else if (item.href === '/index.html') {
+              if (path === '/' || path === '/index' || path === '/index.html' || path === '') active = 'active';
+            } else {
+              if (path === item.href || path === item.href.replace('.html', '')) active = 'active';
+            }
             return `<a href="${item.href}" class="dock-item ${active}">${icon(item.icon)}<span class="label">${item.label}</span></a>`;
           }).join('')}
         </nav>
@@ -130,6 +139,9 @@
       document.body.insertAdjacentHTML('beforeend', renderDock() + renderInstallBanner());
       document.body.classList.add('has-dock');
     }
+
+    // Bind install banner buttons (after they are in the DOM)
+    bindInstall();
 
     injectBlobs();
     registerSW();
