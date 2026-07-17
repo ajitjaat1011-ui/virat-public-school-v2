@@ -2,7 +2,8 @@
 import { readFileSync } from 'fs';
 
 const URL = 'libsql://virat-public-school-ajitjaat1011-ui.aws-ap-south-1.turso.io';
-const TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODQxNzI0ODEsImlkIjoiMDE5ZjY4ZjctNWMwMS03NDVhLTllZDItZTIzNzAyZmIwYzRhIiwia2lkIjoienVDWHBCUlUtOU1paW1aOW45NlhYRUJyRzdUU0U3Y1JJWG4zbE5rQUxzWSIsInJpZCI6IjBhMjBkYmFmLTc5YTktNDliOC1hZDg2LWMzYzNiOGEyYzgxZCJ9.luNfzLTKvqXKQlLyOM4suZbdCihXhKlxwTwoVCvLELFQyjlUu5E_Q5PiLTAn6hEscx2_IC7Y1MuqT185DDD_BA';
+const TOKEN = process.env.TURSO_TOKEN;
+if (!TOKEN) throw new Error('Set TURSO_TOKEN before running this script');
 
 const httpUrl = URL.replace(/^libsql:/, 'https:');
 
