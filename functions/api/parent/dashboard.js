@@ -24,20 +24,21 @@ export async function onRequestGet(context) {
   // Determine which classes to fetch exams for
   const classNames = [...new Set(children.map(c => c.class_name).filter(Boolean))];
 
-  // Exams: upcoming + recent past (60 days back, 90 days forward)
+  // Exams: upcoming (any future date) + recent past (60 days back)
   const now = new Date();
   const pastCutoff = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const futureCutoff = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  // No upper bound — parents should see all upcoming exams for their class,
+  // not just those within 90 days. Class list can be filtered/paginated later.
 
   let exams = [];
   if (classNames.length) {
     const placeholders = classNames.map((_, i) => `?${i + 1}`).join(',');
-    const params = [...classNames, pastCutoff, futureCutoff];
+    const params = [...classNames, pastCutoff];
     const res = await db(env).prepare(
       `SELECT id, title, class_name, subject, exam_date, start_time, end_time, max_marks, syllabus, notes
        FROM exams
        WHERE class_name IN (${placeholders}) AND is_published = 1 AND deleted_at IS NULL
-         AND exam_date >= ?${classNames.length + 1} AND exam_date <= ?${classNames.length + 2}
+         AND exam_date >= ?${classNames.length + 1}
        ORDER BY exam_date ASC, start_time ASC`
     ).bind(...params).all();
     exams = res.results || [];
