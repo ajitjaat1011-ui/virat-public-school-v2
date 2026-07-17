@@ -7,52 +7,39 @@
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=5" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=6" />
   <style>
-    .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .filter-btn {
-      padding: 6px 14px;
-      border-radius: var(--r-pill);
-      border: 1px solid var(--glass-border);
-      background: var(--glass-bg);
-      color: var(--ink-2);
-      font: inherit; font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .filter-btn:hover { background: var(--glass-bg-hover); color: var(--ink-1); }
-    .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
     .parent-card {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--r-md);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
       padding: 18px 20px;
       margin-bottom: 10px;
-      transition: border-color 0.15s, background 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .parent-card:hover { border-color: var(--glass-border-strong); }
+    .parent-card:hover { border-color: var(--pink-200); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
     .parent-card .row1 { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
-    .parent-card h3 { margin: 0 0 2px; font-family: 'Fraunces', serif; font-weight: 500; font-size: 16px; color: var(--ink-1); }
-    .parent-card .meta { font-size: 12px; color: var(--ink-3); }
+    .parent-card h3 { margin: 0 0 2px; font-family: inherit; font-weight: 600; font-size: 16px; color: var(--ink-900); }
+    .parent-card .meta { font-size: 12px; color: var(--ink-500); }
     .parent-card .children-info {
       margin-top: 10px; padding: 10px 12px;
-      background: rgba(0,0,0,0.18); border: 1px solid var(--glass-border);
-      border-radius: var(--r-sm);
-      font-size: 13px; color: var(--ink-2);
+      background: var(--tint); border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 13px; color: var(--ink-700);
     }
     .parent-card .actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
     .note-input {
       width: 100%;
       padding: 8px 12px;
-      border: 1px solid var(--glass-border);
-      border-radius: var(--r-sm);
-      background: rgba(0,0,0,0.18);
-      color: var(--ink-1);
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      color: var(--ink-900);
       font: inherit; font-size: 13px;
       margin-top: 8px;
     }
-    .note-input:focus { outline: none; border-color: var(--accent); }
+    .note-input:focus { outline: none; border-color: var(--pink-400); }
   </style>
 </head>
 <body class="admin-body">
@@ -72,13 +59,13 @@
       <button class="filter-btn" data-filter="REJECTED">Rejected</button>
     </div>
 
-    <div id="list"><p style="color:var(--ink-3);">Loading…</p></div>
+    <div id="list"><p style="color:var(--ink-500);">Loading…</p></div>
   </div>
 
   <script>
     window.ADMIN_PAGE = { title: 'Parents', crumb: 'Academics' };
   </script>
-  <script src="/js/admin.js?v=1"></script>
+  <script src="/js/admin.js?v=2"></script>
   <script>
     const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = iso => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
@@ -94,10 +81,10 @@
 
     async function load() {
       const list = document.getElementById('list');
-      list.innerHTML = '<p style="color:var(--ink-3);">Loading…</p>';
+      list.innerHTML = '<p style="color:var(--ink-500);">Loading…</p>';
       const url = currentFilter === 'ALL' ? '/api/admin/parents' : `/api/admin/parents?status=${currentFilter}`;
       const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) { list.innerHTML = '<p style="color:var(--rose-light);">Failed to load.</p>'; return; }
+      if (!res.ok) { list.innerHTML = '<p style="color:var(--pink-700);">Failed to load.</p>'; return; }
       const data = await res.json();
       const parents = data.parents || [];
       if (!parents.length) { list.innerHTML = '<div class="empty-state"><h3>No parent accounts</h3><p>Nothing in this view.</p></div>'; return; }
@@ -110,7 +97,7 @@
             </div>
             <div>${pill(p.status)}</div>
           </div>
-          ${(p.children && p.children.length) ? `<div class="children-info">Stated child: <strong style="color:var(--ink-1);">${esc(p.children[0].student_name)}</strong> · ${esc(p.children[0].class_name)}${p.children[0].section ? ' · ' + esc(p.children[0].section) : ''}${p.children[0].roll_number ? ' · Roll ' + esc(p.children[0].roll_number) : ''}</div>` : ''}
+          ${(p.children && p.children.length) ? `<div class="children-info">Stated child: <strong style="color:var(--ink-900);">${esc(p.children[0].student_name)}</strong> · ${esc(p.children[0].class_name)}${p.children[0].section ? ' · ' + esc(p.children[0].section) : ''}${p.children[0].roll_number ? ' · Roll ' + esc(p.children[0].roll_number) : ''}</div>` : ''}
           ${p.review_note ? `<div class="meta" style="margin-top:8px;">Review note: ${esc(p.review_note)}</div>` : ''}
           <input type="text" class="note-input" placeholder="Optional review note (admin only)" />
           <div class="actions">

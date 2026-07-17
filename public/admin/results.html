@@ -7,11 +7,10 @@
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=5" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=6" />
   <style>
-    .form-card { max-width: 640px; padding: 24px; background: var(--glass-bg); backdrop-filter: blur(20px) saturate(160%); border: 1px solid var(--glass-border); border-radius: var(--r-lg); }
-    .form-card form { display: flex; flex-direction: column; gap: 12px; }
+    .form-card { max-width: 640px; padding: 24px; background: white; border: 1px solid var(--line); border-radius: 16px; }
   </style>
 </head>
 <body class="admin-body">
@@ -46,7 +45,7 @@
   <script>
     window.ADMIN_PAGE = { title: 'Results', crumb: 'Academics' };
   </script>
-  <script src="/js/admin.js?v=1"></script>
+  <script src="/js/admin.js?v=2"></script>
   <script>
     const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 
@@ -61,23 +60,23 @@
           const r = await fetch('/api/results/lookup?roll=' + encodeURIComponent(roll) + '&dob=' + encodeURIComponent(dob), { credentials: 'include' });
           const d = await r.json();
           if (!r.ok || d.error) {
-            out.innerHTML = '<div class="form-card" style="text-align:center;"><h3 style="font-family:inherit; font-weight:600; font-size:16px; color:var(--ink-1);">No result found</h3><p>Check the roll number and date of birth.</p></div>';
+            out.innerHTML = '<div class="form-card" style="text-align:center;"><h3 style="font-family:inherit; font-weight:600; font-size:16px; color:var(--ink-900);">No result found</h3><p>Check the roll number and date of birth.</p></div>';
             return;
           }
           const s = d.student || {};
           const marks = d.marks || [];
           out.innerHTML = `
             <div class="form-card">
-              <h3 style="margin:0 0 4px; font-family:inherit; font-weight:600; color:var(--ink-1);">${esc(s.name || '')}</h3>
-              <p style="font-size:13px;color:var(--ink-3);margin-bottom:16px;">Class ${esc(s.class || '')} · Roll ${esc(s.roll || roll)}</p>
+              <h3 style="margin:0 0 4px; font-family:inherit; font-weight:600; color:var(--ink-900);">${esc(s.name || '')}</h3>
+              <p style="font-size:13px;color:var(--ink-500);margin-bottom:16px;">Class ${esc(s.class || '')} · Roll ${esc(s.roll || roll)}</p>
               <table class="glass-table">
                 <thead><tr><th>Subject</th><th>Marks</th><th>Grade</th></tr></thead>
                 <tbody>${marks.map((m) => '<tr><td>' + esc(m.subject) + '</td><td>' + esc(String(m.marks)) + '</td><td>' + esc(m.grade || '') + '</td></tr>').join('')}</tbody>
               </table>
-              <p style="margin-top:16px;color:var(--accent-light);font-weight:600;">Total: ${esc(String(d.total || marks.reduce((a,b) => a + Number(b.marks||0), 0)))}</p>
+              <p style="margin-top:16px;color:var(--pink-600);font-weight:700;">Total: ${esc(String(d.total || marks.reduce((a,b) => a + Number(b.marks||0), 0)))}</p>
             </div>`;
         } catch (err) {
-          out.innerHTML = '<div class="form-card" style="text-align:center;"><h3 style="font-family:inherit; font-weight:600; font-size:16px; color:var(--ink-1);">Network error</h3><p>Please try again.</p></div>';
+          out.innerHTML = '<div class="form-card" style="text-align:center;"><h3 style="font-family:inherit; font-weight:600; font-size:16px; color:var(--ink-900);">Network error</h3><p>Please try again.</p></div>';
         }
       });
     };

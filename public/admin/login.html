@@ -7,47 +7,45 @@
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=5" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css?v=6" />
   <style>
     body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    body::before, body::after { display: none; }
     .login-card {
       width: 100%; max-width: 400px;
       padding: 32px;
-      background: rgba(30, 20, 44, 0.6);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid var(--glass-border-strong);
-      border-radius: var(--r-lg);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(255, 61, 128, 0.12);
     }
     .login-card .brand {
       display: flex; align-items: center; gap: 12px;
       margin-bottom: 24px;
       padding-bottom: 20px;
-      border-bottom: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--line);
     }
     .login-card .brand .logo {
-      width: 40px; height: 40px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent-light), var(--rose));
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--pink-400), var(--sky-400));
       color: white;
       display: grid; place-items: center;
-      font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px;
-      box-shadow: 0 4px 16px var(--accent-glow);
+      font-weight: 700; font-size: 20px;
+      box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
     }
-    .login-card .brand .name { font-weight: 600; color: var(--ink-1); font-size: 15px; }
-    .login-card .brand .sub { font-size: 12px; color: var(--ink-3); }
-    .login-card h1 { margin: 0 0 6px; font-family: 'Fraunces', serif; font-weight: 500; font-size: 22px; color: var(--ink-1); }
-    .login-card .hint { color: var(--ink-3); font-size: 13px; margin: 0 0 20px; }
-    .login-card .btn-primary { width: 100%; justify-content: center; margin-top: 4px; }
+    .login-card .brand .name { font-weight: 700; color: var(--ink-900); font-size: 15px; }
+    .login-card .brand .sub { font-size: 12px; color: var(--ink-500); }
+    .login-card h1 { margin: 0 0 6px; font-family: inherit; font-weight: 800; font-size: 24px; color: var(--ink-900); letter-spacing: -0.02em; }
+    .login-card .hint { color: var(--ink-500); font-size: 13px; margin: 0 0 20px; }
+    .login-card .btn-primary { width: 100%; justify-content: center; }
     .login-card .back { text-align: center; margin-top: 16px; font-size: 12px; }
-    .login-card .back a { color: var(--ink-3); text-decoration: none; }
-    .login-card .back a:hover { color: var(--ink-1); }
+    .login-card .back a { color: var(--ink-500); text-decoration: none; }
+    .login-card .back a:hover { color: var(--pink-600); }
   </style>
 </head>
 <body class="admin-body">
-  <div class="bg-mesh" aria-hidden="true"></div>
   <div class="login-card">
     <div class="brand">
       <div class="logo">V</div>

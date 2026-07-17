@@ -1,4 +1,3 @@
-/* Updated active logic for parent dashboard */
 /* ============================================================
    Virat Public School — App shell injector
    Welcome row + bottom dock + PWA install

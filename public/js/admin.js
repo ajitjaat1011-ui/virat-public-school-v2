@@ -1,23 +1,23 @@
 /* ============================================================
    Virat Public School — Admin App Shell
-   Injects sidebar + topbar + background mesh.
+   Sidebar + Topbar + Background blobs
    Each page sets window.ADMIN_PAGE = { title, crumb, subtitle, actionsHtml }
+   And uses window.PICKERS = { classes, subjects } for dropdowns
    ============================================================ */
 (function () {
   'use strict';
 
-  // === Sidebar items (single source of truth) ===
   const NAV = [
     { section: 'Overview' },
     { href: '/admin/',                  label: 'Dashboard',  icon: 'home',    match: '/admin/' },
     { section: 'Manage' },
-    { href: '/admin/notices.html',      label: 'Notices',    icon: 'megaphone', badgeKey: 'newInquiries' },
+    { href: '/admin/notices.html',      label: 'Notices',    icon: 'megaphone', badgeKey: 'notices' },
     { href: '/admin/inquiries.html',    label: 'Inquiries',  icon: 'inbox',   badgeKey: 'newInquiries' },
     { href: '/admin/messages.html',     label: 'Messages',   icon: 'mail',    badgeKey: 'unreadMessages' },
     { href: '/admin/gallery.html',      label: 'Gallery',    icon: 'image' },
     { section: 'Academics' },
     { href: '/admin/results.html',      label: 'Results',    icon: 'chart' },
-    { href: '/admin/exams.html',        label: 'Exams',      icon: 'calendar' },
+    { href: '/admin/exams.html',        label: 'Exams',      icon: 'calendar', badgeKey: 'exams' },
     { href: '/admin/parents.html',      label: 'Parents',    icon: 'users',   badgeKey: 'parentRequests' },
     { section: 'System' },
     { href: '/admin/audit.html',        label: 'Audit log',  icon: 'shield' },
@@ -39,7 +39,6 @@
     return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
   }
 
-  // === Mark current page active ===
   const path = window.location.pathname.replace(/\/$/, '') || '/admin';
   function isActive(item) {
     if (!item.href) return false;
@@ -47,7 +46,6 @@
     return path === item.href.replace(/\/$/, '');
   }
 
-  // === Render sidebar ===
   function renderSidebar(badges) {
     let html = '';
     for (const item of NAV) {
@@ -63,42 +61,50 @@
     return html;
   }
 
-  // === Mount ===
+  // === Shared options for pickers ===
+  // Defined once so all admin forms use the same list.
+  window.PICKERS = {
+    classes: [
+      'LKG', 'UKG',
+      'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5',
+      'Class 6', 'Class 7', 'Class 8',
+      'Class 9', 'Class 10',
+      'Class 11 (Science)', 'Class 11 (Commerce)', 'Class 11 (Arts)',
+      'Class 12 (Science)', 'Class 12 (Commerce)', 'Class 12 (Arts)'
+    ],
+    subjects: [
+      'English', 'Hindi', 'Mathematics', 'Science', 'Social Science',
+      'Physics', 'Chemistry', 'Biology',
+      'Accountancy', 'Business Studies', 'Economics',
+      'History', 'Geography', 'Political Science', 'Sociology',
+      'Computer Science', 'Information Technology',
+      'Sanskrit', 'French', 'Art', 'Music', 'Physical Education'
+    ],
+    sections: ['A', 'B', 'C', 'D', 'E'],
+    grades: ['A+', 'A', 'B+', 'B', 'C', 'D', 'E']
+  };
+
   async function mount() {
     const cfg = window.ADMIN_PAGE || {};
     const title = cfg.title || 'Admin';
     const crumb = cfg.crumb || '';
-    const subtitle = cfg.subtitle || '';
     const actionsHtml = cfg.actionsHtml || '';
 
-    // Check auth
     let user = null;
     try {
       const r = await fetch('/api/admin/auth', { credentials: 'include' });
-      if (r.ok) {
-        const d = await r.json();
-        user = d.user;
-      }
+      if (r.ok) { const d = await r.json(); user = d.user; }
     } catch (e) {}
-    if (!user) {
-      window.location.href = '/admin/login.html';
-      return;
-    }
+    if (!user) { window.location.href = '/admin/login.html'; return; }
 
-    // Get counts for badges (best effort)
     let badges = {};
     try {
       const r = await fetch('/api/admin/dashboard', { credentials: 'include' });
-      if (r.ok) {
-        const d = await r.json();
-        badges = d.counts || {};
-      }
+      if (r.ok) { const d = await r.json(); badges = d.counts || {}; }
     } catch (e) {}
 
-    // Build the app shell
     const root = document.getElementById('app-root') || document.body;
     root.innerHTML = `
-      <div class="bg-mesh" aria-hidden="true"></div>
       <div class="sidebar-scrim" id="sidebar-scrim"></div>
       <div class="app">
         <aside class="sidebar" id="sidebar">
@@ -133,13 +139,7 @@
               <span>${escapeHtml(title)}</span>
               ${crumb ? `<span class="crumb">›</span><span class="sub">${escapeHtml(crumb)}</span>` : ''}
             </h1>
-            <div class="right">
-              <div class="search-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" placeholder="Search…" id="topbar-search" />
-              </div>
-              ${actionsHtml}
-            </div>
+            <div class="right">${actionsHtml}</div>
           </header>
           <main class="page" id="page-root">
             ${document.getElementById('page-content') ? document.getElementById('page-content').innerHTML : ''}
@@ -149,12 +149,14 @@
       <div id="toast-area"></div>
     `;
 
-    // === Mobile menu ===
+    // Mobile menu
     const menuBtn = document.getElementById('menu-btn');
     const sidebar = document.getElementById('sidebar');
     const scrim = document.getElementById('sidebar-scrim');
     if (menuBtn) {
-      menuBtn.addEventListener('click', () => {
+      menuBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         sidebar.classList.toggle('open');
         scrim.classList.toggle('open');
       });
@@ -164,21 +166,12 @@
       });
     }
 
-    // === Sign out ===
+    // Sign out
     document.getElementById('signout-btn').addEventListener('click', async () => {
       try { await fetch('/api/admin/auth', { method: 'DELETE', credentials: 'include' }); } catch (e) {}
       window.location.href = '/admin/login.html';
     });
 
-    // === Topbar search: forward to page-specific handler if registered ===
-    const search = document.getElementById('topbar-search');
-    if (search) {
-      search.addEventListener('input', (e) => {
-        if (typeof window.onTopbarSearch === 'function') window.onTopbarSearch(e.target.value);
-      });
-    }
-
-    // Notify page that the shell is ready
     if (typeof window.onShellReady === 'function') {
       window.onShellReady({ badges, user });
     }
@@ -188,7 +181,7 @@
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  // === Global toast helper ===
+  // === Global toast ===
   window.toast = function (msg, type) {
     type = type || 'success';
     const t = document.createElement('div');
@@ -199,10 +192,15 @@
     setTimeout(() => t.remove(), 3500);
   };
 
+  // === Helper: render options for a select ===
+  window.renderOptions = function (list, selected) {
+    return list.map(v => `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(v)}</option>`).join('');
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mount);
   } else {
     mount();
   }
 })();
-/* admin-shell v1 */
+/* admin-shell v2 */
