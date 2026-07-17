@@ -71,6 +71,7 @@
     const fmt = iso => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
 
     let currentFilter = 'ALL';
+    let listEl;
 
     function pill(s) {
       if (s === 'PENDING')  return '<span class="pill pill-pending">Pending</span>';
@@ -80,15 +81,14 @@
     }
 
     async function load() {
-      const list = document.getElementById('list');
-      list.innerHTML = '<p style="color:var(--ink-500);">Loading…</p>';
+      listEl.innerHTML = '<p style="color:var(--ink-500);">Loading…</p>';
       const url = currentFilter === 'ALL' ? '/api/admin/parents' : `/api/admin/parents?status=${currentFilter}`;
       const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) { list.innerHTML = '<p style="color:var(--pink-700);">Failed to load.</p>'; return; }
+      if (!res.ok) { listEl.innerHTML = '<p style="color:var(--pink-700);">Failed to load.</p>'; return; }
       const data = await res.json();
       const parents = data.parents || [];
-      if (!parents.length) { list.innerHTML = '<div class="empty-state"><h3>No parent accounts</h3><p>Nothing in this view.</p></div>'; return; }
-      list.innerHTML = parents.map(p => `
+      if (!parents.length) { listEl.innerHTML = '<div class="empty-state"><h3>No parent accounts</h3><p>Nothing in this view.</p></div>'; return; }
+      listEl.innerHTML = parents.map(p => `
         <div class="parent-card" data-id="${esc(p.id)}">
           <div class="row1">
             <div>
@@ -109,7 +109,7 @@
         </div>
       `).join('');
 
-      list.querySelectorAll('.parent-card').forEach(card => {
+      listEl.querySelectorAll('.parent-card').forEach(card => {
         const id = card.dataset.id;
         const noteInput = card.querySelector('.note-input');
         card.querySelectorAll('[data-action]').forEach(btn => {
@@ -137,6 +137,7 @@
     }
 
     window.onShellReady = function () {
+      listEl = document.getElementById('list');
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));

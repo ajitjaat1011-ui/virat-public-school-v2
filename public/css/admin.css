@@ -646,4 +646,35 @@ body.admin-body::after {
   border-radius: 4px;
 }
 
-/* CSS v6 — Admin Light App */
+/* === 12-hour time input === */
+.time12 {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: white;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 4px 6px;
+  min-height: 42px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.time12:focus-within {
+  border-color: var(--pink-400);
+  box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.15);
+}
+.time12 select {
+  border: none; background: transparent; padding: 6px 4px;
+  font: inherit; font-size: 14px; color: var(--ink-900);
+  cursor: pointer; outline: none;
+  -webkit-appearance: none; appearance: none;
+  background: transparent;
+  padding-right: 14px;
+}
+.time12 select.h, .time12 select.m { min-width: 48px; }
+.time12 select.ap { font-weight: 600; color: var(--pink-700); min-width: 52px; }
+.time12-sep { color: var(--ink-500); font-weight: 600; padding: 0 2px; }
+.time12 input[type=hidden] { display: none; }
+
+/* === Form row layouts (was missing in v6) === */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+
+/* CSS v7 — Admin Light App */

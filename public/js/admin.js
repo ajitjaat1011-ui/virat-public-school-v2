@@ -1,8 +1,9 @@
 /* ============================================================
-   Virat Public School — Admin App Shell
+   Virat Public School — Admin App Shell v3
    Sidebar + Topbar + Background blobs
-   Each page sets window.ADMIN_PAGE = { title, crumb, subtitle, actionsHtml }
-   And uses window.PICKERS = { classes, subjects } for dropdowns
+   Each page defines window.ADMIN_PAGE = { title, crumb }
+   and window.onShellReady(ctx) — runs AFTER the shell is mounted
+   so getElementById finds the live elements.
    ============================================================ */
 (function () {
   'use strict';
@@ -61,20 +62,20 @@
     return html;
   }
 
-  // === Shared options for pickers ===
-  // Defined once so all admin forms use the same list.
+  // === Shared pickers ===
   window.PICKERS = {
     classes: [
       'LKG', 'UKG',
       'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5',
       'Class 6', 'Class 7', 'Class 8',
       'Class 9', 'Class 10',
-      'Class 11 (Science)', 'Class 11 (Commerce)', 'Class 11 (Arts)',
-      'Class 12 (Science)', 'Class 12 (Commerce)', 'Class 12 (Arts)'
+      'Class 11 (Science)', 'Class 11 (Arts)', 'Class 11 (Agriculture)',
+      'Class 12 (Science)', 'Class 12 (Arts)', 'Class 12 (Agriculture)'
     ],
     subjects: [
       'English', 'Hindi', 'Mathematics', 'Science', 'Social Science',
       'Physics', 'Chemistry', 'Biology',
+      'Agriculture', 'Animal Husbandry',
       'Accountancy', 'Business Studies', 'Economics',
       'History', 'Geography', 'Political Science', 'Sociology',
       'Computer Science', 'Information Technology',
@@ -83,6 +84,110 @@
     sections: ['A', 'B', 'C', 'D', 'E'],
     grades: ['A+', 'A', 'B+', 'B', 'C', 'D', 'E']
   };
+
+  // === 12-hour time helpers ===
+  // Display: "10:30 AM" / "2:00 PM" / "12:00 AM" / "12:00 PM"
+  // Storage: 24h "HH:MM" (server stays the same)
+  window.fmt12 = function (iso) {
+    if (!iso) return '';
+    const m = /^(\d{1,2}):(\d{2})/.exec(String(iso).trim());
+    if (!m) return String(iso);
+    let h = parseInt(m[1], 10);
+    const min = m[2];
+    if (isNaN(h)) return String(iso);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12; if (h === 0) h = 12;
+    return `${h}:${min} ${ampm}`;
+  };
+
+  // Parse a 12h input back to 24h "HH:MM"
+  window.parse12 = function (val) {
+    if (!val) return '';
+    const m = /^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)$/i.exec(String(val).trim());
+    if (!m) {
+      // Try 24h fallback
+      const m2 = /^(\d{1,2}):(\d{2})$/.exec(String(val).trim());
+      if (!m2) return '';
+      return `${m2[1].padStart(2, '0')}:${m2[2]}`;
+    }
+    let h = parseInt(m[1], 10);
+    const min = m[2];
+    const isPm = /PM/i.test(m[3]);
+    if (isPm && h !== 12) h += 12;
+    if (!isPm && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${min}`;
+  };
+
+  // === Custom 12-hour time input HTML ===
+  // Renders a wrapper with hour, minute, AM/PM dropdowns. Returns
+  // an element with `.time12` class and a `getValue()` method on the wrapper.
+  // value is a 24h "HH:MM" string.
+  window.time12Input = function (initial, name) {
+    let h = '', m = '', ap = '';
+    if (initial) {
+      const parts = /^(\d{1,2}):(\d{2})/.exec(String(initial).trim());
+      if (parts) {
+        const hh = parseInt(parts[1], 10);
+        m = parts[2];
+        ap = hh >= 12 ? 'PM' : 'AM';
+        h = String(hh % 12); if (h === '0') h = '12';
+      }
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'time12';
+    wrap.innerHTML = `
+      <select class="time12-h" aria-label="Hour">
+        ${Array.from({length: 12}, (_, i) => i + 1).map(n => `<option value="${n}"${String(n) === h ? ' selected' : ''}>${n}</option>`).join('')}
+      </select>
+      <span class="time12-sep">:</span>
+      <select class="time12-m" aria-label="Minute">
+        ${Array.from({length: 60}, (_, i) => String(i).padStart(2, '0')).map(n => `<option value="${n}"${n === m ? ' selected' : ''}>${n}</option>`).join('')}
+      </select>
+      <select class="time12-ap" aria-label="AM/PM">
+        <option value="AM"${ap === 'AM' ? ' selected' : ''}>AM</option>
+        <option value="PM"${ap === 'PM' ? ' selected' : ''}>PM</option>
+      </select>
+      <input type="hidden" name="${name || 'time12'}" value="" />`;
+    const hSel = wrap.querySelector('.time12-h');
+    const mSel = wrap.querySelector('.time12-m');
+    const apSel = wrap.querySelector('.time12-ap');
+    const hidden = wrap.querySelector('input[type=hidden]');
+    function sync() {
+      hidden.value = window.parse12(`${hSel.value}:${mSel.value} ${apSel.value}`);
+    }
+    hSel.addEventListener('change', sync);
+    mSel.addEventListener('change', sync);
+    apSel.addEventListener('change', sync);
+    sync();
+    wrap.getValue = () => hidden.value;
+    return wrap;
+  };
+
+  // === Sign out — exposed as window.signOut for any page to call ===
+  window.signOut = async function () {
+    try { await fetch('/api/admin/auth', { method: 'DELETE', credentials: 'include' }); } catch (e) {}
+    window.location.href = '/admin/login.html';
+  };
+
+  // === Global toast ===
+  window.toast = function (msg, type) {
+    type = type || 'success';
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    const area = document.getElementById('toast-area');
+    if (area) area.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  };
+
+  // === Render options helper ===
+  window.renderOptions = function (list, selected) {
+    return list.map(v => `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(v)}</option>`).join('');
+  };
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
 
   async function mount() {
     const cfg = window.ADMIN_PAGE || {};
@@ -102,6 +207,10 @@
       const r = await fetch('/api/admin/dashboard', { credentials: 'include' });
       if (r.ok) { const d = await r.json(); badges = d.counts || {}; }
     } catch (e) {}
+
+    // Capture the page-content HTML BEFORE replacing root
+    const contentEl = document.getElementById('page-content');
+    const contentHTML = contentEl ? contentEl.innerHTML : '';
 
     const root = document.getElementById('app-root') || document.body;
     root.innerHTML = `
@@ -141,13 +250,16 @@
             </h1>
             <div class="right">${actionsHtml}</div>
           </header>
-          <main class="page" id="page-root">
-            ${document.getElementById('page-content') ? document.getElementById('page-content').innerHTML : ''}
-          </main>
+          <main class="page" id="page-root">${contentHTML}</main>
         </div>
       </div>
       <div id="toast-area"></div>
     `;
+
+    // Move modals from body into the mounted app (so they overlay correctly)
+    document.querySelectorAll('body > .modal-backdrop').forEach(m => {
+      root.appendChild(m);
+    });
 
     // Mobile menu
     const menuBtn = document.getElementById('menu-btn');
@@ -166,36 +278,15 @@
       });
     }
 
-    // Sign out
-    document.getElementById('signout-btn').addEventListener('click', async () => {
-      try { await fetch('/api/admin/auth', { method: 'DELETE', credentials: 'include' }); } catch (e) {}
-      window.location.href = '/admin/login.html';
-    });
+    // Sign out — bind here AFTER shell is in DOM
+    const soBtn = document.getElementById('signout-btn');
+    if (soBtn) soBtn.addEventListener('click', (e) => { e.preventDefault(); window.signOut(); });
 
+    // Page is now ready — call onShellReady
     if (typeof window.onShellReady === 'function') {
-      window.onShellReady({ badges, user });
+      try { window.onShellReady({ badges, user }); } catch (e) { console.error('onShellReady error:', e); }
     }
   }
-
-  function escapeHtml(s) {
-    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  // === Global toast ===
-  window.toast = function (msg, type) {
-    type = type || 'success';
-    const t = document.createElement('div');
-    t.className = 'toast ' + type;
-    t.textContent = msg;
-    const area = document.getElementById('toast-area');
-    if (area) area.appendChild(t);
-    setTimeout(() => t.remove(), 3500);
-  };
-
-  // === Helper: render options for a select ===
-  window.renderOptions = function (list, selected) {
-    return list.map(v => `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(v)}</option>`).join('');
-  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mount);
@@ -203,4 +294,4 @@
     mount();
   }
 })();
-/* admin-shell v2 */
+/* admin-shell v3 */

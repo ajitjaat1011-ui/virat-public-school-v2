@@ -8,9 +8,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/admin.css?v=6" />
+  <link rel="stylesheet" href="/css/admin.css?v=7" />
   <style>
-    .result-row { display: grid; grid-template-columns: 2fr 0.7fr 0.6fr 0.8fr 0.7fr 32px; gap: 6px; margin-bottom: 6px; align-items: center; }
+    .result-row {
+      display: grid;
+      grid-template-columns: 2fr 0.7fr 0.6fr 0.7fr 0.7fr 32px;
+      gap: 6px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
     .result-row .head {
       font-size: 10px; color: var(--ink-500); font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.06em; padding: 0 4px;
@@ -21,8 +27,11 @@
       border: 1.5px solid var(--line);
       border-radius: 8px;
       font: inherit; font-size: 13px;
+      color: var(--ink-900);
     }
-    .result-row input:focus, .result-row select:focus { outline: none; border-color: var(--pink-400); }
+    .result-row input:focus, .result-row select:focus {
+      outline: none; border-color: var(--pink-400);
+    }
     .result-row .remove {
       background: transparent; border: none; cursor: pointer;
       color: var(--ink-500); font-size: 18px; line-height: 1; padding: 0;
@@ -34,6 +43,25 @@
       padding: 8px 0; background: none; border: none; font: inherit;
     }
     .add-row:hover { color: var(--pink-700); }
+    .results-bulk {
+      background: var(--tint);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    .results-bulk textarea {
+      width: 100%;
+      min-height: 80px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      padding: 8px 10px;
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      margin-top: 8px;
+      resize: vertical;
+    }
     @media (max-width: 880px) {
       .result-row { grid-template-columns: 1fr 1fr; }
     }
@@ -59,9 +87,8 @@
       <p class="modal-sub">Pick a class, subject, date, and time. No typing required.</p>
       <form id="newForm">
         <div class="form-group">
-          <label class="form-label">Title</label>
-          <input name="title" required placeholder="e.g. Mid-Term" />
-          <div class="form-help">Or leave auto-generated from subject + date</div>
+          <label class="form-label">Title (auto-filled if blank)</label>
+          <input name="title" placeholder="e.g. Mid-Term" />
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -92,16 +119,18 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Start time</label>
-            <input name="start_time" type="time" />
+            <div id="new-start-time"></div>
+            <input type="hidden" name="start_time" id="new-start-time-val" />
           </div>
           <div class="form-group">
             <label class="form-label">End time</label>
-            <input name="end_time" type="time" />
+            <div id="new-end-time"></div>
+            <input type="hidden" name="end_time" id="new-end-time-val" />
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">Syllabus / notes (optional)</label>
-          <textarea name="syllabus" rows="2" placeholder="e.g. Chapters 1–4"></textarea>
+          <textarea name="syllabus" rows="2" placeholder="e.g. Chapters 1–4, bring geometry box"></textarea>
         </div>
         <div id="newError" class="form-error" style="display:none;"></div>
         <div class="modal-actions">
@@ -114,9 +143,17 @@
 
   <!-- Results modal -->
   <div class="modal-backdrop" id="resultsModal">
-    <div class="modal" style="max-width: 720px;">
+    <div class="modal" style="max-width: 760px;">
       <h2 id="resultsTitle">Upload results</h2>
-      <p class="modal-sub">Add marks for each student. Pick class & section from the list, type only names & marks.</p>
+      <p class="modal-sub">Pick class & section. Add marks for each student. Existing entries with matching name/roll will be updated.</p>
+
+      <!-- Bulk paste option for speed -->
+      <div class="results-bulk" id="bulk-section">
+        <strong>Quick paste:</strong> Tab-separated rows. Columns: <code>Name | Roll | Marks | Grade</code>
+        <textarea id="bulk-input" placeholder="Aarav Sharma&#9;12&#9;85&#9;A&#10;Priya Verma&#9;15&#9;92&#9;A+&#10;..."></textarea>
+        <button class="btn btn-secondary btn-sm" id="bulk-apply" style="margin-top:8px;">Parse and add rows</button>
+      </div>
+
       <div id="resultsList"></div>
       <button class="add-row" id="addResultRow" type="button">+ Add another student</button>
       <div id="resultsMsg" style="display:none; margin-top: 12px;"></div>
@@ -130,17 +167,13 @@
   <script>
     window.ADMIN_PAGE = { title: 'Exams', crumb: 'Academics' };
   </script>
-  <script src="/js/admin.js?v=2"></script>
+  <script src="/js/admin.js?v=3"></script>
   <script>
     const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = iso => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
+    const fmt12 = window.fmt12;
 
-    const list = document.getElementById('list');
-    const newModal = document.getElementById('newModal');
-    const resultsModal = document.getElementById('resultsModal');
-    const resultsList = document.getElementById('resultsList');
-    const resultsTitle = document.getElementById('resultsTitle');
-    let currentExamId = null;
+    let list, newModal, resultsModal, resultsList, resultsTitle, currentExamId;
 
     function populatePickers() {
       const P = window.PICKERS;
@@ -148,6 +181,29 @@
       const sub = document.getElementById('new-subject');
       if (cls) cls.innerHTML = '<option value="">Pick a class…</option>' + P.classes.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
       if (sub) sub.innerHTML = '<option value="">Pick a subject…</option>' + P.subjects.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    }
+
+    function setupTimeInputs() {
+      // Replace the placeholders with 12-hour time inputs
+      const startContainer = document.getElementById('new-start-time');
+      const endContainer = document.getElementById('new-end-time');
+      const startInput = window.time12Input('10:00', 'start_time');
+      const endInput = window.time12Input('12:00', 'end_time');
+      startContainer.innerHTML = '';
+      endContainer.innerHTML = '';
+      startContainer.appendChild(startInput);
+      endContainer.appendChild(endInput);
+
+      // Sync the hidden fields
+      const startHidden = document.getElementById('new-start-time-val');
+      const endHidden = document.getElementById('new-end-time-val');
+      function sync() {
+        startHidden.value = startInput.getValue();
+        endHidden.value = endInput.getValue();
+      }
+      startContainer.addEventListener('change', sync);
+      endContainer.addEventListener('change', sync);
+      sync();
     }
 
     async function load() {
@@ -168,7 +224,7 @@
               <span class="pill pill-info">${esc(e.class_name)}</span>
               <span class="pill pill-warn">${esc(e.subject)}</span>
               <span>${fmt(e.exam_date)}</span>
-              ${e.start_time ? `<span>· ${esc(e.start_time)}${e.end_time ? '–' + esc(e.end_time) : ''}</span>` : ''}
+              ${e.start_time ? `<span>· ${esc(fmt12(e.start_time))}${e.end_time ? ' – ' + esc(fmt12(e.end_time)) : ''}</span>` : ''}
               ${e.max_marks ? `<span>· ${esc(e.max_marks)} marks</span>` : ''}
             </div>
           </div>
@@ -213,8 +269,8 @@
       document.getElementById('newExamBtn').addEventListener('click', () => {
         document.getElementById('newForm').reset();
         populatePickers();
+        setupTimeInputs();
         const errEl = document.getElementById('newError'); errEl.style.display = 'none';
-        // Auto-fill date to today
         const dateInput = document.querySelector('input[name="exam_date"]');
         if (dateInput && !dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
         newModal.classList.add('open');
@@ -229,16 +285,12 @@
         const errEl = document.getElementById('newError');
         errEl.style.display = 'none';
 
-        // Auto-generate title if blank
-        if (!data.title && data.subject && data.class_name) {
-          data.title = `${data.subject} — ${data.class_name}`;
-        }
-        if (!data.title) {
-          errEl.textContent = 'Please enter a title or pick a class and subject.';
+        if (!data.class_name || !data.subject) {
+          errEl.textContent = 'Please pick a class and subject.';
           errEl.style.display = 'block';
           return;
         }
-
+        if (!data.title) data.title = `${data.subject} — ${data.class_name}`;
         data.is_published = true;
         if (data.max_marks) data.max_marks = Number(data.max_marks);
         const res = await fetch('/api/admin/exams', {
@@ -256,8 +308,8 @@
       document.getElementById('addResultRow').addEventListener('click', () => addResultRow());
       document.getElementById('cancelResults').addEventListener('click', () => resultsModal.classList.remove('open'));
       resultsModal.addEventListener('click', e => { if (e.target === resultsModal) resultsModal.classList.remove('open'); });
-
       document.getElementById('saveResults').addEventListener('click', saveResults);
+      document.getElementById('bulk-apply').addEventListener('click', bulkApply);
     }
 
     function resultRow(r) {
@@ -280,6 +332,37 @@
       resultsList.appendChild(el);
     }
 
+    // Parse tab/newline-separated bulk text into rows
+    function bulkApply() {
+      const text = document.getElementById('bulk-input').value;
+      if (!text.trim()) { alert('Paste some rows first.'); return; }
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      let added = 0;
+      for (const line of lines) {
+        const parts = line.split(/\t|\s{2,}|\s+\|\s+/).map(p => p.trim()).filter(Boolean);
+        // Fallback: split on multiple spaces if no tabs
+        const cols = parts.length >= 4 ? parts : line.split(/\s+/).filter(Boolean);
+        if (cols.length < 3) continue;
+        const [name, roll, marks, grade] = cols;
+        const marksNum = parseFloat(marks);
+        if (!name || isNaN(marksNum)) continue;
+        addResultRow({
+          student_name: name,
+          roll_number: roll || '',
+          section: document.querySelector('.r-section')?.value || 'A',
+          marks_obtained: marksNum,
+          grade: grade || ''
+        });
+        added++;
+      }
+      if (added) {
+        document.getElementById('bulk-input').value = '';
+        toast(`Added ${added} row${added > 1 ? 's' : ''}`);
+      } else {
+        alert('Could not parse any rows. Use: Name<TAB>Roll<TAB>Marks<TAB>Grade');
+      }
+    }
+
     async function openResults(id) {
       currentExamId = id;
       const res = await fetch('/api/admin/exams/' + id, { credentials: 'include' });
@@ -288,12 +371,11 @@
       const existing = data.results || [];
       resultsTitle.textContent = `Results — ${exam.title}`;
       resultsList.innerHTML = `<div class="result-row"><div class="head">Student</div><div class="head">Roll</div><div class="head">Sec</div><div class="head">Marks</div><div class="head">Grade</div><div></div></div>`;
-      // Pre-fill class/section from the exam
-      const examClass = exam.class_name;
-      if (existing.length) existing.forEach(r => addResultRow({ ...r, _examClass: examClass }));
+      if (existing.length) existing.forEach(r => addResultRow(r));
       else addResultRow();
       const msg = document.getElementById('resultsMsg');
       msg.style.display = 'none';
+      document.getElementById('bulk-input').value = '';
       resultsModal.classList.add('open');
     }
 
@@ -323,25 +405,22 @@
       const msg = document.getElementById('resultsMsg');
       if (!res.ok) {
         msg.textContent = data.error || 'Failed to save';
-        msg.className = 'msg err';
-        msg.style.background = 'rgba(255, 61, 128, 0.1)';
-        msg.style.color = 'var(--pink-700)';
-        msg.style.padding = '10px 14px';
-        msg.style.borderRadius = '12px';
-        msg.style.display = 'block';
+        msg.style.cssText = 'background:rgba(255,61,128,0.1);color:var(--pink-700);padding:10px 14px;border-radius:12px;display:block;margin-top:12px;';
         return;
       }
       msg.textContent = `Saved. ${data.inserted} added, ${data.updated} updated.`;
-      msg.style.background = 'rgba(47, 158, 107, 0.15)';
-      msg.style.color = '#047857';
-      msg.style.padding = '10px 14px';
-      msg.style.borderRadius = '12px';
-      msg.style.display = 'block';
+      msg.style.cssText = 'background:rgba(16,185,129,0.15);color:#047857;padding:10px 14px;border-radius:12px;display:block;margin-top:12px;';
       toast('Results saved');
       load();
     }
 
+    // === Shell ready: bind everything ===
     window.onShellReady = function () {
+      list        = document.getElementById('list');
+      newModal    = document.getElementById('newModal');
+      resultsModal = document.getElementById('resultsModal');
+      resultsList  = document.getElementById('resultsList');
+      resultsTitle = document.getElementById('resultsTitle');
       populatePickers();
       bindUI();
       load();
