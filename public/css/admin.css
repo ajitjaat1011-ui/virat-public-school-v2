@@ -139,6 +139,8 @@ body.admin-body::after {
 }
 .nav-item {
   display: flex; align-items: center; gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
   padding: 9px 12px;
   border-radius: 12px;
   color: var(--ink-700);
@@ -150,6 +152,9 @@ body.admin-body::after {
   cursor: pointer;
 }
 .nav-item:hover { background: var(--pink-50); color: var(--pink-700); }
+.nav-item:focus,
+.nav-item:focus-visible,
+.nav-item:active { outline: none; box-shadow: none; }
 .nav-item.active {
   background: linear-gradient(90deg, var(--pink-50), rgba(255, 107, 157, 0.05));
   color: var(--pink-700);
