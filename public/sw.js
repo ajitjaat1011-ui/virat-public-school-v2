@@ -1,45 +1,53 @@
-/* Service worker — basic offline cache for the app shell */
-const CACHE_NAME = 'vps-app-v1';
+/* Service worker — fast offline shell without caching dynamic API responses. */
+const CACHE_NAME = 'vps-app-v2';
 const APP_SHELL = [
   '/',
-  '/css/style.css',
-  '/js/partials.js',
-  '/js/main.js',
+  '/css/style.css?v=14',
+  '/js/partials.js?v=10',
+  '/js/main.js?v=9',
   '/manifest.json',
   '/images/favicon.svg'
 ];
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((keys) =>
-    Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-  ).then(() => self.clients.claim()));
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(
+      keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+    )).then(() => self.clients.claim())
+  );
 });
 
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  // Network-first for HTML, cache-first for assets
-  if (req.headers.get('accept') && req.headers.get('accept').includes('text/html')) {
-    e.respondWith(
-      fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then((c) => c.put(req, copy));
-        return res;
-      }).catch(() => caches.match(req).then((r) => r || caches.match('/')))
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+
+  // Never cache APIs: notices, gallery, stats, auth, and results must be fresh.
+  if (new URL(request.url).pathname.startsWith('/api/')) return;
+
+  if (request.headers.get('accept')?.includes('text/html')) {
+    // Fresh navigation first, offline fallback second.
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+        return response;
+      }).catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
     );
-  } else {
-    e.respondWith(
-      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
-        if (res.ok && req.url.startsWith(self.location.origin)) {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(req, copy));
-        }
-        return res;
-      }))
-    );
+    return;
   }
+
+  // Cache static assets after the first request for instant repeat visits.
+  event.respondWith(
+    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+      return response;
+    }))
+  );
 });
