@@ -7,23 +7,11 @@
   <link rel="icon" type="image/svg+xml" href="../images/favicon.svg" />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:wght@500;600&display=swap" />
   <link rel="stylesheet" href="../css/style.css?v=12" />
+  <link rel="stylesheet" href="/css/components.css?v=1" />
   <style>
-    .auth-wrap {
-      min-height: calc(100vh - 64px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 40px 24px;
-      background: var(--tint);
-    }
-    .auth-card {
-      width: 100%; max-width: 460px;
-      background: var(--paper);
-      border: 1px solid var(--line);
-      border-radius: var(--r-lg);
-      padding: 32px;
-      text-align: center;
-    }
-    .auth-card h1 { font-size: 1.4rem; margin: 16px 0 8px; }
-    .auth-card p { color: var(--ink-3); font-size: 14px; }
+    .auth-card { text-align: center; max-width: 480px; }
+    .auth-card .logo { margin-inline: auto; }
+    .auth-card .action-row { justify-content: center; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -33,14 +21,16 @@
   <main id="main">
     <div class="auth-wrap">
       <div class="auth-card">
-        <div style="font-size: 32px;">⏳</div>
-        <h1>Your account is pending review</h1>
-        <p>The school office has received your request and will review it shortly. You will be able to sign in once your account is approved.</p>
-        <p style="margin-top: 24px;"><a href="../index.html" class="btn btn-secondary">Back to site</a> · <a href="login.html" class="btn btn-ghost">Try again</a></p>
+        <div class="logo">V</div>
+        <span class="section-eyebrow">Awaiting verification</span>
+        <h1 style="margin-top:14px;">Your account is pending review</h1>
+        <p class="sub">The school office has received your request. Staff will verify your account and child details before portal access is approved.</p>
+        <div class="status-panel show warning" style="text-align:left;">You do not need to register again. Use the same mobile number and password after approval.</div>
+        <div class="action-row"><a href="../index.html" class="btn btn-secondary">Back to site</a><a href="login.html" class="btn btn-ghost">Check again</a></div>
       </div>
     </div>
   </main>
   <div id="vps-footer"></div>
-  <script src="../js/partials.js?v=10"></script>
+  <script src="../js/partials.js?v=12"></script>
 </body>
 </html>

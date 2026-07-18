@@ -43,17 +43,27 @@ CREATE INDEX IF NOT EXISTS idx_parent_sessions_expires ON parent_sessions(expire
 -- A parent may have 1+ children. After approval, admin maps the parent to
 -- student(s) so the parent can see their exam schedule + results.
 CREATE TABLE IF NOT EXISTS parent_students (
-  id              TEXT PRIMARY KEY,
-  parent_id       TEXT NOT NULL,
-  student_name    TEXT NOT NULL,
-  class_name      TEXT NOT NULL,           -- e.g. "Class 5"
-  section         TEXT,                    -- e.g. "A"
-  roll_number     TEXT,
-  created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+  id               TEXT PRIMARY KEY,
+  parent_id        TEXT NOT NULL,
+  student_id       TEXT,                    -- verified students.id when linked by admin
+  student_name     TEXT NOT NULL,
+  admission_number TEXT,                    -- supplied by parent or copied from student master
+  class_name       TEXT NOT NULL,            -- e.g. "Class 5"
+  section          TEXT,                     -- e.g. "A"
+  roll_number      TEXT,
+  dob              TEXT,
+  link_status      TEXT NOT NULL DEFAULT 'REQUESTED'
+                   CHECK (link_status IN ('REQUESTED','LINKED','REJECTED')),
+  verified_by      TEXT,
+  verified_at      TEXT,
+  created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at       TEXT NOT NULL DEFAULT (datetime('now')),
   FOREIGN KEY (parent_id) REFERENCES parents(id) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS idx_parent_students_parent ON parent_students(parent_id);
+CREATE INDEX IF NOT EXISTS idx_parent_students_parent ON parent_students(parent_id, link_status);
 CREATE INDEX IF NOT EXISTS idx_parent_students_lookup ON parent_students(class_name, section, roll_number);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_parent_students_verified_unique
+  ON parent_students(parent_id, student_id) WHERE student_id IS NOT NULL AND link_status = 'LINKED';
 
 -- ---------- Exams (announcements / schedule) ----------
 -- Admin creates an exam for a class. Parents of that class see it.

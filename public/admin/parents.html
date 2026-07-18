@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-  <link rel="stylesheet" href="/css/admin.css?v=10" />
+  <link rel="stylesheet" href="/css/admin.css?v=11" />
   <style>
     .parent-card {
       background: white;
@@ -40,6 +40,12 @@
       margin-top: 8px;
     }
     .note-input:focus { outline: none; border-color: var(--pink-400); }
+    .child-row { margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--tint); }
+    .child-row-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .child-row strong { color:var(--ink-900); }
+    .link-controls { display:grid; grid-template-columns:minmax(180px,1fr) auto auto; gap:8px; align-items:center; margin-top:10px; }
+    .manual-link { margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+    @media(max-width:700px){ .link-controls{grid-template-columns:1fr;} .link-controls .btn{width:100%;} }
   </style>
 </head>
 <body class="admin-body">
@@ -65,72 +71,177 @@
   <script>
     window.ADMIN_PAGE = { title: 'Parents', crumb: 'Academics' };
   </script>
-  <script src="/js/admin.js?v=5"></script>
+  <script src="/js/admin.js?v=7"></script>
   <script>
-    const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = iso => iso ? new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
 
     let currentFilter = 'ALL';
     let listEl;
+    let parents = [];
+    let students = [];
 
-    function pill(s) {
-      if (s === 'PENDING')  return '<span class="pill pill-pending">Pending</span>';
-      if (s === 'APPROVED') return '<span class="pill pill-approved">Approved</span>';
-      if (s === 'REJECTED') return '<span class="pill pill-rejected">Rejected</span>';
-      return `<span class="pill">${esc(s)}</span>`;
+    function pill(status) {
+      const cls = status === 'PENDING' ? 'pending' : status === 'APPROVED' ? 'approved' : 'rejected';
+      return `<span class="pill pill-${cls}">${esc(status.charAt(0) + status.slice(1).toLowerCase())}</span>`;
+    }
+
+    function studentLabel(student) {
+      return [student.full_name, student.admission_number ? 'Adm ' + student.admission_number : '', student.class_name, student.section ? 'Sec ' + student.section : '', student.roll_number ? 'Roll ' + student.roll_number : ''].filter(Boolean).join(' · ');
+    }
+
+    function candidateOptions(request, includePlaceholder = true) {
+      const normalized = value => String(value || '').trim().toLowerCase();
+      const sorted = [...students].sort((a, b) => {
+        const score = student => {
+          let value = 0;
+          if (request) {
+            if (request.admission_number && normalized(student.admission_number) === normalized(request.admission_number)) value += 100;
+            if (normalized(student.full_name) === normalized(request.student_name)) value += 30;
+            if (student.class_name === request.class_name) value += 15;
+            if (request.roll_number && normalized(student.roll_number) === normalized(request.roll_number)) value += 10;
+          }
+          return value;
+        };
+        return score(b) - score(a) || studentLabel(a).localeCompare(studentLabel(b));
+      });
+      const best = request ? sorted.find(student =>
+        (request.admission_number && normalized(student.admission_number) === normalized(request.admission_number)) ||
+        (normalized(student.full_name) === normalized(request.student_name) && student.class_name === request.class_name && (!request.roll_number || normalized(student.roll_number) === normalized(request.roll_number)))
+      ) : null;
+      return (includePlaceholder ? '<option value="">Choose a verified student…</option>' : '') + sorted.map(student =>
+        `<option value="${esc(student.id)}"${best && best.id === student.id ? ' selected' : ''}>${esc(studentLabel(student))}</option>`
+      ).join('');
+    }
+
+    function renderChild(parent, child) {
+      if (child.link_status === 'LINKED') {
+        const name = child.master_name || child.student_name;
+        const details = [child.master_admission_number ? 'Adm ' + child.master_admission_number : '', child.master_class_name || child.class_name, (child.master_section || child.section) ? 'Sec ' + (child.master_section || child.section) : '', (child.master_roll_number || child.roll_number) ? 'Roll ' + (child.master_roll_number || child.roll_number) : ''].filter(Boolean).join(' · ');
+        return `<div class="child-row">
+          <div class="child-row-head"><div><strong>${esc(name)}</strong><div class="meta">${esc(details)}</div></div><span class="pill pill-approved">Verified link</span></div>
+          <div class="card-actions"><button class="btn btn-ghost btn-sm btn-danger" data-parent-action="unlink_child" data-link-id="${esc(child.id)}">Unlink child</button></div>
+        </div>`;
+      }
+      if (child.link_status === 'REJECTED') {
+        return `<div class="child-row"><div class="child-row-head"><div><strong>${esc(child.student_name)}</strong><div class="meta">${esc(child.class_name)} · Could not be verified</div></div><span class="pill pill-rejected">Rejected link</span></div></div>`;
+      }
+      const requestDetails = [child.admission_number ? 'Adm ' + child.admission_number : '', child.class_name, child.section ? 'Sec ' + child.section : '', child.roll_number ? 'Roll ' + child.roll_number : '', child.dob ? 'DOB ' + child.dob : ''].filter(Boolean).join(' · ');
+      return `<div class="child-row">
+        <div class="child-row-head"><div><strong>Requested: ${esc(child.student_name)}</strong><div class="meta">${esc(requestDetails)}</div></div><span class="pill pill-pending">Needs matching</span></div>
+        <div class="link-controls">
+          <select class="form-select candidate-select" aria-label="Choose matching student">${candidateOptions(child)}</select>
+          <button class="btn btn-primary btn-sm" data-parent-action="link_child" data-request-id="${esc(child.id)}">Verify & link</button>
+          <button class="btn btn-ghost btn-sm btn-danger" data-parent-action="reject_child" data-request-id="${esc(child.id)}">Reject match</button>
+        </div>
+      </div>`;
+    }
+
+    function render() {
+      const filtered = currentFilter === 'ALL' ? parents : parents.filter(parent => parent.status === currentFilter);
+      if (!filtered.length) {
+        listEl.innerHTML = '<div class="empty-state"><h3>No parent accounts</h3><p>Nothing in this view.</p></div>';
+        return;
+      }
+      listEl.innerHTML = filtered.map(parent => {
+        const children = parent.children || [];
+        const linkedCount = children.filter(child => child.link_status === 'LINKED').length;
+        const requestCount = children.filter(child => child.link_status === 'REQUESTED').length;
+        return `<article class="parent-card" data-id="${esc(parent.id)}">
+          <div class="row1">
+            <div><h3>${esc(parent.full_name)}</h3><div class="meta">${esc(parent.phone)} · requested ${fmt(parent.created_at)} · ${linkedCount} linked${requestCount ? ' · ' + requestCount + ' awaiting match' : ''}</div></div>
+            <div>${pill(parent.status)}</div>
+          </div>
+          <div class="children-info"><strong>Child verification</strong>${children.length ? children.map(child => renderChild(parent, child)).join('') : '<div class="meta" style="margin-top:6px;">No child details submitted yet.</div>'}
+            <div class="manual-link">
+              <div class="meta" style="margin-bottom:6px;">Link another student from the master list</div>
+              <div class="link-controls"><select class="form-select manual-student-select">${candidateOptions(null)}</select><button class="btn btn-secondary btn-sm" data-parent-action="link_child">Link selected</button></div>
+            </div>
+          </div>
+          ${parent.review_note ? `<div class="meta" style="margin-top:8px;">Review note: ${esc(parent.review_note)}</div>` : ''}
+          <input type="text" class="note-input" placeholder="Optional review note (admin only)" />
+          <div class="form-status card-status" aria-live="polite"></div>
+          <div class="actions">
+            ${parent.status !== 'APPROVED' ? '<button class="btn btn-primary btn-sm" data-parent-action="approve">Approve account</button>' : ''}
+            ${parent.status !== 'REJECTED' ? '<button class="btn btn-ghost btn-sm" data-parent-action="reject">Reject account</button>' : ''}
+            ${parent.status !== 'PENDING' ? '<button class="btn btn-ghost btn-sm" data-parent-action="reset">Reset to pending</button>' : ''}
+            <button class="btn btn-ghost btn-sm btn-danger" data-parent-action="delete" style="margin-left:auto;">Delete account</button>
+          </div>
+        </article>`;
+      }).join('');
+      bindCardActions();
     }
 
     async function load() {
-      listEl.innerHTML = '<p style="color:var(--ink-500);">Loading…</p>';
-      const url = currentFilter === 'ALL' ? '/api/admin/parents' : `/api/admin/parents?status=${currentFilter}`;
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) { listEl.innerHTML = '<p style="color:var(--pink-700);">Failed to load.</p>'; return; }
-      const data = await res.json();
-      const parents = data.parents || [];
-      if (!parents.length) { listEl.innerHTML = '<div class="empty-state"><h3>No parent accounts</h3><p>Nothing in this view.</p></div>'; return; }
-      listEl.innerHTML = parents.map(p => `
-        <div class="parent-card" data-id="${esc(p.id)}">
-          <div class="row1">
-            <div>
-              <h3>${esc(p.full_name)}</h3>
-              <div class="meta">${esc(p.phone)} · requested ${fmt(p.created_at)}</div>
-            </div>
-            <div>${pill(p.status)}</div>
-          </div>
-          ${(p.children && p.children.length) ? `<div class="children-info">Stated child: <strong style="color:var(--ink-900);">${esc(p.children[0].student_name)}</strong> · ${esc(p.children[0].class_name)}${p.children[0].section ? ' · ' + esc(p.children[0].section) : ''}${p.children[0].roll_number ? ' · Roll ' + esc(p.children[0].roll_number) : ''}</div>` : ''}
-          ${p.review_note ? `<div class="meta" style="margin-top:8px;">Review note: ${esc(p.review_note)}</div>` : ''}
-          <input type="text" class="note-input" placeholder="Optional review note (admin only)" />
-          <div class="actions">
-            ${p.status !== 'APPROVED' ? '<button class="btn btn-primary btn-sm" data-action="approve">Approve</button>' : ''}
-            ${p.status !== 'REJECTED' ? '<button class="btn btn-ghost btn-sm" data-action="reject">Reject</button>' : ''}
-            ${p.status !== 'PENDING'  ? '<button class="btn btn-ghost btn-sm" data-action="reset">Reset to pending</button>' : ''}
-            <button class="btn btn-ghost btn-sm btn-danger" data-action="delete" style="margin-left:auto;">Delete</button>
-          </div>
-        </div>
-      `).join('');
+      listEl.innerHTML = '<div class="loading-state">Loading parent accounts and student records…</div>';
+      const parentUrl = currentFilter === 'ALL' ? '/api/admin/parents' : `/api/admin/parents?status=${currentFilter}`;
+      try {
+        const [parentResponse, studentResponse] = await Promise.all([
+          fetch(parentUrl, { credentials: 'include' }),
+          students.length ? Promise.resolve(null) : fetch('/api/admin/students', { credentials: 'include' })
+        ]);
+        if (!parentResponse.ok) throw new Error('Could not load parent accounts');
+        parents = (await parentResponse.json()).parents || [];
+        if (studentResponse) {
+          if (!studentResponse.ok) throw new Error('Could not load the student master list');
+          students = (await studentResponse.json()).students || [];
+        }
+        render();
+      } catch (error) {
+        listEl.innerHTML = `<div class="empty-state"><h3>Could not load</h3><p>${esc(error.message)}</p><button class="btn btn-secondary btn-sm" id="retry-load">Try again</button></div>`;
+        document.getElementById('retry-load')?.addEventListener('click', load);
+      }
+    }
 
+    async function runAction(card, action, payload, button, successMessage) {
+      const parentId = card.dataset.id;
+      const status = card.querySelector('.card-status');
+      setButtonLoading(button, true, 'Working…');
+      clearFormStatus(status);
+      try {
+        const response = await fetch(`/api/admin/parents/${encodeURIComponent(parentId)}`, {
+          method: action === 'delete' ? 'DELETE' : 'POST',
+          credentials: 'include',
+          headers: action === 'delete' ? {} : { 'Content-Type': 'application/json' },
+          body: action === 'delete' ? null : JSON.stringify({ action, ...payload })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Action failed');
+        setFormStatus(status, data.duplicate ? 'That child is already linked to this account.' : successMessage, 'success');
+        toast(data.duplicate ? 'Already linked' : successMessage);
+        await load();
+      } catch (error) {
+        setFormStatus(status, error.message, 'error');
+        toast(error.message, 'error');
+      } finally { setButtonLoading(button, false); }
+    }
+
+    function bindCardActions() {
       listEl.querySelectorAll('.parent-card').forEach(card => {
-        const id = card.dataset.id;
         const noteInput = card.querySelector('.note-input');
-        card.querySelectorAll('[data-action]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const action = btn.dataset.action;
-            if (action === 'delete' && !confirm('Delete this parent account and all their linked data?')) return;
-            const note = noteInput ? noteInput.value.trim() : '';
-            const method = action === 'delete' ? 'DELETE' : 'POST';
-            const body = action === 'delete' ? null : JSON.stringify({ action, note });
-            const r = await fetch(`/api/admin/parents/${id}`, {
-              method, credentials: 'include',
-              headers: body ? { 'Content-Type': 'application/json' } : {},
-              body
-            });
-            if (!r.ok) {
-              const err = await r.json().catch(() => ({}));
-              alert(err.error || 'Action failed');
-              return;
+        card.querySelectorAll('[data-parent-action]').forEach(button => {
+          button.addEventListener('click', async () => {
+            const action = button.dataset.parentAction;
+            if (action === 'delete' && !confirm('Delete this parent account and all linked data? This cannot be undone.')) return;
+            if (action === 'unlink_child' && !confirm('Unlink this child? Their exams and results will disappear from this parent account.')) return;
+            if (action === 'reject_child' && !confirm('Mark this child-link request as not verified?')) return;
+            if (action === 'approve' && !card.querySelector('[data-parent-action="unlink_child"]') && !confirm('No verified child is linked yet. Approve the account anyway? The parent can sign in but will not see child data.')) return;
+
+            const payload = { note: noteInput?.value.trim() || '' };
+            if (action === 'link_child') {
+              const controls = button.closest('.link-controls');
+              const select = controls.querySelector('select');
+              if (!select.value) { setFormStatus(card.querySelector('.card-status'), 'Choose a student from the master list first.', 'error'); select.focus(); return; }
+              payload.student_id = select.value;
+              payload.request_id = button.dataset.requestId || undefined;
             }
-            toast(action === 'approve' ? 'Parent approved' : action === 'reject' ? 'Parent rejected' : 'Done');
-            load();
+            if (action === 'unlink_child') payload.link_id = button.dataset.linkId;
+            if (action === 'reject_child') payload.request_id = button.dataset.requestId;
+            const labels = {
+              approve:'Parent account approved', reject:'Parent account rejected', reset:'Account reset to pending', delete:'Parent account deleted',
+              link_child:'Child verified and linked', unlink_child:'Child unlinked', reject_child:'Child request marked unverified'
+            };
+            await runAction(card, action, payload, button, labels[action] || 'Saved');
           });
         });
       });
@@ -138,11 +249,11 @@
 
     window.onShellReady = function () {
       listEl = document.getElementById('list');
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentFilter = btn.dataset.filter;
+      document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(item => item.classList.remove('active'));
+          button.classList.add('active');
+          currentFilter = button.dataset.filter;
           load();
         });
       });

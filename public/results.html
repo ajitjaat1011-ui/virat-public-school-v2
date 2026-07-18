@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" />
   <link rel="stylesheet" href="css/style.css?v=14" />
+  <link rel="stylesheet" href="/css/components.css?v=1" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -33,7 +34,7 @@
 
     <section class="section">
       <div class="container-narrow">
-        <form id="result-form" class="form reveal" style="background:white;padding:40px;border-radius:28px;box-shadow:0 12px 48px rgba(106,56,119,0.08);">
+        <form id="result-form" class="form form-surface reveal">
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="roll">Roll number</label>
@@ -44,8 +45,9 @@
               <input class="form-input" type="date" id="dob" name="dob" required />
             </div>
           </div>
-          <button type="submit" class="btn btn-accent btn-lg btn-magnetic" style="justify-content:center;">View result <span class="arrow">→</span></button>
-          <p class="form-help text-center">Sample: roll <code>10-001</code>, dob <code>2011-04-12</code></p>
+          <div id="lookup-status" class="form-status" role="status" aria-live="polite"></div>
+          <button type="submit" class="btn btn-accent btn-lg" id="lookup-btn">View result <span class="arrow">→</span></button>
+          <p class="form-help text-center">Your roll number and date of birth must match the school record.</p>
         </form>
         <div id="result-out" class="mt-7" aria-live="polite"></div>
       </div>
@@ -55,21 +57,28 @@
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=10"></script>
+  <script src="js/partials.js?v=12"></script>
   <script src="js/main.js?v=9"></script>
   <script>
     document.getElementById('result-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const out = document.getElementById('result-out');
-      const roll = document.getElementById('roll').value;
+      const status = document.getElementById('lookup-status');
+      const button = document.getElementById('lookup-btn');
+      const roll = document.getElementById('roll').value.trim();
       const dob = document.getElementById('dob').value;
-      out.innerHTML = '<p class="text-center" style="color:var(--ink-500);">Looking up…</p>';
+      status.className = 'form-status';
+      if (!roll || !dob) { status.textContent = 'Enter both roll number and date of birth.'; status.className = 'form-status show error'; return; }
+      button.disabled = true; button.classList.add('is-loading'); button.textContent = 'Looking up…';
+      status.textContent = 'Searching published results…'; status.className = 'form-status show warning';
+      out.innerHTML = '<div class="empty">Looking up the result…</div>';
       try {
         const r = await fetch('/api/results/lookup?roll=' + encodeURIComponent(roll) + '&dob=' + encodeURIComponent(dob));
         const d = await r.json();
-        if (!r.ok || d.error) { out.innerHTML = '<div class="form-error-banner show">No result found. Check your roll number and date of birth.</div>'; return; }
+        if (!r.ok || d.error) { status.textContent = 'No published result matched those details.'; status.className = 'form-status show error'; out.innerHTML = '<div class="form-error-banner show">Check the roll number and date of birth, then try again.</div>'; return; }
         const s = d.student || {};
         const marks = d.marks || [];
+        status.textContent = 'Published result found.'; status.className = 'form-status show';
         out.innerHTML = `<div class="table-wrap">
           <h3 style="margin-bottom:8px;">${esc(s.name || '')}</h3>
           <p style="color:var(--ink-500);font-size:13px;margin-bottom:16px;">Class ${esc(s.class || '')} · Roll ${esc(s.roll || roll)}</p>
@@ -79,7 +88,8 @@
           </table>
           <p style="margin-top:16px;color:var(--plum-700);font-weight:600;">Total: ${esc(String(d.total || marks.reduce((a,b) => a + Number(b.marks||0), 0)))}</p>
         </div>`;
-      } catch (err) { out.innerHTML = '<div class="form-error-banner show">Could not reach the server. Please try again.</div>'; }
+      } catch (err) { status.textContent = 'Could not reach the server. Please try again.'; status.className = 'form-status show error'; out.innerHTML = '<div class="form-error-banner show">Check your connection and try again.</div>'; }
+      finally { button.disabled = false; button.classList.remove('is-loading'); button.innerHTML = 'View result <span class="arrow">→</span>'; }
     });
     function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
     </script>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Students · VPS Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
-  <link rel="stylesheet" href="/css/admin.css?v=10" />
+  <link rel="stylesheet" href="/css/admin.css?v=11" />
   <style>
     .student-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
     .student-toolbar > * { flex:1 1 180px; }
@@ -37,6 +37,7 @@
           <div class="form-group"><label class="form-label">Roll number</label><input class="form-input" id="roll_number" placeholder="Optional" /></div>
           <div class="form-group"><label class="form-label">Date of birth</label><input class="form-input" type="date" id="dob" /></div>
         </div>
+        <div id="student-form-status" class="form-status" aria-live="polite"></div>
         <button class="btn btn-primary" type="submit" id="save-btn">Add student</button>
         <button class="btn btn-ghost" type="button" id="cancel-btn" hidden>Cancel edit</button>
       </form>
@@ -45,7 +46,7 @@
     <div id="student-list"><div class="empty-state"><p>Loading…</p></div></div>
   </div>
   <script>window.ADMIN_PAGE = { title: 'Students', crumb: 'Academics' };</script>
-  <script src="/js/admin.js?v=5"></script>
+  <script src="/js/admin.js?v=7"></script>
   <script>
     const classes = window.PICKERS.classes;
     let editingId = null;
@@ -60,12 +61,42 @@
       if (!rows.length) { el.innerHTML='<div class="empty-state"><h3>No students yet</h3><p>Add the first student above.</p></div>'; return; }
       el.innerHTML='<div class="student-table-wrap"><table class="student-table"><thead><tr><th>Name</th><th>Admission no.</th><th>Class</th><th>Section</th><th>Roll no.</th><th>Actions</th></tr></thead><tbody>' + rows.map(s => `<tr><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.admission_number || '—')}</td><td>${esc(s.class_name)}</td><td>${esc(s.section || '—')}</td><td>${esc(s.roll_number || '—')}</td><td class="actions"><button class="btn btn-sm btn-ghost edit" data-student='${esc(JSON.stringify(s))}'>Edit</button><button class="btn btn-sm btn-danger delete" data-id="${esc(s.id)}">Delete</button></td></tr>`).join('')+'</tbody></table></div>';
       el.querySelectorAll('.edit').forEach(b=>b.onclick=()=>editStudent(JSON.parse(b.dataset.student)));
-      el.querySelectorAll('.delete').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this student from the master list?'))return; await fetch('/api/admin/students/'+encodeURIComponent(b.dataset.id),{method:'DELETE',credentials:'include'}); loadStudents();});
+      el.querySelectorAll('.delete').forEach(button => button.onclick = async () => {
+        if (!confirm('Delete this student from the master list?')) return;
+        setButtonLoading(button, true, 'Deleting…');
+        try {
+          const response = await fetch('/api/admin/students/' + encodeURIComponent(button.dataset.id), { method:'DELETE', credentials:'include' });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || 'Could not delete student');
+          toast('Student deleted');
+          loadStudents();
+        } catch (error) { toast(error.message, 'error'); }
+        finally { setButtonLoading(button, false); }
+      });
     }
     function editStudent(s) { editingId=s.id; ['full_name','admission_number','class_name','section','roll_number','dob'].forEach(k=>document.getElementById(k).value=s[k]||''); document.getElementById('form-title').textContent='Edit student'; document.getElementById('save-btn').textContent='Save changes'; document.getElementById('cancel-btn').hidden=false; window.scrollTo({top:0,behavior:'smooth'}); }
     window.onShellReady=function(){
       document.getElementById('class_name').innerHTML=options(classes,'Select class'); document.getElementById('filter-class').innerHTML=options(classes,'All classes'); document.getElementById('section').innerHTML=options(window.PICKERS.sections,'No section');
-      document.getElementById('student-form').onsubmit=async e=>{e.preventDefault(); const payload={full_name:val('full_name'),admission_number:val('admission_number'),class_name:val('class_name'),section:val('section'),roll_number:val('roll_number'),dob:val('dob')}; const r=await fetch('/api/admin/students'+(editingId?'/'+editingId:''),{method:editingId?'POST':'POST',headers:{'content-type':'application/json'},credentials:'include',body:JSON.stringify(payload)}); const d=await r.json(); if(!r.ok){toast(d.error||'Could not save student','error');return;} toast(editingId?'Student updated':'Student added'); resetForm(); loadStudents();};
+      document.getElementById('student-form').onsubmit = async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const button = document.getElementById('save-btn');
+        const status = document.getElementById('student-form-status');
+        clearFormStatus(status);
+        const payload = { full_name:val('full_name'), admission_number:val('admission_number'), class_name:val('class_name'), section:val('section'), roll_number:val('roll_number'), dob:val('dob') };
+        if (!payload.full_name || !payload.class_name) { setFormStatus(status, 'Student name and class are required.', 'error'); return; }
+        setButtonLoading(button, true, editingId ? 'Saving…' : 'Adding…');
+        try {
+          const response = await fetch('/api/admin/students' + (editingId ? '/' + editingId : ''), { method:'POST', headers:{'content-type':'application/json'}, credentials:'include', body:JSON.stringify(payload) });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || 'Could not save student');
+          const message = editingId ? 'Student updated successfully.' : 'Student added to the master list.';
+          setFormStatus(status, message, 'success'); toast(message);
+          setButtonLoading(button, false);
+          resetForm(); loadStudents();
+        } catch (error) { setFormStatus(status, error.message, 'error'); toast(error.message, 'error'); }
+        finally { setButtonLoading(button, false); }
+      };
       document.getElementById('cancel-btn').onclick=resetForm; document.getElementById('filter-class').onchange=loadStudents; document.getElementById('refresh-btn').onclick=loadStudents; loadStudents();
     };
   </script>

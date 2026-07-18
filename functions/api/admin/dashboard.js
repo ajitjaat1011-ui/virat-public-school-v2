@@ -8,20 +8,19 @@ export async function onRequestGet(context) {
   const user = await getCurrentUser(request, env);
   if (!user) return errorResponse('Not authenticated', 401);
 
-  const counts = { newInquiries: 0, oldInquiries: 0, unreadMessages: 0, notices: 0, albums: 0, parentRequests: 0, exams: 0, students: 0 };
-  const safeCount = async (key, sql) => {
-    try { const row = await db(env).prepare(sql).first(); counts[key] = row?.c || 0; } catch (_) {}
-  };
-  await Promise.all([
-    safeCount('newInquiries', "SELECT COUNT(*) as c FROM admission_inquiries WHERE status = 'NEW' AND deleted_at IS NULL"),
-    safeCount('oldInquiries', "SELECT COUNT(*) as c FROM admission_inquiries WHERE status = 'NEW' AND deleted_at IS NULL AND created_at < datetime('now', '-24 hours')"),
-    safeCount('unreadMessages', 'SELECT COUNT(*) as c FROM contact_messages WHERE is_read = 0 AND deleted_at IS NULL'),
-    safeCount('notices', 'SELECT COUNT(*) as c FROM notices WHERE deleted_at IS NULL AND is_published = 1'),
-    safeCount('albums', 'SELECT COUNT(*) as c FROM gallery_albums WHERE deleted_at IS NULL AND is_published = 1'),
-    safeCount('parentRequests', "SELECT COUNT(*) as c FROM parents WHERE status = 'PENDING'"),
-    safeCount('exams', 'SELECT COUNT(*) as c FROM exams WHERE deleted_at IS NULL'),
-    safeCount('students', 'SELECT COUNT(*) as c FROM students WHERE deleted_at IS NULL AND is_active = 1')
-  ]);
+  let counts = { newInquiries: 0, oldInquiries: 0, unreadMessages: 0, notices: 0, albums: 0, parentRequests: 0, exams: 0, students: 0 };
+  try {
+    const row = await db(env).prepare(`SELECT
+      (SELECT COUNT(*) FROM admission_inquiries WHERE status='NEW' AND deleted_at IS NULL) AS newInquiries,
+      (SELECT COUNT(*) FROM admission_inquiries WHERE status='NEW' AND deleted_at IS NULL AND created_at < datetime('now','-24 hours')) AS oldInquiries,
+      (SELECT COUNT(*) FROM contact_messages WHERE is_read=0 AND deleted_at IS NULL) AS unreadMessages,
+      (SELECT COUNT(*) FROM notices WHERE deleted_at IS NULL AND is_published=1) AS notices,
+      (SELECT COUNT(*) FROM gallery_albums WHERE deleted_at IS NULL AND is_published=1) AS albums,
+      (SELECT COUNT(*) FROM parents WHERE status='PENDING') AS parentRequests,
+      (SELECT COUNT(*) FROM exams WHERE deleted_at IS NULL) AS exams,
+      (SELECT COUNT(*) FROM students WHERE deleted_at IS NULL AND is_active=1) AS students`).first();
+    if (row) counts = { ...counts, ...row };
+  } catch (_) { /* render zero fallbacks instead of failing the dashboard */ }
 
   const recentInquiries = [];
   const recentAudit = [];

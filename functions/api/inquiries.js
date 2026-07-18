@@ -50,6 +50,26 @@ export async function onRequestPost(context) {
     return jsonError('Please enter a valid email address', 400);
   }
 
+  // Idempotency: a double tap, browser retry, or repeated request with the same
+  // child/phone/class in a short window returns the first successful inquiry.
+  // This is intentionally server-side; disabling a button alone cannot prevent
+  // network retries.
+  try {
+    const duplicate = await db(env).prepare(`SELECT id FROM admission_inquiries
+      WHERE parent_phone = ?1 AND lower(student_name) = lower(?2) AND class_seeking = ?3
+        AND deleted_at IS NULL AND created_at >= datetime('now', '-10 minutes')
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(phone, studentName, classSeeking).first();
+    if (duplicate) {
+      return Response.json({
+        ok: true,
+        duplicate: true,
+        id: duplicate.id,
+        reference: 'VPS-' + String(duplicate.id).slice(-6).toUpperCase()
+      });
+    }
+  } catch (_) { /* continue if a legacy database cannot run the check */ }
+
   const id = cuid();
   try {
     await db(env).prepare(`INSERT INTO admission_inquiries
@@ -69,7 +89,11 @@ export async function onRequestPost(context) {
     await db(env).prepare(`INSERT INTO audit_log (id, user_id, action, entity, entity_id, ip, metadata) VALUES (?1, NULL, 'inquiry.create', 'AdmissionInquiry', ?2, ?3, ?4)`)
       .bind(cuid(), id, request.headers.get('CF-Connecting-IP') || '', JSON.stringify({ class: classSeeking })).run();
 
-    return Response.json({ ok: true, id });
+    return Response.json({
+      ok: true,
+      id,
+      reference: 'VPS-' + String(id).slice(-6).toUpperCase()
+    });
   } catch (e) {
     return jsonError('Could not save: ' + e.message, 500);
   }

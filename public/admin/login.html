@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-  <link rel="stylesheet" href="/css/admin.css?v=10" />
+  <link rel="stylesheet" href="/css/admin.css?v=11" />
   <style>
     body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
     body::before, body::after { display: none; }
@@ -59,14 +59,15 @@
     <form id="login-form" novalidate>
       <div class="form-group">
         <label class="form-label" for="username">Username</label>
-        <input type="text" id="username" name="username" required autocomplete="username" autofocus value="Arvindjaat1011" />
+        <input type="text" id="username" name="username" required autocomplete="username" autofocus />
       </div>
       <div class="form-group">
         <label class="form-label" for="password">Password</label>
         <input type="password" id="password" name="password" required autocomplete="current-password" />
       </div>
-      <div id="login-error" class="form-error-banner"></div>
-      <button type="submit" class="btn btn-primary btn-lg" id="login-btn" style="width:100%; justify-content:center;">Sign in</button>
+      <div id="login-error" class="form-error-banner" role="alert" aria-live="assertive"></div>
+      <div id="login-status" class="form-status" role="status" aria-live="polite"></div>
+      <button type="submit" class="btn btn-primary btn-lg" id="login-btn" style="width:100%;">Sign in</button>
     </form>
     <p class="back"><a href="/">← Back to website</a></p>
   </div>
@@ -75,11 +76,21 @@
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const err = document.getElementById('login-error');
+      const status = document.getElementById('login-status');
+      const btn = document.getElementById('login-btn');
+      if (btn.disabled) return;
       err.classList.remove('show');
+      status.className = 'form-status';
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
-      const btn = document.getElementById('login-btn');
-      btn.disabled = true; btn.textContent = 'Signing in…';
+      if (!username || !password) {
+        err.textContent = 'Enter both username and password.';
+        err.classList.add('show');
+        (!username ? document.getElementById('username') : document.getElementById('password')).focus();
+        return;
+      }
+      btn.disabled = true; btn.classList.add('is-loading'); btn.textContent = 'Signing in securely…';
+      status.textContent = 'Checking your credentials…'; status.className = 'form-status show';
       try {
         const r = await fetch('/api/admin/auth', {
           method: 'POST',
@@ -89,16 +100,20 @@
         });
         const d = await r.json();
         if (!r.ok || !d.user) {
+          status.className = 'form-status';
           err.textContent = (d && d.error) || ('Invalid username or password (HTTP ' + r.status + ')');
           err.classList.add('show');
           return;
         }
+        status.textContent = 'Signed in. Opening the dashboard…';
+        status.className = 'form-status show';
         location.href = '/admin/index.html';
       } catch (e) {
-        err.textContent = 'Network error. Please try again.';
+        status.className = 'form-status';
+        err.textContent = 'Network error. Check your connection and try again.';
         err.classList.add('show');
       } finally {
-        btn.disabled = false; btn.textContent = 'Sign in';
+        btn.disabled = false; btn.classList.remove('is-loading'); btn.textContent = 'Sign in';
       }
     });
   </script>

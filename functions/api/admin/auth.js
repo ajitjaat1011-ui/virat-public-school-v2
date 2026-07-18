@@ -52,8 +52,9 @@ export async function onRequestPost(context) {
     await db(env).prepare(
       'INSERT INTO sessions (id, user_id, expires_at, ip, user_agent) VALUES (?1, ?2, ?3, ?4, ?5)'
     ).bind(sid, user.id, expiresAt, request.headers.get('CF-Connecting-IP') || '', request.headers.get('User-Agent') || '').run();
-    await db(env).prepare('UPDATE users SET failed_logins = 0, locked_until = NULL, last_login_at = ?1 WHERE id = ?2')
-      .bind(new Date().toISOString(), user.id).run();
+    const updateLogin = db(env).prepare('UPDATE users SET failed_logins = 0, locked_until = NULL, last_login_at = ?1 WHERE id = ?2')
+      .bind(new Date().toISOString(), user.id).run().catch(() => {});
+    if (typeof context.waitUntil === 'function') context.waitUntil(updateLogin);
   } catch (e) {
     console.error('Session creation failed');
     return errorResponse('Session creation failed', 500);

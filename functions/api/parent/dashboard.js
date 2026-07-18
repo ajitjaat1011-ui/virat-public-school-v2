@@ -5,21 +5,44 @@
  */
 import { errorResponse, jsonResponse } from '../../lib/data.js';
 import { db } from '../../lib/db.js';
+import { ensureParentLinkSchema } from '../../lib/migrations.js';
 import { requireParent } from '../../lib/auth.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
   const { parent, error } = await requireParent(request, env);
   if (!parent) return errorResponse(error, 401);
+  try { await ensureParentLinkSchema(env); }
+  catch (_) { return errorResponse('Parent portal setup failed', 503); }
 
-  // Get children
-  const childrenRows = await db(env).prepare(
-    'SELECT id, student_name, class_name, section, roll_number FROM parent_students WHERE parent_id = ?1 ORDER BY student_name'
+  // Verified children are joined to the student master so class/section changes
+  // made by the office flow through to the parent portal automatically.
+  const childrenRows = await db(env).prepare(`
+    SELECT ps.id, ps.student_id,
+      COALESCE(s.full_name, ps.student_name) AS student_name,
+      COALESCE(s.admission_number, ps.admission_number) AS admission_number,
+      COALESCE(s.class_name, ps.class_name) AS class_name,
+      COALESCE(s.section, ps.section) AS section,
+      COALESCE(s.roll_number, ps.roll_number) AS roll_number,
+      COALESCE(s.dob, ps.dob) AS dob,
+      ps.verified_at
+    FROM parent_students ps
+    LEFT JOIN students s ON s.id = ps.student_id AND s.deleted_at IS NULL AND s.is_active = 1
+    WHERE ps.parent_id = ?1 AND ps.link_status = 'LINKED'
+    ORDER BY student_name`
   ).bind(parent.id).all();
   const children = (childrenRows.results || []).map(c => ({
     ...c,
     full_label: [c.student_name, c.class_name, c.section].filter(Boolean).join(' · ')
   }));
+
+  const requestRows = await db(env).prepare(`
+    SELECT id, student_name, admission_number, class_name, section, roll_number, dob, link_status, created_at
+    FROM parent_students
+    WHERE parent_id = ?1 AND link_status != 'LINKED'
+    ORDER BY created_at DESC`
+  ).bind(parent.id).all();
+  const linkRequests = requestRows.results || [];
 
   // Determine which classes to fetch exams for
   const classNames = [...new Set(children.map(c => c.class_name).filter(Boolean))];
@@ -78,6 +101,7 @@ export async function onRequestGet(context) {
   return jsonResponse({
     parent,
     children,
+    link_requests: linkRequests,
     exams,
     results
   });

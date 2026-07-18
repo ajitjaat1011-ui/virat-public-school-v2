@@ -17,23 +17,43 @@ export async function onRequestPost(context) {
     }
   }
 
+  const name = String(body.name).trim().slice(0, 100);
+  const email = String(body.email).trim().toLowerCase().slice(0, 200);
+  const subject = String(body.subject).trim().slice(0, 200);
+  const message = String(body.message).trim().slice(0, 5000);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return Response.json({ error: 'Please enter a valid email address' }, { status: 400 });
+  }
+
+  // Server-side duplicate protection for double taps and browser retries.
+  try {
+    const duplicate = await db(env).prepare(`SELECT id FROM contact_messages
+      WHERE lower(email) = lower(?1) AND subject = ?2 AND message = ?3
+        AND deleted_at IS NULL AND created_at >= datetime('now', '-10 minutes')
+      ORDER BY created_at DESC LIMIT 1`)
+      .bind(email, subject, message).first();
+    if (duplicate) {
+      return Response.json({ ok: true, duplicate: true, reference: 'MSG-' + String(duplicate.id).slice(-6).toUpperCase() });
+    }
+  } catch (_) { /* continue for legacy databases */ }
+
   const id = cuid();
   try {
     await db(env).prepare(`INSERT INTO contact_messages (id, name, email, phone, subject, message) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`).bind(
       id,
-      String(body.name).trim().slice(0, 100),
-      String(body.email).trim().slice(0, 200),
+      name,
+      email,
       body.phone ? String(body.phone).trim().slice(0, 20) : null,
-      String(body.subject).trim().slice(0, 200),
-      String(body.message).trim().slice(0, 5000)
+      subject,
+      message
     ).run();
     await db(env).prepare(`INSERT INTO audit_log (id, user_id, action, entity, entity_id, ip) VALUES (?1, NULL, 'contact.submit', 'ContactMessage', ?2, ?3)`)
       .bind(cuid(), id, request.headers.get('CF-Connecting-IP') || '').run();
   } catch (e) {
-    // Log but don't fail the user submission
     console.error('Contact submit DB error:', e.message);
+    return Response.json({ error: 'We could not save your message. Please try again.' }, { status: 500 });
   }
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, reference: 'MSG-' + String(id).slice(-6).toUpperCase() });
 }
 
 export async function onRequestGet() {

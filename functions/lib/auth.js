@@ -152,10 +152,11 @@ export async function rateLimit(env, key, maxCount, windowSeconds) {
   const now = Math.floor(Date.now() / 1000);
   const windowStart = now - (now % windowSeconds);
   const fullKey = `${key}:${windowStart}`;
-  await db(env).prepare(
-    'INSERT INTO rate_limits (key, count, window_start) VALUES (?1, 1, ?2) ON CONFLICT(key) DO UPDATE SET count = count + 1'
-  ).bind(fullKey, new Date(windowStart * 1000).toISOString()).run();
-  const row = await db(env).prepare('SELECT count FROM rate_limits WHERE key = ?1').bind(fullKey).first();
+  const row = await db(env).prepare(
+    `INSERT INTO rate_limits (key, count, window_start) VALUES (?1, 1, ?2)
+     ON CONFLICT(key) DO UPDATE SET count = count + 1
+     RETURNING count`
+  ).bind(fullKey, new Date(windowStart * 1000).toISOString()).first();
   if (row && row.count > maxCount) {
     return { limited: true, retryAfter: windowSeconds - (now - windowStart) };
   }

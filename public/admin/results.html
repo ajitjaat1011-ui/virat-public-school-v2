@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-  <link rel="stylesheet" href="/css/admin.css?v=10" />
+  <link rel="stylesheet" href="/css/admin.css?v=11" />
   <style>
     .form-card { max-width: 640px; padding: 24px; background: white; border: 1px solid var(--line); border-radius: 16px; }
   </style>
@@ -35,6 +35,7 @@
             <input type="date" id="dob" required />
           </div>
         </div>
+        <div id="search-status" class="form-status" role="status" aria-live="polite"></div>
         <button type="submit" class="btn btn-primary" id="search-btn">Look up</button>
       </form>
     </div>
@@ -45,7 +46,7 @@
   <script>
     window.ADMIN_PAGE = { title: 'Results', crumb: 'Academics' };
   </script>
-  <script src="/js/admin.js?v=5"></script>
+  <script src="/js/admin.js?v=7"></script>
   <script>
     const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 
@@ -53,18 +54,26 @@
       document.getElementById('search-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const out = document.getElementById('result-out');
+        const status = document.getElementById('search-status');
+        const button = document.getElementById('search-btn');
         const roll = document.getElementById('roll').value.trim();
         const dob = document.getElementById('dob').value;
-        out.innerHTML = '<div class="empty-state"><p>Looking up…</p></div>';
+        clearFormStatus(status);
+        if (!roll || !dob) { setFormStatus(status, 'Enter both roll number and date of birth.', 'error'); return; }
+        setButtonLoading(button, true, 'Looking up…');
+        setFormStatus(status, 'Searching published results…', 'warning');
+        out.innerHTML = '<div class="loading-state">Looking up the result…</div>';
         try {
           const r = await fetch('/api/results/lookup?roll=' + encodeURIComponent(roll) + '&dob=' + encodeURIComponent(dob), { credentials: 'include' });
           const d = await r.json();
           if (!r.ok || d.error) {
+            setFormStatus(status, 'No published result matched those details.', 'error');
             out.innerHTML = '<div class="form-card" style="text-align:center;"><h3 style="font-family:inherit; font-weight:600; font-size:16px; color:var(--ink-900);">No result found</h3><p>Check the roll number and date of birth.</p></div>';
             return;
           }
           const s = d.student || {};
           const marks = d.marks || [];
+          setFormStatus(status, 'Published result found.', 'success');
           out.innerHTML = `
             <div class="form-card">
               <h3 style="margin:0 0 4px; font-family:inherit; font-weight:600; color:var(--ink-900);">${esc(s.name || '')}</h3>
@@ -76,8 +85,9 @@
               <p style="margin-top:16px;color:var(--pink-600);font-weight:700;">Total: ${esc(String(d.total || marks.reduce((a,b) => a + Number(b.marks||0), 0)))}</p>
             </div>`;
         } catch (err) {
+          setFormStatus(status, 'Network error. Check your connection and try again.', 'error');
           out.innerHTML = '<div class="form-card" style="text-align:center;"><h3 style="font-family:inherit; font-weight:600; font-size:16px; color:var(--ink-900);">Network error</h3><p>Please try again.</p></div>';
-        }
+        } finally { setButtonLoading(button, false); }
       });
     };
   </script>

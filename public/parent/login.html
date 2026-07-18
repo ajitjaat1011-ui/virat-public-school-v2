@@ -14,9 +14,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="/css/style.css?v=14" />
+  <link rel="stylesheet" href="/css/components.css?v=1" />
   <style>
     body.has-dock .auth-wrap { min-height: calc(100vh - 90px); }
-    .password-toggle { align-self:flex-end; margin-top:-4px; border:0; background:transparent; color:var(--pink-600); font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:4px 0; }
   </style>
 </head>
 <body>
@@ -36,11 +36,13 @@
             <label class="form-label" for="phone">Mobile number</label>
             <input class="form-input" type="tel" id="phone" name="phone" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required autocomplete="tel" placeholder="10-digit mobile" />
           </div>
-          <div class="form-group">
+          <div class="form-group password-field">
             <label class="form-label" for="password">Password</label>
-            <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters" /> <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+            <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters" />
+            <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
           </div>
-          <div id="loginError" class="form-error-banner" role="alert"></div>
+          <div id="loginError" class="form-error-banner" role="alert" aria-live="assertive"></div>
+          <div id="loginStatus" class="form-status" role="status" aria-live="polite"></div>
           <button type="submit" class="btn btn-pink btn-lg" id="loginBtn">Sign in</button>
         </form>
 
@@ -52,11 +54,12 @@
     </div>
   </main>
 
-  <script src="/js/partials.js?v=10"></script>
+  <script src="/js/partials.js?v=12"></script>
   <script>
     (function () {
       const form = document.getElementById('loginForm');
       const errEl = document.getElementById('loginError');
+      const statusEl = document.getElementById('loginStatus');
       const btn   = document.getElementById('loginBtn');
 
       document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
@@ -68,8 +71,9 @@
         });
       });
 
-      function showError(msg) { errEl.textContent = msg; errEl.classList.add('show'); }
-      function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; }
+      function showError(msg) { errEl.textContent = msg; errEl.classList.add('show'); statusEl.className = 'form-status'; }
+      function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; statusEl.className = 'form-status'; }
+      document.getElementById('phone').addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g,'').slice(0,10); });
 
       fetch('/api/parent/auth', { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
@@ -82,7 +86,8 @@
         const password = document.getElementById('password').value;
         if (!/^\d{10}$/.test(phone)) { showError('Please enter a 10-digit mobile number.'); return; }
         if (!password || password.length < 6) { showError('Password must be at least 6 characters.'); return; }
-        btn.disabled = true; btn.textContent = 'Signing in…';
+        btn.disabled = true; btn.classList.add('is-loading'); btn.textContent = 'Signing in securely…';
+        statusEl.textContent = 'Checking your account…'; statusEl.className = 'form-status show';
         try {
           const res = await fetch('/api/parent/auth', {
             method: 'POST',
@@ -91,12 +96,20 @@
             body: JSON.stringify({ phone, password })
           });
           const data = await res.json();
-          if (!res.ok) { showError(data.error || 'Sign in failed.'); return; }
+          if (!res.ok) {
+            if (res.status === 403 && /pending/i.test(data.error || '')) {
+              window.location.href = 'pending.html';
+              return;
+            }
+            showError(data.error || 'Sign in failed.');
+            return;
+          }
+          statusEl.textContent = 'Signed in. Opening your dashboard…'; statusEl.className = 'form-status show';
           window.location.href = 'dashboard.html';
         } catch (err) {
           showError('Network error. Please try again.');
         } finally {
-          btn.disabled = false; btn.textContent = 'Sign in';
+          btn.disabled = false; btn.classList.remove('is-loading'); btn.textContent = 'Sign in';
         }
       });
     })();

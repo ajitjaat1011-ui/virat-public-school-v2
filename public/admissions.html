@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" />
   <link rel="stylesheet" href="css/style.css?v=14" />
+  <link rel="stylesheet" href="/css/components.css?v=1" />
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to main content</a>
@@ -53,7 +54,10 @@
           <h2 class="section-title reveal">Tell us about your child.</h2>
           <p class="reveal">We'll get back to you within a working day.</p>
         </div>
-        <form id="inquiry-form" class="form" novalidate style="background:white;padding:32px;border:1px solid var(--line);border-radius:14px;">
+        <ol class="form-progress" aria-label="Admission process">
+          <li class="active">Inquiry</li><li>School call</li><li>Campus visit</li><li>Admission</li>
+        </ol>
+        <form id="inquiry-form" class="form form-surface" novalidate aria-describedby="form-help">
           <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
           <div class="form-row">
             <div class="form-group">
@@ -94,12 +98,11 @@
             <label class="form-label" for="message">Anything we should know? <span style="color:var(--ink-500);font-weight:400;">(optional)</span></label>
             <textarea class="form-textarea" id="message" name="message" rows="3" placeholder="Allergies, learning needs, siblings already at VPS…"></textarea>
           </div>
-          <button type="submit" class="btn btn-accent btn-lg btn-magnetic" id="submit-btn" style="justify-content:center;">Send inquiry <span class="arrow">→</span></button>
-          <p class="form-help text-center">By submitting, you agree to our <a href="privacy.html">privacy policy</a>.</p>
-          <div id="form-error" class="form-error-banner" role="alert"></div>
-          <div id="form-success" class="form-success" role="status">
-            <strong>Thank you.</strong> We've received your note and will reply within a working day.
-          </div>
+          <div id="form-error" class="form-error-banner" role="alert" aria-live="assertive"></div>
+          <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+          <button type="submit" class="btn btn-accent btn-lg" id="submit-btn">Send inquiry <span class="arrow">→</span></button>
+          <p class="form-help text-center" id="form-help">Your inquiry is not an admission commitment. By submitting, you agree to our <a href="privacy.html">privacy policy</a>.</p>
+          <div id="form-success" class="form-success" role="status" aria-live="polite"></div>
         </form>
       </div>
     </section>
@@ -124,38 +127,103 @@
 
   <div id="vps-footer"></div>
 
-  <script src="js/partials.js?v=10"></script>
+  <script src="js/partials.js?v=12"></script>
   <script src="js/main.js?v=9"></script>
   <script>
     (function () {
       const form = document.getElementById('inquiry-form');
       const btn = document.getElementById('submit-btn');
       const errBox = document.getElementById('form-error');
+      const statusBox = document.getElementById('form-status');
       const okBox = document.getElementById('form-success');
-      function showError(msg) { errBox.textContent = msg; errBox.classList.add('show'); okBox.classList.remove('show'); errBox.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
       const phoneEl = document.getElementById('phone');
-      phoneEl.addEventListener('input', () => { phoneEl.value = phoneEl.value.replace(/\D/g, '').slice(-10); phoneEl.setAttribute('aria-invalid', 'false'); });
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      const idleButtonHtml = btn.innerHTML;
+
+      function clearFeedback() {
         errBox.classList.remove('show');
+        statusBox.className = 'form-status';
+        statusBox.textContent = '';
         form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.setAttribute('aria-invalid', 'false'));
+      }
+      function showError(message, field) {
+        statusBox.className = 'form-status';
+        errBox.textContent = message;
+        errBox.classList.add('show');
+        if (field) {
+          field.setAttribute('aria-invalid', 'true');
+          field.focus({ preventScroll: true });
+        }
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      function showProgress(message) {
+        statusBox.textContent = message;
+        statusBox.className = 'form-status show';
+      }
+      function setBusy(busy) {
+        btn.disabled = busy;
+        btn.classList.toggle('is-loading', busy);
+        btn.setAttribute('aria-busy', String(busy));
+        btn.textContent = busy ? 'Sending securely…' : '';
+        if (!busy) btn.innerHTML = idleButtonHtml;
+      }
+
+      phoneEl.addEventListener('input', () => {
+        phoneEl.value = phoneEl.value.replace(/\D/g, '').slice(0, 10);
+        phoneEl.setAttribute('aria-invalid', 'false');
+      });
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearFeedback();
+        okBox.classList.remove('show');
         const data = Object.fromEntries(new FormData(form));
-        if (!data.parent_name)  { showError('Please tell us the parent\'s name.'); document.getElementById('parent_name').setAttribute('aria-invalid','true'); return; }
-        if (!data.student_name) { showError('Please tell us the child\'s name.'); document.getElementById('student_name').setAttribute('aria-invalid','true'); return; }
-        if (!data.applying_for) { showError('Please choose a class.'); document.getElementById('applying_for').setAttribute('aria-invalid','true'); return; }
-        if (!data.phone)         { showError('Please share a phone number.'); document.getElementById('phone').setAttribute('aria-invalid','true'); return; }
-        if (!/^[6-9]\d{9}$/.test(data.phone)) { showError('Phone number must be 10 digits, starting with 6, 7, 8 or 9.'); document.getElementById('phone').setAttribute('aria-invalid','true'); return; }
-        if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { showError('Please enter a valid email.'); document.getElementById('email').setAttribute('aria-invalid','true'); return; }
-        btn.disabled = true; btn.textContent = 'Sending…';
+        data.parent_name = data.parent_name.trim();
+        data.student_name = data.student_name.trim();
+        data.phone = data.phone.replace(/\D/g, '');
+        data.email = data.email.trim();
+
+        if (!data.parent_name) return showError('Please tell us the parent’s name.', document.getElementById('parent_name'));
+        if (!data.student_name) return showError('Please tell us the child’s name.', document.getElementById('student_name'));
+        if (!data.applying_for) return showError('Please choose the class you are applying for.', document.getElementById('applying_for'));
+        if (!/^[6-9]\d{9}$/.test(data.phone)) return showError('Enter a 10-digit mobile number starting with 6, 7, 8, or 9.', phoneEl);
+        if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return showError('Please enter a valid email address.', document.getElementById('email'));
+
+        setBusy(true);
+        showProgress('Saving your inquiry. Please keep this page open…');
         try {
-          const r = await fetch('/api/inquiries', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
-          const out = await r.json().catch(() => ({}));
-          if (r.ok && out.ok) { okBox.classList.add('show'); form.reset(); okBox.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-          else { showError(out.error || 'Could not send (' + r.status + '). Please call +91 90000 00000.'); }
-        } catch (err) { showError('Network error. Please try again or call +91 90000 00000.'); }
-        finally { btn.disabled = false; btn.textContent = 'Send inquiry'; }
+          const response = await window.vpsFetchWithRetry('/api/inquiries', {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'x-submission-key': window.vpsSubmissionKey(form)
+            },
+            body: JSON.stringify(data)
+          }, 2);
+          const out = await response.json().catch(() => ({}));
+          if (!response.ok || !out.ok) throw new Error(out.error || 'We could not save your inquiry. Please try again.');
+
+          const reference = out.reference || (out.id ? 'VPS-' + String(out.id).slice(-6).toUpperCase() : 'VPS-RECEIVED');
+          statusBox.className = 'form-status';
+          okBox.innerHTML = `
+            <strong>${out.duplicate ? 'Your inquiry was already received.' : 'Inquiry received—thank you.'}</strong><br>
+            Reference: <strong>${reference}</strong><br><br>
+            <strong>What happens next:</strong> our admissions office will call <strong>${data.phone}</strong> within one working day to answer questions and arrange a campus visit.
+            <div class="action-row" style="margin-top:14px;">
+              <a class="btn btn-secondary btn-sm" href="/admissions-fee.html">View fees</a>
+              <a class="btn btn-ghost btn-sm" href="/">Back to home</a>
+            </div>`;
+          okBox.classList.add('show');
+          form.querySelectorAll('input, select, textarea').forEach(control => { control.disabled = true; });
+          btn.hidden = true;
+          document.querySelectorAll('.form-progress li')[0]?.classList.add('active');
+          okBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (error) {
+          showError(error.message || 'Network error. Check your connection and try again.');
+        } finally {
+          if (!btn.hidden) setBusy(false);
+        }
       });
     })();
-    </script>
+  </script>
 </body>
 </html>

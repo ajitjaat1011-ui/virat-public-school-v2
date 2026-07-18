@@ -63,6 +63,14 @@ export async function onRequestPost(context) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(exam_date)) return errorResponse('Exam date must be YYYY-MM-DD format', 400);
   if (!title)     title = `${subject} — ${class_name}`;
 
+  // Creating the same exam twice is almost always a double click or retry.
+  const duplicate = await db(env).prepare(`SELECT id FROM exams
+    WHERE title = ?1 AND class_name = ?2 AND subject = ?3 AND exam_date = ?4
+      AND IFNULL(start_time, '') = ?5 AND deleted_at IS NULL
+    ORDER BY created_at DESC LIMIT 1`)
+    .bind(title, class_name, subject, exam_date, start_time || '').first();
+  if (duplicate) return jsonResponse({ ok: true, duplicate: true, id: duplicate.id });
+
   const id = 'exm_' + cuid();
   try {
     await db(env).prepare(

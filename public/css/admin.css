@@ -693,4 +693,111 @@ body.menu-open { overflow: hidden; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
 
-/* CSS v7 — Admin Light App */
+/* === Shared consistency and feedback pass === */
+.btn { justify-content: center; }
+.btn-secondary { background: white; color: var(--ink-900); border-color: var(--line); }
+.btn-secondary:hover { background: var(--pink-50); color: var(--pink-700); border-color: var(--pink-200); }
+.btn.is-loading::before {
+  content: '';
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: admin-spin .7s linear infinite;
+}
+@keyframes admin-spin { to { transform: rotate(360deg); } }
+
+/* A number of older admin templates use native controls without component
+   classes. Normalize them so every form looks and behaves the same. */
+form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+form textarea,
+form select,
+.filter-bar input,
+.filter-bar select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background-color: white;
+  color: var(--ink-900);
+  font: inherit;
+  font-size: 14px;
+  transition: border-color .15s, box-shadow .15s;
+}
+form textarea { min-height: 84px; resize: vertical; }
+form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus,
+form textarea:focus,
+form select:focus,
+.filter-bar input:focus,
+.filter-bar select:focus {
+  outline: none;
+  border-color: var(--pink-400);
+  box-shadow: 0 0 0 3px rgba(255,107,157,.16);
+}
+form input[aria-invalid="true"], form textarea[aria-invalid="true"], form select[aria-invalid="true"] {
+  border-color: #be123c;
+  box-shadow: 0 0 0 3px #fff1f2;
+}
+
+.form-card {
+  max-width: 720px;
+  padding: 22px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--glass-shadow);
+}
+.form-status {
+  display: none;
+  margin: 12px 0;
+  padding: 11px 14px;
+  border: 1px solid rgba(47,158,107,.28);
+  border-radius: 12px;
+  background: rgba(47,158,107,.10);
+  color: #047857;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.form-status.show { display: block; }
+.form-status.error {
+  border-color: rgba(255,61,128,.25);
+  background: rgba(255,61,128,.09);
+  color: var(--pink-700);
+}
+.form-status.warning {
+  border-color: rgba(217,145,34,.28);
+  background: rgba(217,145,34,.10);
+  color: #a16207;
+}
+
+.glass-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.glass-table th, .glass-table td { padding: 11px 13px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; }
+.glass-table th { color: var(--ink-500); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.glass-table tr:last-child td { border-bottom: 0; }
+
+.loading-state {
+  padding: 30px 20px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  color: var(--ink-500);
+  text-align: center;
+}
+.card-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.inline-field { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.inline-field > :first-child { flex: 1 1 200px; }
+
+@media (max-width: 640px) {
+  .page-head .btn { width: 100%; }
+  .modal { padding: 22px 18px; }
+  .modal-actions { align-items: stretch; flex-direction: column-reverse; }
+  .modal-actions .btn { width: 100%; }
+  #toast-area { right: 12px; bottom: 12px; left: 12px; }
+  .toast { width: 100%; }
+}
+
+/* CSS v11 — unified components and form states */

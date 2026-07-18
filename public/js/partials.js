@@ -26,15 +26,18 @@
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
   }
 
-  // === Render top app bar (welcome row) ===
+  // === Render school identity bar ===
   function renderAppBar() {
     return `
       <div class="app-topbar">
-        <div class="welcome">
-          <span class="hi">Welcome back,</span>
-          <span class="name">Virat <span class="em">Public School</span></span>
-        </div>
-        <div class="app-avatar" title="VPS">V</div>
+        <a class="school-brand" href="/" aria-label="Virat Public School home">
+          <span class="school-brand-mark" aria-hidden="true">V</span>
+          <span class="school-brand-copy">
+            <strong>Virat Public School</strong>
+            <span>Viratnagar · Kotputli-Behror</span>
+          </span>
+        </a>
+        <a class="app-pill pink" href="/admissions.html">Admissions 2026–27</a>
       </div>`;
   }
 
@@ -123,8 +126,83 @@
     });
   }
 
+  // === Shared form guard ===
+  // Prevents accidental double taps/clicks while a form request is in flight.
+  // Existing page handlers remain responsible for validation and feedback.
+  function installSubmissionGuard() {
+    if (window.__vpsSubmissionGuard) return;
+    window.__vpsSubmissionGuard = true;
+
+    document.addEventListener('submit', (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      if (form.dataset.submitting === 'true') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+
+      form.dataset.submitting = 'true';
+      const button = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
+      let observer;
+      let timer;
+      const unlock = () => {
+        form.dataset.submitting = 'false';
+        if (observer) observer.disconnect();
+        if (timer) clearTimeout(timer);
+      };
+
+      if (button) {
+        observer = new MutationObserver(() => {
+          if (!button.disabled && button.getAttribute('aria-disabled') !== 'true') unlock();
+        });
+        observer.observe(button, { attributes: true, attributeFilter: ['disabled', 'aria-disabled'] });
+      }
+
+      // Validation failures do not disable the submit button; release immediately.
+      queueMicrotask(() => {
+        if (!button || (!button.disabled && button.getAttribute('aria-disabled') !== 'true')) unlock();
+      });
+      timer = setTimeout(unlock, 30000);
+    }, true);
+  }
+
+  window.vpsSetButtonLoading = function (button, loading, loadingText) {
+    if (!button) return;
+    if (!button.dataset.idleText) button.dataset.idleText = button.textContent.trim();
+    button.disabled = !!loading;
+    button.classList.toggle('is-loading', !!loading);
+    button.setAttribute('aria-busy', String(!!loading));
+    button.textContent = loading ? (loadingText || 'Please wait…') : button.dataset.idleText;
+  };
+
+  window.vpsSubmissionKey = function (form) {
+    if (!form.dataset.submissionKey) {
+      form.dataset.submissionKey = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+    }
+    return form.dataset.submissionKey;
+  };
+
+  // Use only for idempotent form endpoints. The server recognises a repeated
+  // payload and returns the first successful submission.
+  window.vpsFetchWithRetry = async function (url, options, attempts) {
+    const max = attempts || 2;
+    let response;
+    let lastError;
+    for (let i = 0; i < max; i++) {
+      try {
+        response = await fetch(url, options);
+        if (response.status < 500) return response;
+      } catch (error) { lastError = error; }
+      if (i < max - 1) await new Promise(resolve => setTimeout(resolve, 450 * (i + 1)));
+    }
+    if (response) return response;
+    throw lastError || new Error('Network request failed');
+  };
+
   // === Mount ===
   function mount() {
+    installSubmissionGuard();
     // Inject app topbar (welcome row)
     const topbarSlot = document.getElementById('vps-topbar');
     if (topbarSlot) {

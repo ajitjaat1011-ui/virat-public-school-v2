@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-  <link rel="stylesheet" href="/css/admin.css?v=10" />
+  <link rel="stylesheet" href="/css/admin.css?v=11" />
   <style>
     /* Mobile-friendly list-item */
     .list-item {
@@ -147,7 +147,8 @@
           <label class="form-label">Syllabus / notes (optional)</label>
           <textarea name="syllabus" rows="2" placeholder="e.g. Chapters 1–4, bring geometry box"></textarea>
         </div>
-        <div id="newError" class="form-error" style="display:none;"></div>
+        <div id="newError" class="form-error" role="alert" aria-live="assertive"></div>
+        <div id="newStatus" class="form-status" role="status" aria-live="polite"></div>
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="cancelNew">Cancel</button>
           <button type="submit" class="btn btn-primary" id="saveNew">Save exam</button>
@@ -169,7 +170,7 @@
 
       <div id="resultsList"></div>
       <button class="add-row" id="addResultRow" type="button">+ Add another student</button>
-      <div id="resultsMsg" style="display:none; margin-top: 12px;"></div>
+      <div id="resultsMsg" class="form-status" role="status" aria-live="polite"></div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="cancelResults">Close</button>
         <button type="button" class="btn btn-secondary" id="saveDraft">Save draft</button>
@@ -181,7 +182,7 @@
   <script>
     window.ADMIN_PAGE = { title: 'Exams', crumb: 'Academics' };
   </script>
-  <script src="/js/admin.js?v=5"></script>
+  <script src="/js/admin.js?v=7"></script>
   <script>
     const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = iso => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
@@ -324,7 +325,8 @@
         document.getElementById('newForm').reset();
         populatePickers();
         setupTimeInputs();
-        const errEl = document.getElementById('newError'); errEl.style.display = 'none';
+        const errEl = document.getElementById('newError'); errEl.classList.remove('show');
+        clearFormStatus('newStatus');
         const dateInput = document.querySelector('input[name="exam_date"]');
         if (dateInput && !dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
         newModal.classList.add('open');
@@ -337,11 +339,13 @@
         const form = e.target;
         const data = Object.fromEntries(new FormData(form).entries());
         const errEl = document.getElementById('newError');
-        errEl.style.display = 'none';
+        const statusEl = document.getElementById('newStatus');
+        errEl.classList.remove('show');
+        clearFormStatus(statusEl);
 
-        if (!data.class_name || !data.subject) {
-          errEl.textContent = 'Please pick a class and subject.';
-          errEl.style.display = 'block';
+        if (!data.class_name || !data.subject || !data.exam_date) {
+          errEl.textContent = 'Choose a class, subject, and exam date.';
+          errEl.classList.add('show');
           return;
         }
         if (!data.title) data.title = `${data.subject} — ${data.class_name}`;
@@ -349,23 +353,28 @@
         if (data.max_marks) data.max_marks = Number(data.max_marks);
 
         const saveBtn = document.getElementById('saveNew');
-        saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+        setButtonLoading(saveBtn, true, 'Saving…');
+        setFormStatus(statusEl, 'Scheduling the exam and preparing the parent notice…', 'warning');
         try {
           const res = await fetch('/api/admin/exams', {
             method: 'POST', credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
           });
-          const out = await res.json();
-          if (!res.ok) { errEl.textContent = out.error || 'Failed'; errEl.style.display = 'block'; return; }
+          const out = await res.json().catch(() => ({}));
+          if (!res.ok) { clearFormStatus(statusEl); errEl.textContent = out.error || 'Could not schedule the exam.'; errEl.classList.add('show'); return; }
+          setFormStatus(statusEl, out.duplicate ? 'This exam was already scheduled.' : 'Exam scheduled successfully.', 'success');
+          toast(out.duplicate ? 'Exam already exists' : 'Exam scheduled');
           newModal.classList.remove('open');
-          toast('Exam scheduled');
-          // Optimistic: prepend the new exam immediately, then sync
-          cachedExams.unshift({ ...data, id: out.id, result_count: 0 });
+          if (!out.duplicate) cachedExams.unshift({ ...data, id: out.id, result_count: 0 });
           renderList();
           load();
+        } catch (error) {
+          clearFormStatus(statusEl);
+          errEl.textContent = 'Network error. Check your connection and try again.';
+          errEl.classList.add('show');
         } finally {
-          saveBtn.disabled = false; saveBtn.textContent = 'Save exam';
+          setButtonLoading(saveBtn, false);
         }
       });
 
@@ -446,7 +455,7 @@
       else if (master.length) master.forEach(s => addResultRow({ student_name: s.full_name, roll_number: s.roll_number || '', section: s.section || 'A' }));
       else addResultRow();
       const msg = document.getElementById('resultsMsg');
-      msg.style.display = 'none';
+      clearFormStatus(msg);
       document.getElementById('bulk-input').value = '';
       resultsModal.classList.add('open');
     }
@@ -471,34 +480,46 @@
 
     function saveDraft() {
       const { out, duplicates } = collectResultRows();
-      if (duplicates.length) { toast('Duplicate student/roll: ' + duplicates.join(', '), 'error'); return; }
-      if (!out.length) { toast('Add at least one student before saving a draft.', 'error'); return; }
+      const msg = document.getElementById('resultsMsg');
+      clearFormStatus(msg);
+      if (duplicates.length) { setFormStatus(msg, 'Duplicate student/roll: ' + duplicates.join(', '), 'error'); return; }
+      if (!out.length) { setFormStatus(msg, 'Add at least one student before saving a draft.', 'error'); return; }
       localStorage.setItem('vps-result-draft-' + currentExamId, JSON.stringify(out));
+      setFormStatus(msg, 'Draft saved on this device. It is not visible to parents.', 'success');
       toast('Draft saved on this device');
     }
 
     async function saveResults() {
       const { out, duplicates } = collectResultRows();
-      if (duplicates.length) { toast('Duplicate student/roll: ' + duplicates.join(', '), 'error'); return; }
-      if (out.some(r => !r.student_name || isNaN(r.marks_obtained))) { toast('Complete each student name and marks before publishing.', 'error'); return; }
-      if (!out.length) { toast('Add at least one student with marks.', 'error'); return; }
-      const res = await fetch('/api/admin/exam-results', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ exam_id: currentExamId, results: out })
-      });
-      const data = await res.json();
       const msg = document.getElementById('resultsMsg');
-      if (!res.ok) {
-        msg.textContent = data.error || 'Failed to save';
-        msg.style.cssText = 'background:rgba(255,61,128,0.1);color:var(--pink-700);padding:10px 14px;border-radius:12px;display:block;margin-top:12px;';
-        return;
+      const publishButton = document.getElementById('saveResults');
+      const draftButton = document.getElementById('saveDraft');
+      clearFormStatus(msg);
+      if (duplicates.length) { setFormStatus(msg, 'Duplicate student/roll: ' + duplicates.join(', '), 'error'); return; }
+      if (out.some(r => !r.student_name || isNaN(r.marks_obtained))) { setFormStatus(msg, 'Complete each student name and marks before publishing.', 'error'); return; }
+      if (!out.length) { setFormStatus(msg, 'Add at least one student with marks.', 'error'); return; }
+      setButtonLoading(publishButton, true, 'Publishing…');
+      draftButton.disabled = true;
+      setFormStatus(msg, 'Saving and publishing results for parents…', 'warning');
+      try {
+        const res = await fetch('/api/admin/exam-results', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ exam_id: currentExamId, results: out })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed to save results');
+        setFormStatus(msg, `Published successfully. ${data.inserted} added, ${data.updated} updated.`, 'success');
+        localStorage.removeItem('vps-result-draft-' + currentExamId);
+        toast('Results published');
+        load();
+      } catch (error) {
+        setFormStatus(msg, error.message || 'Could not publish results.', 'error');
+        toast(error.message || 'Could not publish results', 'error');
+      } finally {
+        setButtonLoading(publishButton, false);
+        draftButton.disabled = false;
       }
-      msg.textContent = `Saved. ${data.inserted} added, ${data.updated} updated.`;
-      msg.style.cssText = 'background:rgba(16,185,129,0.15);color:#047857;padding:10px 14px;border-radius:12px;display:block;margin-top:12px;';
-      localStorage.removeItem('vps-result-draft-' + currentExamId);
-      toast('Results published');
-      load();
     }
 
     window.onShellReady = function () {

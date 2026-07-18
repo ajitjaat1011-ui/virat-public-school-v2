@@ -1,0 +1,144 @@
+{
+  "baseUrl": "https://e4d905b4.virat-public-school-v2.pages.dev",
+  "startedAt": "2026-07-18T00:00:52.501Z",
+  "testData": {
+    "stamp": "32852501"
+  },
+  "steps": [
+    {
+      "name": "Desktop public homepage",
+      "detail": "hero, CTAs, proof cards, stats and gallery visible",
+      "at": "2026-07-18T00:00:53.478Z"
+    },
+    {
+      "name": "Admissions validation feedback",
+      "detail": "",
+      "at": "2026-07-18T00:00:53.719Z"
+    },
+    {
+      "name": "Admissions success workflow",
+      "detail": "reference and next steps displayed",
+      "at": "2026-07-18T00:00:55.109Z"
+    },
+    {
+      "name": "Contact form success feedback",
+      "detail": "",
+      "at": "2026-07-18T00:00:56.584Z"
+    },
+    {
+      "name": "Public results error feedback",
+      "detail": "",
+      "at": "2026-07-18T00:00:57.533Z"
+    },
+    {
+      "name": "Parent account registration",
+      "detail": "child match details submitted",
+      "at": "2026-07-18T00:01:00.066Z"
+    },
+    {
+      "name": "Pending parent sign-in state",
+      "detail": "",
+      "at": "2026-07-18T00:01:00.838Z"
+    },
+    {
+      "name": "Authenticated desktop admin dashboard",
+      "detail": "",
+      "at": "2026-07-18T00:01:04.531Z"
+    },
+    {
+      "name": "Admin student form success",
+      "detail": "",
+      "at": "2026-07-18T00:01:07.779Z"
+    },
+    {
+      "name": "Admin verified child linking",
+      "detail": "",
+      "at": "2026-07-18T00:01:13.266Z"
+    },
+    {
+      "name": "Admin parent approval",
+      "detail": "",
+      "at": "2026-07-18T00:01:15.603Z"
+    },
+    {
+      "name": "Admin admission status action",
+      "detail": "",
+      "at": "2026-07-18T00:01:17.678Z"
+    },
+    {
+      "name": "Admin contact message click-through",
+      "detail": "",
+      "at": "2026-07-18T00:01:20.927Z"
+    },
+    {
+      "name": "Admin notice form success",
+      "detail": "",
+      "at": "2026-07-18T00:01:25.358Z"
+    },
+    {
+      "name": "Admin exam form success",
+      "detail": "",
+      "at": "2026-07-18T00:01:28.696Z"
+    },
+    {
+      "name": "Admin results form error state",
+      "detail": "",
+      "at": "2026-07-18T00:01:31.379Z"
+    },
+    {
+      "name": "Authenticated mobile admin click-through",
+      "detail": "9 destinations via drawer",
+      "at": "2026-07-18T00:01:55.743Z"
+    },
+    {
+      "name": "Authenticated mobile parent workflow",
+      "detail": "verified child and add-child flow visible",
+      "at": "2026-07-18T00:01:58.676Z"
+    },
+    {
+      "name": "Production test-data cleanup",
+      "detail": "",
+      "at": "2026-07-18T00:02:10.016Z"
+    }
+  ],
+  "warnings": [],
+  "cleanup": [
+    {
+      "resource": "/api/admin/inquiries/cmrplplpnifoekw8f",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "resource": "/api/admin/messages/cmrplpmusznuu0ogv",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "resource": "/api/admin/parents/p_cmrplpph10smgvrji",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "resource": "/api/admin/students/std_cmrplpvnycyl3m945",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "resource": "/api/admin/notices/cmrplq8o2wcnuwb0v",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "resource": "/api/admin/notices/ntc_cmrplqc6nzkepjc1b",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "resource": "/api/admin/exams/exm_cmrplqbswibvui4vi",
+      "ok": true,
+      "status": 200
+    }
+  ],
+  "ok": true,
+  "finishedAt": "2026-07-18T00:02:10.022Z"
+}

@@ -37,6 +37,17 @@ export async function onRequestPost(context) {
   if (!fullName) return errorResponse('Student name is required', 400);
   if (!className) return errorResponse('Class is required', 400);
 
+  // Protect the master list from double clicks when no admission number is
+  // available to trigger the unique index.
+  const duplicate = admission
+    ? await db(env).prepare('SELECT id FROM students WHERE admission_number = ?1 AND deleted_at IS NULL').bind(admission).first()
+    : await db(env).prepare(`SELECT id FROM students
+        WHERE lower(full_name) = lower(?1) AND class_name = ?2
+          AND IFNULL(section, '') = ?3 AND IFNULL(roll_number, '') = ?4
+          AND deleted_at IS NULL LIMIT 1`)
+        .bind(fullName, className, section || '', roll || '').first();
+  if (duplicate) return errorResponse('This student already exists in the master list', 409);
+
   const id = 'std_' + cuid();
   try {
     await db(env).prepare(`INSERT INTO students

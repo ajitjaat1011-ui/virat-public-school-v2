@@ -25,16 +25,11 @@ function getConfig(env) {
 export async function tursoQuery(env, sql, params = []) {
   const { url, token } = getConfig(env);
   const httpUrl = url.replace(/^libsql:/, 'https:');
-  const res = await fetch(httpUrl + '/v2/pipeline', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-    signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined,
-    body: JSON.stringify({
-      requests: [
-        { type: 'execute', stmt: { sql, args: params.map(toTursoValue) } },
-        { type: 'close' }
-      ]
-    })
+  const res = await pipelineFetch(httpUrl, token, {
+    requests: [
+      { type: 'execute', stmt: { sql, args: params.map(toTursoValue) } },
+      { type: 'close' }
+    ]
   });
   if (!res.ok) throw new Error('Turso query failed: HTTP ' + res.status + ' — ' + (await res.text()).slice(0, 200));
   const data = await res.json();
@@ -67,13 +62,39 @@ export async function tursoBatch(env, stmts) {
     requests.push({ type: 'execute', stmt: { sql, args: params.map(toTursoValue) } });
   }
   requests.push({ type: 'close' });
-  const res = await fetch(httpUrl + '/v2/pipeline', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requests })
-  });
+  const res = await pipelineFetch(httpUrl, token, { requests });
   if (!res.ok) throw new Error('Turso batch failed: HTTP ' + res.status);
   return await res.json();
+}
+
+async function pipelineFetch(httpUrl, token, payload) {
+  let lastError;
+  const firstSql = String(payload?.requests?.find(request => request.type === 'execute')?.stmt?.sql || '').trim();
+  const safeToRetry = /^(SELECT|PRAGMA)\b/i.test(firstSql);
+  const attempts = safeToRetry ? 2 : 1;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const response = await fetch(httpUrl + '/v2/pipeline', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(safeToRetry ? 6500 : 9000) : undefined,
+        body: JSON.stringify(payload)
+      });
+      if ((response.status === 429 || response.status >= 500) && attempt < attempts - 1) {
+        await new Promise(resolve => setTimeout(resolve, 120));
+        continue;
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts - 1 && (error?.name === 'TimeoutError' || error?.name === 'AbortError' || error instanceof TypeError)) {
+        await new Promise(resolve => setTimeout(resolve, 120));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError || new Error('Turso request failed');
 }
 
 function toTursoValue(v) {

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-  <link rel="stylesheet" href="/css/admin.css?v=10" />
+  <link rel="stylesheet" href="/css/admin.css?v=11" />
 </head>
 <body class="admin-body">
   <div id="app-root"></div>
@@ -71,7 +71,8 @@
           <input type="checkbox" id="edit-published" style="width:18px;height:18px;" />
           <label class="form-label" for="edit-published" style="margin:0;">Published (visible on site)</label>
         </div>
-        <div id="edit-err" class="form-error"></div>
+        <div id="edit-err" class="form-error" role="alert" aria-live="assertive"></div>
+        <div id="edit-status" class="form-status" role="status" aria-live="polite"></div>
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="cancel-btn">Cancel</button>
           <button type="submit" class="btn btn-primary" id="save-btn">Save notice</button>
@@ -83,7 +84,7 @@
   <script>
     window.ADMIN_PAGE = { title: 'Notices', crumb: 'Manage' };
   </script>
-  <script src="/js/admin.js?v=5"></script>
+  <script src="/js/admin.js?v=7"></script>
   <script>
     const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const fmt = iso => iso ? new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
@@ -147,6 +148,7 @@
       document.getElementById('edit-published').checked = n ? !!n.is_published : true;
       document.getElementById('edit-title').textContent = n ? 'Edit notice' : 'New notice';
       document.getElementById('edit-err').classList.remove('show');
+      clearFormStatus('edit-status');
       document.getElementById('edit-modal').classList.add('open');
     }
 
@@ -173,27 +175,33 @@
           publish_date: new Date(document.getElementById('edit-publish').value).toISOString()
         };
         const btn = document.getElementById('save-btn');
-        btn.disabled = true; btn.textContent = 'Saving…';
+        const statusEl = document.getElementById('edit-status');
+        clearFormStatus(statusEl);
+        setButtonLoading(btn, true, 'Saving…');
+        setFormStatus(statusEl, id ? 'Saving notice changes…' : 'Creating the notice…', 'warning');
         try {
           const r = id
             ? await fetch('/api/admin/notices/' + id, { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
             : await fetch('/api/admin/notices', { method: 'POST', credentials: 'include', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
           const out = await r.json().catch(() => ({}));
           if (!r.ok || !out.ok) {
+            clearFormStatus(statusEl);
             const e2 = document.getElementById('edit-err');
-            e2.textContent = out.error || 'Could not save';
+            e2.textContent = out.error || 'Could not save the notice.';
             e2.classList.add('show');
             return;
           }
+          setFormStatus(statusEl, id ? 'Notice updated successfully.' : 'Notice created successfully.', 'success');
+          toast(id ? 'Notice updated' : 'Notice created');
           document.getElementById('edit-modal').classList.remove('open');
-          toast('Notice saved');
           load();
         } catch (err) {
+          clearFormStatus(statusEl);
           const e2 = document.getElementById('edit-err');
-          e2.textContent = 'Network error';
+          e2.textContent = 'Network error. Check your connection and try again.';
           e2.classList.add('show');
         } finally {
-          btn.disabled = false; btn.textContent = 'Save notice';
+          setButtonLoading(btn, false);
         }
       });
     }

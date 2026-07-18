@@ -8,6 +8,77 @@
 (function () {
   'use strict';
 
+  // Shared duplicate-submit guard. Every admin form gets the same protection,
+  // including forms mounted inside modals after authentication.
+  if (!window.__vpsAdminSubmissionGuard) {
+    window.__vpsAdminSubmissionGuard = true;
+    document.addEventListener('submit', (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      if (form.dataset.submitting === 'true') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      form.dataset.submitting = 'true';
+      const button = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
+      let observer;
+      let timer;
+      const unlock = () => {
+        form.dataset.submitting = 'false';
+        if (observer) observer.disconnect();
+        if (timer) clearTimeout(timer);
+      };
+      if (button) {
+        observer = new MutationObserver(() => { if (!button.disabled) unlock(); });
+        observer.observe(button, { attributes: true, attributeFilter: ['disabled'] });
+      }
+      queueMicrotask(() => { if (!button || !button.disabled) unlock(); });
+      timer = setTimeout(unlock, 30000);
+    }, true);
+  }
+
+  window.setButtonLoading = function (button, loading, loadingText) {
+    if (!button) return;
+    if (loading) button.dataset.loadingRestore = button.textContent.trim();
+    const restore = button.dataset.loadingRestore || button.textContent.trim();
+    button.disabled = !!loading;
+    button.classList.toggle('is-loading', !!loading);
+    button.setAttribute('aria-busy', String(!!loading));
+    button.textContent = loading ? (loadingText || 'Please wait…') : restore;
+    if (!loading) delete button.dataset.loadingRestore;
+  };
+
+  window.setFormStatus = function (elementOrId, message, type) {
+    const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
+    if (!el) return;
+    el.className = 'form-status show ' + (type || 'success');
+    el.textContent = message;
+    el.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  };
+
+  window.clearFormStatus = function (elementOrId) {
+    const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
+    if (!el) return;
+    el.className = 'form-status';
+    el.textContent = '';
+  };
+
+  window.fetchWithRetry = async function (url, options, attempts) {
+    const max = attempts || 3;
+    let response;
+    let lastError;
+    for (let i = 0; i < max; i++) {
+      try {
+        response = await fetch(url, options);
+        if (response.status < 500) return response;
+      } catch (error) { lastError = error; }
+      if (i < max - 1) await new Promise(resolve => setTimeout(resolve, 350 * (i + 1)));
+    }
+    if (response) return response;
+    throw lastError || new Error('Request failed');
+  };
+
   const NAV = [
     { section: 'Overview' },
     { href: '/admin/',                  label: 'Dashboard',  icon: 'home',    match: '/admin/' },
@@ -199,14 +270,14 @@
 
     let user = null;
     try {
-      const r = await fetch('/api/admin/auth', { credentials: 'include' });
+      const r = await window.fetchWithRetry('/api/admin/auth', { credentials: 'include' }, 3);
       if (r.ok) { const d = await r.json(); user = d.user; }
     } catch (e) {}
     if (!user) { window.location.href = '/admin/login.html'; return; }
 
     let badges = {};
     try {
-      const r = await fetch('/api/admin/dashboard', { credentials: 'include' });
+      const r = await window.fetchWithRetry('/api/admin/dashboard', { credentials: 'include' }, 2);
       if (r.ok) { const d = await r.json(); badges = d.counts || {}; }
     } catch (e) {}
 

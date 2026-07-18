@@ -32,6 +32,14 @@ export async function onRequestPost(context) {
   const cleanBody = sanitizeHtml(body.body);
   const excerpt = body.excerpt || cleanBody.replace(/<[^>]+>/g, '').slice(0, 200);
 
+  // Double-click/network retry protection for notice creation.
+  const duplicate = await db(env).prepare(`SELECT id, slug FROM notices
+    WHERE title = ?1 AND category = ?2 AND body = ?3 AND deleted_at IS NULL
+      AND created_at >= datetime('now', '-2 minutes')
+    ORDER BY created_at DESC LIMIT 1`)
+    .bind(String(body.title).slice(0, 200), body.category, cleanBody).first();
+  if (duplicate) return jsonResponse({ ok: true, duplicate: true, id: duplicate.id, slug: duplicate.slug });
+
   try {
     await db(env).prepare(`INSERT INTO notices (id, title, slug, body, excerpt, category, is_published, publish_date, expiry_date, attachment_url, attachment_name, author_id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)`).bind(
       id, String(body.title).slice(0, 200), slug, cleanBody, String(excerpt).slice(0, 300), body.category,

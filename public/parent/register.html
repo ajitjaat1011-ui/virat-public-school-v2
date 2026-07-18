@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="/css/style.css?v=14" />
+  <link rel="stylesheet" href="/css/components.css?v=1" />
   <style>
     body.has-dock .auth-wrap { min-height: calc(100vh - 90px); }
     .auth-notice {
@@ -36,7 +37,6 @@
       color: var(--ink-700);
       margin-bottom: 12px;
     }
-    .password-toggle { align-self:flex-end; margin-top:-4px; border:0; background:transparent; color:var(--pink-600); font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:4px 0; }
   </style>
 </head>
 <body>
@@ -65,38 +65,58 @@
             <label class="form-label" for="phone">Mobile number (as given to school)</label>
             <input class="form-input" type="tel" id="phone" name="phone" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required autocomplete="tel" placeholder="10-digit mobile" />
           </div>
-          <div class="form-group">
+          <div class="form-group password-field">
             <label class="form-label" for="password">Password</label>
-            <input class="form-input" type="password" id="password" name="password" required autocomplete="new-password" minlength="6" maxlength="100" placeholder="At least 6 characters" /> <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
+            <input class="form-input" type="password" id="password" name="password" required autocomplete="new-password" minlength="6" maxlength="100" placeholder="At least 6 characters" />
+            <button type="button" class="password-toggle" data-password-toggle="password">Show</button>
           </div>
-          <div class="form-group">
+          <div class="form-group password-field">
             <label class="form-label" for="password2">Confirm password</label>
-            <input class="form-input" type="password" id="password2" name="password2" required autocomplete="new-password" minlength="6" maxlength="100" placeholder="Type it again" /> <button type="button" class="password-toggle" data-password-toggle="password2">Show</button>
+            <input class="form-input" type="password" id="password2" name="password2" required autocomplete="new-password" minlength="6" maxlength="100" placeholder="Type it again" />
+            <button type="button" class="password-toggle" data-password-toggle="password2">Show</button>
           </div>
 
-          <div class="auth-section auth-section-title">Your child (optional — helps us link your account)</div>
+          <div class="auth-section auth-section-title">Your child <span class="optional">(optional now—you can add children later)</span></div>
+          <p class="form-help">Details are checked against the student master list by the school office before any results become visible.</p>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="student_name">Child's name</label>
-              <input class="form-input" type="text" id="student_name" name="student_name" placeholder="e.g. Aarav" />
+              <label class="form-label" for="student_name">Child's full name</label>
+              <input class="form-input" type="text" id="student_name" name="student_name" maxlength="100" placeholder="As recorded at school" />
             </div>
             <div class="form-group">
+              <label class="form-label" for="admission_number">Admission number</label>
+              <input class="form-input" type="text" id="admission_number" name="admission_number" maxlength="40" placeholder="Best way to match" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
               <label class="form-label" for="class_name">Class</label>
-              <input class="form-input" type="text" id="class_name" name="class_name" placeholder="e.g. Class 5" />
+              <select class="form-select" id="class_name" name="class_name">
+                <option value="">Select class…</option>
+                <option>LKG</option><option>UKG</option>
+                <option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option>
+                <option>Class 11 (Science)</option><option>Class 11 (Arts)</option><option>Class 11 (Agriculture)</option>
+                <option>Class 12 (Science)</option><option>Class 12 (Arts)</option><option>Class 12 (Agriculture)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="dob">Date of birth</label>
+              <input class="form-input" type="date" id="dob" name="dob" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="section">Section</label>
-              <input class="form-input" type="text" id="section" name="section" maxlength="5" placeholder="e.g. A" />
+              <select class="form-select" id="section" name="section"><option value="">Unknown / none</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
             </div>
             <div class="form-group">
               <label class="form-label" for="roll_number">Roll number</label>
-              <input class="form-input" type="text" id="roll_number" name="roll_number" maxlength="20" placeholder="optional" />
+              <input class="form-input" type="text" id="roll_number" name="roll_number" maxlength="20" placeholder="If known" />
             </div>
           </div>
 
-          <div id="regError" class="form-error-banner" role="alert"></div>
+          <div id="regError" class="form-error-banner" role="alert" aria-live="assertive"></div>
+          <div id="regStatus" class="form-status" role="status" aria-live="polite"></div>
           <button type="submit" class="btn btn-pink btn-lg" id="regBtn">Submit request</button>
         </form>
 
@@ -108,11 +128,12 @@
     </div>
   </main>
 
-  <script src="/js/partials.js?v=10"></script>
+  <script src="/js/partials.js?v=12"></script>
   <script>
     (function () {
       const form = document.getElementById('regForm');
       const errEl = document.getElementById('regError');
+      const statusEl = document.getElementById('regStatus');
       const btn   = document.getElementById('regBtn');
 
       document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
@@ -124,8 +145,9 @@
         });
       });
 
-      function showError(msg) { errEl.textContent = msg; errEl.classList.add('show'); }
-      function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; }
+      function showError(msg, field) { errEl.textContent = msg; errEl.classList.add('show'); statusEl.className = 'form-status'; if (field) { field.setAttribute('aria-invalid','true'); field.focus(); } }
+      function clearError() { errEl.classList.remove('show'); errEl.textContent = ''; statusEl.className = 'form-status'; form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.setAttribute('aria-invalid','false')); }
+      document.getElementById('phone').addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g,'').slice(0,10); });
 
       fetch('/api/parent/auth', { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
@@ -139,41 +161,48 @@
         const password  = document.getElementById('password').value;
         const password2 = document.getElementById('password2').value;
         const student_name = document.getElementById('student_name').value.trim();
+        const admission_number = document.getElementById('admission_number').value.trim();
         const class_name   = document.getElementById('class_name').value.trim();
         const section      = document.getElementById('section').value.trim();
         const roll_number  = document.getElementById('roll_number').value.trim();
+        const dob          = document.getElementById('dob').value;
 
-        if (full_name.length < 2) { showError('Please enter your full name.'); return; }
-        if (!/^\d{10}$/.test(phone)) { showError('Please enter a 10-digit mobile number.'); return; }
-        if (password.length < 6) { showError('Password must be at least 6 characters.'); return; }
-        if (password !== password2) { showError('Passwords do not match.'); return; }
+        if (full_name.length < 2) { showError('Please enter your full name.', document.getElementById('full_name')); return; }
+        if (!/^[6-9]\d{9}$/.test(phone)) { showError('Enter a 10-digit mobile number starting with 6, 7, 8, or 9.', document.getElementById('phone')); return; }
+        if (password.length < 6) { showError('Password must be at least 6 characters.', document.getElementById('password')); return; }
+        if (password !== password2) { showError('Passwords do not match.', document.getElementById('password2')); return; }
+        if (student_name && !class_name) { showError('Choose your child’s class so the office can match the record.', document.getElementById('class_name')); return; }
 
-        btn.disabled = true; btn.textContent = 'Submitting…';
+        btn.disabled = true; btn.classList.add('is-loading'); btn.textContent = 'Submitting securely…';
+        statusEl.textContent = 'Creating your request and protecting your sign-in details…';
+        statusEl.className = 'form-status show';
         try {
-          const res = await fetch('/api/parent/auth', {
+          const res = await window.vpsFetchWithRetry('/api/parent/auth', {
             method: 'POST',
             credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-submission-key': window.vpsSubmissionKey(form) },
             body: JSON.stringify({
               action: 'register',
               full_name, phone, password,
-              student_name, class_name, section, roll_number
+              student_name, admission_number, class_name, section, roll_number, dob
             })
-          });
+          }, 2);
           const data = await res.json();
           if (!res.ok) { showError(data.error || 'Submission failed.'); return; }
           form.outerHTML = `
-            <div class="form-success" style="background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:16px; border-radius:14px; text-align:left;">
-              <strong>Thank you — your request is in.</strong><br><br>
-              The school office will review your details and approve your account. You will be able to sign in with the mobile number and password you just provided.
-              <br><br>
-              <a href="login.html" class="btn btn-secondary btn-sm">Go to sign in</a>
-              <a href="../index.html" class="btn btn-ghost btn-sm">Back to site</a>
+            <div class="form-success show" style="text-align:left;">
+              <strong>Account request received.</strong><br>
+              Reference: <strong>${data.reference || 'PAR-RECEIVED'}</strong><br><br>
+              The school office will first verify your account and child details against the student master list. Once approved, sign in with <strong>${phone}</strong> and the password you created.
+              <div class="action-row" style="margin-top:14px;">
+                <a href="login.html" class="btn btn-secondary btn-sm">Go to sign in</a>
+                <a href="../index.html" class="btn btn-ghost btn-sm">Back to site</a>
+              </div>
             </div>`;
         } catch (err) {
           showError('Network error. Please try again.');
         } finally {
-          btn.disabled = false; btn.textContent = 'Submit request';
+          if (document.body.contains(btn)) { btn.disabled = false; btn.classList.remove('is-loading'); btn.textContent = 'Submit request'; }
         }
       });
     })();

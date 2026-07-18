@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="/css/style.css?v=14" />
+  <link rel="stylesheet" href="/css/components.css?v=1" />
   <style>
     .stat-app-grid { padding-top: 8px; }
     .exam-card {
@@ -99,8 +100,41 @@
     </section>
 
     <!-- Children -->
-    <div class="section-head"><h2>Your child(ren)</h2></div>
+    <div class="section-head"><h2>Your children</h2></div>
     <div id="children" class="app-list" aria-live="polite"></div>
+
+    <div class="section-head"><h2>Child-link requests</h2></div>
+    <div id="linkRequests" class="app-list" aria-live="polite"></div>
+    <div class="app-list">
+      <details class="app-card link-request-card" id="addChildDetails">
+        <summary style="cursor:pointer;font-weight:700;color:var(--pink-700);">Request a link for another child</summary>
+        <form id="childLinkForm" class="form child-link-form" novalidate>
+          <p class="form-help">The school office verifies each request against the student master list before results are shown.</p>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label" for="link_student_name">Student full name</label><input class="form-input" id="link_student_name" required maxlength="100" /></div>
+            <div class="form-group"><label class="form-label" for="link_admission_number">Admission number</label><input class="form-input" id="link_admission_number" maxlength="40" placeholder="Recommended" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="link_class_name">Class</label>
+              <select class="form-select" id="link_class_name" required>
+                <option value="">Select class…</option><option>LKG</option><option>UKG</option>
+                <option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option>
+                <option>Class 11 (Science)</option><option>Class 11 (Arts)</option><option>Class 11 (Agriculture)</option><option>Class 12 (Science)</option><option>Class 12 (Arts)</option><option>Class 12 (Agriculture)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label" for="link_dob">Date of birth</label><input class="form-input" type="date" id="link_dob" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label" for="link_section">Section</label><select class="form-select" id="link_section"><option value="">Unknown / none</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
+            <div class="form-group"><label class="form-label" for="link_roll_number">Roll number</label><input class="form-input" id="link_roll_number" maxlength="20" /></div>
+          </div>
+          <div id="childLinkError" class="form-error-banner" role="alert"></div>
+          <div id="childLinkStatus" class="form-status" role="status"></div>
+          <button type="submit" class="btn btn-pink" id="childLinkBtn">Submit link request</button>
+        </form>
+      </details>
+    </div>
 
     <!-- Stats summary -->
     <div class="stat-app-grid">
@@ -132,13 +166,14 @@
     </div>
   </footer>
 
-  <script src="/js/partials.js?v=10"></script>
+  <script src="/js/partials.js?v=12"></script>
   <script>
     function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
     const elHello = document.getElementById('hello');
     const elHelloSub = document.getElementById('helloSub');
     const elChildren = document.getElementById('children');
+    const elLinkRequests = document.getElementById('linkRequests');
     const elExams = document.getElementById('exams');
     const elResults = document.getElementById('results');
 
@@ -149,34 +184,62 @@
     async function load() {
       let res, data;
       try {
-        res = await fetch('/api/parent/dashboard', { credentials: 'include' });
-        data = await res.json();
-      } catch (e) {
-        window.location.href = 'login.html';
+        for (let attempt = 0; attempt < 3; attempt++) {
+          res = await fetch('/api/parent/dashboard', { credentials: 'include' });
+          if (res.status < 500 || attempt === 2) break;
+          await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)));
+        }
+        data = await res.json().catch(() => ({}));
+        if (res.status === 401) { window.location.href = 'login.html'; return; }
+        if (!res.ok) throw new Error(data.error || 'Could not load the parent dashboard');
+      } catch (error) {
+        elHelloSub.textContent = 'The portal could not load right now.';
+        renderEmpty(elChildren, error.message || 'Check your connection and try again.');
+        elLinkRequests.innerHTML = '<div class="empty-state"><button class="btn btn-secondary btn-sm" id="retryDashboard">Try again</button></div>';
+        document.getElementById('retryDashboard')?.addEventListener('click', load);
         return;
       }
-      if (!res.ok) { window.location.href = 'login.html'; return; }
 
-      const { parent, children, exams, results } = data;
+      const { parent, children, exams, results, link_requests: linkRequests = [] } = data;
       elHello.textContent = `Hello, ${parent.full_name.split(' ')[0]}.`;
-      elHelloSub.textContent = `Signed in as ${parent.phone}.`;
+      elHelloSub.textContent = `Signed in as ${parent.phone}. Child data shown here is verified by the school office.`;
 
       if (!children.length) {
-        elChildren.innerHTML = '<div class="empty-state">No child linked yet. The school office will add this when they approve your request.</div>';
+        elChildren.innerHTML = '<div class="empty-state">No verified child is linked yet. Check the request status below or submit a link request.</div>';
       } else {
         elChildren.innerHTML = children.map(c => `
-          <a href="#" class="app-card" onclick="return false;">
+          <div class="app-card">
             <div class="head">
               <div class="icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </div>
-              <div>
+              <div style="flex:1;min-width:0;">
                 <h3>${esc(c.student_name)}</h3>
-                <p>${esc(c.class_name || '')}${c.section ? ' · ' + esc(c.section) : ''}${c.roll_number ? ' · Roll ' + esc(c.roll_number) : ''}</p>
+                <p>${esc(c.class_name || '')}${c.section ? ' · Section ' + esc(c.section) : ''}${c.roll_number ? ' · Roll ' + esc(c.roll_number) : ''}${c.admission_number ? ' · Admission ' + esc(c.admission_number) : ''}</p>
               </div>
+              <span class="tag ok child-status">Verified</span>
             </div>
-          </a>
+          </div>
         `).join('');
+      }
+
+      if (!linkRequests.length) {
+        elLinkRequests.innerHTML = '<div class="empty-state">No pending child-link requests.</div>';
+      } else {
+        elLinkRequests.innerHTML = linkRequests.map(request => `
+          <div class="app-card compact" data-request-id="${esc(request.id)}">
+            <div class="head">
+              <div style="flex:1;min-width:0;">
+                <h3>${esc(request.student_name)}</h3>
+                <p>${esc(request.class_name)}${request.section ? ' · Section ' + esc(request.section) : ''}${request.admission_number ? ' · Admission ' + esc(request.admission_number) : ''}</p>
+              </div>
+              <span class="tag ${request.link_status === 'REJECTED' ? 'danger' : 'warn'}">${request.link_status === 'REJECTED' ? 'Needs attention' : 'Awaiting review'}</span>
+            </div>
+            ${request.link_status === 'REQUESTED' ? '<button type="button" class="btn btn-ghost btn-sm cancel-link-request">Cancel request</button>' : '<p class="form-help">The office could not verify this record. Please check the details or contact the school.</p>'}
+          </div>`).join('');
+        elLinkRequests.querySelectorAll('.cancel-link-request').forEach(button => {
+          button.addEventListener('click', () => cancelLinkRequest(button.closest('[data-request-id]').dataset.requestId, button));
+        });
       }
 
       const today = new Date().toISOString().slice(0, 10);
@@ -232,6 +295,63 @@
         }).join('');
       }
     }
+
+    async function cancelLinkRequest(id, button) {
+      if (!confirm('Cancel this pending child-link request?')) return;
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/parent/children?id=' + encodeURIComponent(id), { method: 'DELETE', credentials: 'include' });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Could not cancel request');
+        await load();
+      } catch (error) {
+        alert(error.message);
+      } finally { button.disabled = false; }
+    }
+
+    document.getElementById('childLinkForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const errorEl = document.getElementById('childLinkError');
+      const statusEl = document.getElementById('childLinkStatus');
+      const button = document.getElementById('childLinkBtn');
+      errorEl.classList.remove('show');
+      statusEl.className = 'form-status';
+      const payload = {
+        student_name: document.getElementById('link_student_name').value.trim(),
+        admission_number: document.getElementById('link_admission_number').value.trim(),
+        class_name: document.getElementById('link_class_name').value,
+        dob: document.getElementById('link_dob').value,
+        section: document.getElementById('link_section').value,
+        roll_number: document.getElementById('link_roll_number').value.trim()
+      };
+      if (payload.student_name.length < 2 || !payload.class_name) {
+        errorEl.textContent = 'Enter the student’s full name and choose a class.';
+        errorEl.classList.add('show');
+        return;
+      }
+      button.disabled = true; button.classList.add('is-loading'); button.textContent = 'Submitting…';
+      statusEl.textContent = 'Sending this request to the school office…'; statusEl.className = 'form-status show';
+      try {
+        const response = await window.vpsFetchWithRetry('/api/parent/children', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'x-submission-key': window.vpsSubmissionKey(form) },
+          body: JSON.stringify(payload)
+        }, 2);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Could not submit request');
+        statusEl.textContent = data.message || (data.duplicate ? 'This request is already being reviewed.' : 'Request submitted. The school office will verify it.');
+        statusEl.className = 'form-status show';
+        if (!data.duplicate) form.reset();
+        await load();
+      } catch (error) {
+        statusEl.className = 'form-status';
+        errorEl.textContent = error.message;
+        errorEl.classList.add('show');
+      } finally {
+        button.disabled = false; button.classList.remove('is-loading'); button.textContent = 'Submit link request';
+      }
+    });
 
     document.getElementById('signoutLink').addEventListener('click', async (e) => {
       e.preventDefault();
