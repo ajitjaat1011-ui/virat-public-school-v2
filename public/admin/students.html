@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Students · VPS Admin</title>
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
-  <link rel="stylesheet" href="/css/admin.css?v=11" />
+  <link rel="stylesheet" href="/css/admin.css?v=12" />
   <style>
     .student-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
     .student-toolbar > * { flex:1 1 180px; }
@@ -100,5 +100,6 @@
       document.getElementById('cancel-btn').onclick=resetForm; document.getElementById('filter-class').onchange=loadStudents; document.getElementById('refresh-btn').onclick=loadStudents; loadStudents();
     };
   </script>
+  <script src="/js/i18n.js?v=1"></script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "deployment": "https://0209bcf4.virat-public-school-v2.pages.dev",
+  "production": "https://virat-public-school-v2.pages.dev",
+  "testedAt": "2026-07-18T05:50:45+05:30",
+  "checks": {
+    "publicMobileBilingualRoutes": 20,
+    "publicDesktopBilingual": true,
+    "authenticatedAdminMobileBilingualRoutes": 9,
+    "englishHindiPersistence": true,
+    "englishRestore": true,
+    "horizontalOverflowFailures": 0,
+    "minimumLanguageToggleHeightPx": 42
+  },
+  "warnings": []
+}
