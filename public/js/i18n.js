@@ -266,7 +266,14 @@
     'Notices | Virat Public School': 'सूचनाएँ | विराट पब्लिक स्कूल',
     'Gallery | Virat Public School': 'गैलरी | विराट पब्लिक स्कूल',
     'Faculty | Virat Public School': 'शिक्षकगण | विराट पब्लिक स्कूल',
-    'Holiday List | Virat Public School': 'अवकाश सूची | विराट पब्लिक स्कूल'
+    'Holiday List | Virat Public School': 'अवकाश सूची | विराट पब्लिक स्कूल',
+    'SCHOOL HOLIDAY FOR 12 JULY': '12 जुलाई को विद्यालय अवकाश',
+    'School holiday due to rain': 'बारिश के कारण विद्यालय में अवकाश',
+    'MATH MAJOR EXAM': 'गणित मुख्य परीक्षा',
+    'Exam on 18 July 2026, 11:00 – 13:07 — Class 12 (Science)': 'परीक्षा 18 जुलाई 2026, 11:00 – 13:07 — कक्षा 12 (विज्ञान)',
+    'MATH MAJOR EXAM is scheduled for 18 July 2026 at 11:00 – 13:07 for Class 12 (Science).chapters 1.1 se 1.5Please be in your seats 10 minutes before the start time. Bring your school ID and stationery.': 'गणित मुख्य परीक्षा 18 जुलाई 2026 को 11:00 – 13:07 बजे कक्षा 12 (विज्ञान) के लिए निर्धारित है। अध्याय 1.1 से 1.5। कृपया आरंभ समय से 10 मिनट पहले अपनी सीट पर बैठें। विद्यालय पहचान-पत्र और लेखन सामग्री साथ लाएँ।',
+    'Online applications are now being accepted for LKG through Class 11 (Science, Commerce, and Arts streams) for the 2026-27 academic year.How to applyFill the inquiry form on our websiteVisit the campus for a tour and meetingSubmit required documents at the officeComplete admission by paying the feeLimited seats available in select classes. Apply early to secure your spot.': 'शैक्षणिक वर्ष 2026–27 के लिए LKG से कक्षा 11 (विज्ञान, वाणिज्य और कला) तक ऑनलाइन आवेदन स्वीकार किए जा रहे हैं। आवेदन कैसे करें: वेबसाइट पर पूछताछ फ़ॉर्म भरें, परिसर भ्रमण और बैठक के लिए आएँ, कार्यालय में आवश्यक दस्तावेज़ जमा करें और शुल्क देकर प्रवेश पूरा करें। कुछ कक्षाओं में सीमित सीटें हैं, इसलिए समय पर आवेदन करें।',
+    'Online applications are now being accepted for LKG through Class 11 (Science, Commerce, and Arts streams) for the 2026-27 academic year.How to applyFill the inquiry form on our websiteVisit the campus': 'शैक्षणिक वर्ष 2026–27 के लिए LKG से कक्षा 11 तक ऑनलाइन आवेदन स्वीकार किए जा रहे हैं। आवेदन के लिए पूछताछ फ़ॉर्म भरें और परिसर आएँ।'
   });
 
   const PATTERNS = [

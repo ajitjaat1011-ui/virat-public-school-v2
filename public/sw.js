@@ -1,11 +1,11 @@
 /* Service worker — fast offline shell without caching dynamic API responses. */
-const CACHE_NAME = 'vps-app-v4';
+const CACHE_NAME = 'vps-app-v5';
 const APP_SHELL = [
   '/',
   '/css/style.css?v=14',
   '/css/components.css?v=2',
   '/js/partials.js?v=12',
-  '/js/i18n.js?v=1',
+  '/js/i18n.js?v=2',
   '/js/main.js?v=9',
   '/manifest.json',
   '/images/favicon.svg'
