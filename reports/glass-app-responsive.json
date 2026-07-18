@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "testedAt": "2026-07-18T06:02:00+05:30",
+  "deployment": "https://ed8590cb.virat-public-school-v2.pages.dev",
+  "productionAuthenticatedChecks": true,
+  "checks": {
+    "publicDesktop": {
+      "horizontalOverflowPx": 0,
+      "glassBlur": "26px",
+      "stickyHeader": true,
+      "floatingDockBlur": "30px"
+    },
+    "publicMobile": {
+      "viewport": "390x844",
+      "horizontalOverflowPx": 0,
+      "glassBlur": "26px",
+      "headerRadius": "20px"
+    },
+    "adminDesktop": {
+      "horizontalOverflowPx": 0,
+      "sidebarBlur": "26px",
+      "sidebarRadius": "28px",
+      "topbarRadius": "22px"
+    },
+    "adminMobile": {
+      "viewport": "390x844",
+      "horizontalOverflowPx": 0,
+      "drawerWidthPx": 280,
+      "drawerWithinViewport": true
+    }
+  },
+  "warnings": []
+}
