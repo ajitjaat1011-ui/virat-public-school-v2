@@ -6,7 +6,16 @@
  */
 import { errorResponse, jsonResponse } from '../../../lib/data.js';
 import { db } from '../../../lib/db.js';
-import { requireAdmin, checkOrigin, audit } from '../../../lib/auth.js';
+import { requireAdmin, checkOrigin, audit, cuid } from '../../../lib/auth.js';
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export async function onRequestGet(context) {
   const { request, env, params } = context;
@@ -68,7 +77,7 @@ export async function onRequestPost(context) {
         if (updated) {
           const examDateFmt = new Date(updated.exam_date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
           const timeLine = updated.start_time ? `${updated.start_time}${updated.end_time ? ' – ' + updated.end_time : ''}` : '';
-          const bodyHtml = `<p><strong>${(updated.title || '').replace(/</g, '&lt;')}</strong> is scheduled for <strong>${examDateFmt}</strong>${timeLine ? ' at <strong>' + timeLine + '</strong>' : ''}${updated.class_name ? ' for <strong>' + updated.class_name + '</strong>' : ''}.</p>${updated.syllabus ? '<p>' + updated.syllabus.replace(/</g, '&lt;') + '</p>' : ''}<p>Please be in your seats 10 minutes before the start time. Bring your school ID and stationery.</p>`;
+          const bodyHtml = `<p><strong>${escapeHtml(updated.title)}</strong> is scheduled for <strong>${escapeHtml(examDateFmt)}</strong>${timeLine ? ' at <strong>' + escapeHtml(timeLine) + '</strong>' : ''}${updated.class_name ? ' for <strong>' + escapeHtml(updated.class_name) + '</strong>' : ''}.</p>${updated.syllabus ? '<p>' + escapeHtml(updated.syllabus) + '</p>' : ''}<p>Please be in your seats 10 minutes before the start time. Bring your school ID and stationery.</p>`;
           const excerpt = `Exam on ${examDateFmt}${timeLine ? ', ' + timeLine : ''} — ${updated.class_name || ''}`;
           const slugBase = (updated.title || 'exam').toLowerCase()
             .replace(/[^a-z0-9\s-]/g, '').trim()

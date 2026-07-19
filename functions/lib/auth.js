@@ -74,7 +74,11 @@ export function parseCookies(request) {
   header.split(';').forEach((kv) => {
     const [k, ...rest] = kv.trim().split('=');
     if (!k) return;
-    out[k] = decodeURIComponent(rest.join('='));
+    try {
+      out[k] = decodeURIComponent(rest.join('='));
+    } catch (_) {
+      out[k] = rest.join('=');
+    }
   });
   return out;
 }

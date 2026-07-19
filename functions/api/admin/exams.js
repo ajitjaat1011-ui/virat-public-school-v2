@@ -8,6 +8,15 @@ import { errorResponse, jsonResponse } from '../../lib/data.js';
 import { db } from '../../lib/db.js';
 import { requireAdmin, cuid, checkOrigin, audit } from '../../lib/auth.js';
 
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const { user, error } = await requireAdmin(request, env);
@@ -93,7 +102,7 @@ export async function onRequestPost(context) {
         const timeLine = start_time
           ? `${start_time}${end_time ? ' – ' + end_time : ''}`
           : '';
-        const bodyHtml = `<p><strong>${title.replace(/</g, '&lt;')}</strong> is scheduled for <strong>${examDateFmt}</strong>${timeLine ? ' at <strong>' + timeLine + '</strong>' : ''}${class_name ? ' for <strong>' + class_name + '</strong>' : ''}.</p>${syllabus ? '<p>' + syllabus.replace(/</g, '&lt;') + '</p>' : ''}<p>Please be in your seats 10 minutes before the start time. Bring your school ID and stationery.</p>`;
+        const bodyHtml = `<p><strong>${escapeHtml(title)}</strong> is scheduled for <strong>${escapeHtml(examDateFmt)}</strong>${timeLine ? ' at <strong>' + escapeHtml(timeLine) + '</strong>' : ''}${class_name ? ' for <strong>' + escapeHtml(class_name) + '</strong>' : ''}.</p>${syllabus ? '<p>' + escapeHtml(syllabus) + '</p>' : ''}<p>Please be in your seats 10 minutes before the start time. Bring your school ID and stationery.</p>`;
         const excerpt = `Exam on ${examDateFmt}${timeLine ? ', ' + timeLine : ''} — ${class_name}`;
         // Use a unique slug — append a short cuid tail to avoid collisions
         const slugFinal = slug + '-' + cuid().slice(0, 6);

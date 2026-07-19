@@ -56,7 +56,15 @@ export async function onRequestDelete(context) {
 function parseCookies(request) {
   const h = request.headers.get('Cookie') || '';
   const out = {};
-  h.split(';').forEach((kv) => { const [k, ...rest] = kv.trim().split('='); if (k) out[k] = decodeURIComponent(rest.join('=')); });
+  h.split(';').forEach((kv) => {
+    const [k, ...rest] = kv.trim().split('=');
+    if (!k) return;
+    try {
+      out[k] = decodeURIComponent(rest.join('='));
+    } catch (_) {
+      out[k] = rest.join('=');
+    }
+  });
   return out;
 }
 

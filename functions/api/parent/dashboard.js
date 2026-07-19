@@ -87,13 +87,23 @@ export async function onRequestGet(context) {
       const allRows = res.results || [];
 
       // Filter to only this parent's children
-      const myChildren = children.map(c => ({
-        key: `${(c.student_name||'').trim().toLowerCase()}|${(c.class_name||'').trim().toLowerCase()}|${(c.section||'').trim().toLowerCase()}|${(c.roll_number||'').trim().toLowerCase()}`,
-        ...c
-      }));
       results = allRows.filter(r => {
-        const key = `${(r.student_name||'').trim().toLowerCase()}|${(r.class_name||'').trim().toLowerCase()}|${(r.section||'').trim().toLowerCase()}|${(r.roll_number||'').trim().toLowerCase()}`;
-        return myChildren.some(c => c.key === key);
+        const rName = (r.student_name || '').trim().toLowerCase();
+        const rClass = (r.class_name || '').trim().toLowerCase();
+        const rSection = (r.section || '').trim().toLowerCase();
+        const rRoll = (r.roll_number || '').trim().toLowerCase();
+
+        return children.some(c => {
+          const cName = (c.student_name || '').trim().toLowerCase();
+          const cClass = (c.class_name || '').trim().toLowerCase();
+          const cSection = (c.section || '').trim().toLowerCase();
+          const cRoll = (c.roll_number || '').trim().toLowerCase();
+
+          if (rName !== cName || rClass !== cClass) return false;
+          if (rRoll && cRoll && rRoll !== cRoll) return false;
+          if (rSection && cSection && rSection !== cSection) return false;
+          return true;
+        });
       });
     }
   }

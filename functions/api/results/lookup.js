@@ -34,7 +34,7 @@ export async function onRequestGet(context) {
   }
 
   // New admin-uploaded results are linked to the student master list by roll/class.
-  const row = await db(env).prepare(`
+  const { results: rows } = await db(env).prepare(`
     SELECT er.roll_number, er.student_name, er.class_name, er.section,
       er.marks_obtained, er.max_marks, er.grade, er.remarks,
       e.title AS exam_name, e.subject, e.exam_date
@@ -44,15 +44,32 @@ export async function onRequestGet(context) {
       AND IFNULL(st.roll_number, '') = IFNULL(er.roll_number, '')
       AND st.deleted_at IS NULL AND st.is_active = 1
     WHERE er.roll_number = ?1 AND st.dob = ?2
-    ORDER BY e.exam_date DESC LIMIT 1
-  `).bind(roll, dob).first();
+    ORDER BY e.exam_date DESC, e.subject ASC
+  `).bind(roll, dob).all();
 
-  if (!row) return errorResponse('No result found', 404);
+  if (!rows || !rows.length) return errorResponse('No result found', 404);
+
+  // Filter to rows from the most recent exam date / exam name
+  const latestExamDate = rows[0].exam_date;
+  const latestExamName = rows[0].exam_name;
+  const latestRows = rows.filter(r => r.exam_date === latestExamDate || r.exam_name === latestExamName);
+
+  const first = latestRows[0];
+  const marks = latestRows.map(r => ({
+    subject: r.subject || 'General',
+    marks: r.marks_obtained,
+    max_marks: r.max_marks,
+    grade: r.grade || ''
+  }));
+
+  const totalObtained = latestRows.reduce((sum, r) => sum + (Number(r.marks_obtained) || 0), 0);
+  const totalMax = latestRows.reduce((sum, r) => sum + (Number(r.max_marks) || 100), 0);
+
   return jsonResponse({
-    student: { name: row.student_name, class: row.class_name, roll: row.roll_number },
-    roll_number: row.roll_number, student_name: row.student_name, class_name: row.class_name,
-    section: row.section, exam_name: row.exam_name,
-    marks: [{ subject: row.subject, marks: row.marks_obtained, grade: row.grade || '' }],
-    total: row.marks_obtained, max_total: row.max_marks, grade: row.grade || '', remarks: row.remarks || ''
+    student: { name: first.student_name, class: first.class_name, roll: first.roll_number },
+    roll_number: first.roll_number, student_name: first.student_name, class_name: first.class_name,
+    section: first.section, exam_name: first.exam_name,
+    marks,
+    total: totalObtained, max_total: totalMax, grade: first.grade || '', remarks: first.remarks || ''
   });
 }
