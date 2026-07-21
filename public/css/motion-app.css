@@ -10,16 +10,16 @@
   --ambient-y: 0px;
 }
 
+html, body { overflow-x: clip; }
+
 /* Page arrival */
 body { opacity: 1; transform: none; }
-html.motion-ready body:not(.motion-page-entered) {
-  opacity: .001;
-  transform: translateY(5px);
-}
 html.motion-ready body.motion-page-entered {
-  opacity: 1;
-  transform: none;
-  transition: opacity .38s ease-out, transform .48s var(--motion-spring);
+  animation: motion-page-arrive .46s var(--motion-spring) both;
+}
+@keyframes motion-page-arrive {
+  from { opacity: .9; translate: 0 5px; }
+  to { opacity: 1; translate: 0 0; }
 }
 
 /* Scroll progress is thin enough to stay quiet but gives an app-like response. */
