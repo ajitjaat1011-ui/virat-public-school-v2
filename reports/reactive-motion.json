@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "testedAt": "2026-07-21T07:09:43+05:30",
+  "profile": "balanced",
+  "deployment": "https://79927225.virat-public-school-v2.pages.dev",
+  "productionAuthenticatedChecks": true,
+  "architecture": "vanilla JavaScript progressive enhancement",
+  "checks": {
+    "pageEntrance": true,
+    "intersectionReveals": true,
+    "staggeredCards": true,
+    "desktopPointerTilt": true,
+    "pointerGlassGlow": true,
+    "buttonRipple": true,
+    "scrollProgress": true,
+    "reactiveStickyHeader": true,
+    "mobileDockResponse": true,
+    "dynamicCountPreparation": true,
+    "formSuccessAnimation": true,
+    "mobileHorizontalOverflowPx": 0,
+    "reducedMotionFallback": true,
+    "contentVisibleWithoutJavaScript": true
+  },
+  "warnings": []
+}
